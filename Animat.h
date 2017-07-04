@@ -19,6 +19,7 @@ public:
 	virtual ~Animat();
 
 	// member vars
+	const char* name;
 	float posX;
 	float posY;
 	float velocity;
@@ -26,7 +27,9 @@ public:
 	int energy;
 
 	// member functions
-
+	char* generateName();
+	const char* getName();
+	void toString();
 
 };
 

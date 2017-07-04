@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <map>
+#include <ctime>
 
 #include "Animat.h"
 
@@ -17,8 +18,11 @@ using namespace ecosystem;
 
 int main( void ) {
 
+	srand(time(0));
 
-	map<int, Animat> somemap;
+//	map<int, Animat> somemap;
+	Animat ani;
+	ani.toString();
 
 	return 0;
 

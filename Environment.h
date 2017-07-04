@@ -27,7 +27,7 @@ public:
 	// member variables
 	int sizeX;
 	int sizeY;
-	map<int, Animat> population;
+	map<const char*, Animat> population;
 
 	// member functions
 	void birth( Animat );
