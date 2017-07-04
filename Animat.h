@@ -12,15 +12,22 @@ namespace ecosystem {
 
 class Animat {
 public:
+
 	// constructors
 	Animat();
+	Animat( float, float, float, float, int );
 	virtual ~Animat();
+
 	// member vars
-	float pos_x;
-	float pos_y;
+	float posX;
+	float posY;
 	float velocity;
 	float direction;
 	int energy;
+
+	// member functions
+
+
 };
 
 } /* namespace ecosystem */
