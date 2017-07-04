@@ -23,7 +23,7 @@ Environment::Environment() {
 }
 
 Environment::~Environment() {
-	// TODO Auto-generated destructor stub
+
 }
 
 } /* namespace ecosystem */

@@ -30,6 +30,8 @@ public:
 	map<int, Animat> population;
 
 	// member functions
+	void birth( Animat );
+
 };
 
 } /* namespace ecosystem */
