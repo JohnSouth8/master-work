@@ -28,8 +28,11 @@ public:
 	int sizeX;
 	int sizeY;
 	map<const char*, Animat> population;
+	bool* foodReserve;
+
 
 	// member functions
+	void distributeFood( float );
 	void birth( Animat );
 
 };

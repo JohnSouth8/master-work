@@ -29,6 +29,9 @@ public:
 	// member functions
 	char* generateName();
 	const char* getName();
+	void changeVelocity( float );
+	void move();
+	void turn( float );
 	void toString();
 
 };

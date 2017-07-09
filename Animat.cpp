@@ -27,6 +27,17 @@ Animat::Animat() {
 
 }
 
+Animat::Animat( float px, float py, float v, float dir, int e ) {
+
+	name = generateName();
+	posX = px;
+	posY = py;
+	velocity = v;
+	direction = dir;
+	energy = e;
+
+}
+
 Animat::~Animat() {
 	// TODO Auto-generated destructor stub
 }
@@ -52,6 +63,33 @@ char* Animat::generateName() {
 
 const char* Animat::getName() {
 	return name;
+}
+
+
+
+void Animat::changeVelocity( float delta ) {
+	velocity += delta;
+}
+
+
+void Animat::move() {
+
+	float newX, newY, deltaX, deltaY;
+	deltaX = velocity * sin( direction );
+	deltaY = velocity * cos( direction );
+	newX = posX + deltaX;
+	newY = posY + deltaY;
+	posX = newX;
+	posY = newY;
+
+}
+
+
+void Animat::turn( float rads ) {
+
+	direction += rads;
+	direction = fmod( direction, M_PI );
+
 }
 
 
