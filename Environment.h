@@ -21,19 +21,20 @@ public:
 
 	// constructors
 	Environment();
-	Environment( int, int );
+	Environment( int, int, float );
 	virtual ~Environment();
 
 	// member variables
 	int sizeX;
 	int sizeY;
 	map<const char*, Animat> population;
-	bool* foodReserve;
+	unsigned int* foodReserve;
 
 
 	// member functions
 	void distributeFood( float );
 	void birth( Animat );
+	unsigned int* getFoodReserve();
 
 };
 

@@ -22,18 +22,18 @@ Environment::Environment() {
 	sizeX = 1000;
 	sizeY = 1000;
 	population = map<const char*, Animat>();
-	foodReserve = new bool[sizeX*sizeY] {false};
-	distributeFood( 0.3 );
+	foodReserve = new unsigned int[sizeX*sizeY] {0};
+	distributeFood( 0.5 );
 
 }
 
-Environment::Environment( int sx, int sy ) {
+Environment::Environment( int sx, int sy, float density ) {
 
 	sizeX = sx;
 	sizeY = sy;
 	population = map<const char*, Animat>();
-	foodReserve = new bool[sx*sy] {false};
-	distributeFood( 0.3 );
+	foodReserve = new unsigned int[sx*sy] {0};
+	distributeFood( density );
 
 }
 
@@ -64,15 +64,21 @@ void Environment::distributeFood( float density ) {
 	for ( int i = 0; i < n_cells; i++ ) {
 
 		fraction = double( rand() ) / double( RAND_MAX );
-		if ( fraction < density )
-			foodReserve[i] = true;
-		else
-			foodReserve[i] = false;
+		if ( fraction < density ) {
+			foodReserve[i] = 1;
+			std::cout << i << ',';
+		}
 
 	}
 
+	std::cout << std::endl;
+
 }
 
+
+unsigned int* Environment::getFoodReserve() {
+	return foodReserve;
+}
 
 
 
