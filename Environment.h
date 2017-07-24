@@ -9,6 +9,7 @@
 #define ENVIRONMENT_H_
 
 #include <map>
+#include <Eigen/Dense>
 
 #include "Animat.h"
 
@@ -28,13 +29,13 @@ public:
 	int sizeX;
 	int sizeY;
 	map<const char*, Animat> population;
-	unsigned int* foodReserve;
+	Eigen::MatrixXf foodReserve;
 
 
 	// member functions
 	void distributeFood( float );
 	void birth( Animat );
-	unsigned int* getFoodReserve();
+	Eigen::MatrixXf getFoodReserve();
 
 };
 

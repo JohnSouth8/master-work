@@ -10,8 +10,10 @@
 #include <cstdlib>
 #include <iostream>
 #include <map>
+#include <Eigen/Dense>
 
 using namespace std;
+using namespace Eigen;
 
 namespace ecosystem {
 
@@ -22,7 +24,7 @@ Environment::Environment() {
 	sizeX = 1000;
 	sizeY = 1000;
 	population = map<const char*, Animat>();
-	foodReserve = new unsigned int[sizeX*sizeY] {0};
+	foodReserve = MatrixXf( sizeX, sizeY );
 	distributeFood( 0.5 );
 
 }
@@ -32,7 +34,7 @@ Environment::Environment( int sx, int sy, float density ) {
 	sizeX = sx;
 	sizeY = sy;
 	population = map<const char*, Animat>();
-	foodReserve = new unsigned int[sx*sy] {0};
+	foodReserve = MatrixXf( sizeX, sizeY );
 	distributeFood( density );
 
 }
@@ -58,25 +60,23 @@ void Environment::birth( Animat ani ) {
 
 void Environment::distributeFood( float density ) {
 
-	int n_cells = sizeX * sizeY;
 	double fraction;
 
-	for ( int i = 0; i < n_cells; i++ ) {
+	for ( int x = 0; x < sizeX; x++ ) {
+		for ( int y = 0; y < sizeY; y++ ) {
 
-		fraction = double( rand() ) / double( RAND_MAX );
-		if ( fraction < density ) {
-			foodReserve[i] = 1;
-			std::cout << i << ',';
+			fraction = double( rand() ) / double( RAND_MAX );
+			if ( fraction < density ) {
+				foodReserve(x,y) = 1.0;
+			}
+
 		}
-
 	}
-
-	std::cout << std::endl;
 
 }
 
 
-unsigned int* Environment::getFoodReserve() {
+Eigen::MatrixXf Environment::getFoodReserve() {
 	return foodReserve;
 }
 
