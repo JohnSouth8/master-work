@@ -29,10 +29,12 @@ public:
 	// member functions
 	char* generateName();
 	const char* getName();
+	int getEnergy();
 	void changeVelocity( float );
 	void move();
 	void turn( float );
 	void toString();
+	void makeDecision();
 
 };
 

@@ -11,10 +11,12 @@
 #include <cstdlib>
 #include <map>
 #include <ctime>
+#include <cmath>
 #include <Eigen/Dense>
 
 #include "Animat.h"
 #include "Environment.h"
+#include "util.h"
 
 using namespace std;
 using namespace Eigen;
@@ -23,17 +25,11 @@ using namespace ecosystem;
 
 
 
-void printToFile( MatrixXf, char*  );
-
-
 
 int main( void ) {
 
 	srand(time(0));
 
-//	map<int, Animat> somemap;
-	Animat ani;
-	ani.toString();
 
 	int sx = 160;
 	int sy = 160;
@@ -54,29 +50,32 @@ int main( void ) {
 	cout << allFood << endl;
 
 	char fname[] = "foodReserve.txt";
-	printToFile( foods, fname );
+	util::printToFile( foods, fname );
 
 	// TODO: implement one moving agent who is searching for food until it dies
+
+	double randx = ( double( rand() ) / double( RAND_MAX ) ) * sx;
+	double randy = ( double( rand() ) / double( RAND_MAX ) ) * sy;
+	double randdir = ( double( rand() ) / double( RAND_MAX ) ) * M_PI;
+
+	Animat ani( randx, randy, 0.0, randdir, 100 );
+	ani.toString();
+
+	// life loop
+//	while ( true ) {
+//
+//
+//
+//		if ( ani.getEnergy() <= 0 )
+//			break;
+//
+//	}
 
 //    getchar();
 
 	return 0;
 
 }
-
-
-
-void printToFile( MatrixXf data, char* fname ) {
-
-	ofstream outputFile;
-	outputFile.open(fname);
-	outputFile << data;
-	outputFile.close();
-
-}
-
-
-
 
 
 

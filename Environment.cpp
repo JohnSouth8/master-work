@@ -11,6 +11,7 @@
 #include <iostream>
 #include <map>
 #include <Eigen/Dense>
+#include "util.h"
 
 using namespace std;
 using namespace Eigen;
@@ -65,7 +66,7 @@ void Environment::distributeFood( float density ) {
 	for ( int x = 0; x < sizeX; x++ ) {
 		for ( int y = 0; y < sizeY; y++ ) {
 
-			fraction = double( rand() ) / double( RAND_MAX );
+			fraction = util::randFromUnitInterval();
 			if ( fraction < density ) {
 				foodReserve(x,y) = 1.0;
 			}

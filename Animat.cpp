@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <iostream>
+#include "util.h"
 
 #include "Animat.h"
 
@@ -46,15 +47,14 @@ Animat::~Animat() {
 
 char* Animat::generateName() {
 
-	int charmin = 65, nchar = 25, randint;
-	char* cname = new char[10];
+	int charmin = 65, charmax = 90, randint;
+	char* cname = new char[11];
 
 	for ( int i = 0; i < 10; i++ ) {
-		randint = rand();
-		double x = double( randint ) / double( RAND_MAX );
-		randint = int( round( charmin + x * nchar ) );
+		randint = util::randIntFrom( charmin, charmax );
 		cname[i] = randint;
 	}
+	cname[10] = '\0';
 
 	return cname;
 
@@ -63,6 +63,12 @@ char* Animat::generateName() {
 
 const char* Animat::getName() {
 	return name;
+}
+
+
+
+int Animat::getEnergy() {
+	return energy;
 }
 
 
@@ -81,6 +87,7 @@ void Animat::move() {
 	newY = posY + deltaY;
 	posX = newX;
 	posY = newY;
+	energy -= 1;
 
 }
 
@@ -89,6 +96,14 @@ void Animat::turn( float rads ) {
 
 	direction += rads;
 	direction = fmod( direction, M_PI );
+
+}
+
+
+
+void Animat::makeDecision() {
+
+
 
 }
 
