@@ -24,7 +24,7 @@ Environment::Environment() {
 
 	sizeX = 1000;
 	sizeY = 1000;
-	population = map<const char*, Animat>();
+//	population = map<const char*, Animat>();
 	foodReserve = MatrixXf( sizeX, sizeY );
 	distributeFood( 0.5 );
 
@@ -34,7 +34,7 @@ Environment::Environment( int sx, int sy, float density ) {
 
 	sizeX = sx;
 	sizeY = sy;
-	population = map<const char*, Animat>();
+//	population = map<const char*, Animat>();
 	foodReserve = MatrixXf( sizeX, sizeY );
 	distributeFood( density );
 

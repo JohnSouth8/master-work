@@ -36,6 +36,7 @@ public:
 	void toString();
 	void makeDecision();
 
+
 };
 
 } /* namespace ecosystem */

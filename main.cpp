@@ -33,7 +33,7 @@ int main( void ) {
 
 	int sx = 160;
 	int sy = 160;
-	float density = 0.25;
+	float density = 0.01;
 
 	Environment env ( sx, sy, density );
 	MatrixXf foods = env.getFoodReserve();
@@ -50,7 +50,7 @@ int main( void ) {
 	cout << allFood << endl;
 
 	char fname[] = "foodReserve.txt";
-	util::printToFile( foods, fname );
+	util::printMatrixToFile( foods, fname );
 
 	// TODO: implement one moving agent who is searching for food until it dies
 
@@ -78,7 +78,7 @@ int main( void ) {
 }
 
 
-
+// TODO: destruct everything in classes with new keyword
 
 
 

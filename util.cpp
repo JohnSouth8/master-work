@@ -23,7 +23,7 @@ namespace util {
 		return double( rand() ) / double( RAND_MAX );
 	}
 
-	void printToFile( Eigen::MatrixXf data, char* fname ) {
+	void printMatrixToFile( Eigen::MatrixXf data, char* fname ) {
 		std::ofstream outputFile;
 		outputFile.open(fname);
 		outputFile << data;

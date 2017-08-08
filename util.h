@@ -15,7 +15,7 @@ namespace util {
 
 	int randIntFrom( int, int );
 	double randFromUnitInterval();
-	void printToFile( Eigen::MatrixXf, char* );
+	void printMatrixToFile( Eigen::MatrixXf, char* );
 
 }
 
