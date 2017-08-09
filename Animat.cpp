@@ -11,6 +11,8 @@
 #include "util.h"
 
 #include "Animat.h"
+#include "Habitat.h"
+
 
 using namespace std;
 
@@ -25,10 +27,12 @@ Animat::Animat() {
 	velocity = 0.0;
 	direction = 0.0;
 	energy = 0;
+	senseRadius = 1;
+	senseAngle = 2*M_PI;
 
 }
 
-Animat::Animat( float px, float py, float v, float dir, int e ) {
+Animat::Animat( float px, float py, float v, float dir, int e, float senseR, float senseA, Habitat* hab ) {
 
 	name = generateName();
 	posX = px;
@@ -36,6 +40,9 @@ Animat::Animat( float px, float py, float v, float dir, int e ) {
 	velocity = v;
 	direction = dir;
 	energy = e;
+	senseRadius = senseR;
+	senseAngle = senseA;
+	environment = hab;
 
 }
 
@@ -101,6 +108,35 @@ void Animat::turn( float rads ) {
 
 
 
+void Animat::sense() {
+
+	// check all points in local (+- r squarely) neighbourhood if they are inside the circle
+	// TODO: take care of edges!!
+	int x_max = std::ceil( posX + senseRadius );
+	int y_max = std::ceil( posY + senseRadius );
+	int x_min = std::ceil( posX - senseRadius );
+	int y_min = std::ceil( posY - senseRadius );
+
+	// TODO: debug this!
+	for ( int i = x_min; i <= x_max; i++ ) {
+		for ( int j = y_min; j <= y_max; j++ ) {
+			if ( environment->foodReserve(i, j) == 1 ) {
+
+				float x_sq = pow( (i - posX), 2 );
+				float y_sq = pow( (j - posY), 2 );
+
+				if ( x_sq + y_sq <= pow( senseRadius, 2 ) ) {
+					coord co = { i, j };
+					addSensation( co );
+				}
+			}
+		}
+	}
+
+}
+
+
+
 void Animat::makeDecision() {
 
 
@@ -109,9 +145,18 @@ void Animat::makeDecision() {
 
 
 
+void Animat::addSensation( coord loc ) {
+	sensedObjs.push_back( loc );
+}
+
+
+
 void Animat::toString() {
 
-	cout << name << endl;
+	cout << name << "; ";
+	cout << posX << ", " << posY << "; ";
+	cout << "a: " << direction << " rad; ";
+	cout << endl;
 
 }
 

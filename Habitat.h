@@ -5,25 +5,27 @@
  *      Author: south
  */
 
-#ifndef ENVIRONMENT_H_
-#define ENVIRONMENT_H_
+#ifndef HABITAT_H_
+#define HABITAT_H_
 
 #include <map>
 #include <Eigen/Dense>
-
-#include "Animat.h"
 
 using namespace std;
 
 namespace ecosystem {
 
-class Environment {
+// forward declarations
+class Animat;
+
+// class declaration
+class Habitat {
 public:
 
 	// constructors
-	Environment();
-	Environment( int, int, float );
-	virtual ~Environment();
+	Habitat();
+	Habitat( int, int, float );
+	virtual ~Habitat();
 
 	// member variables
 	int sizeX;
@@ -41,4 +43,4 @@ public:
 
 } /* namespace ecosystem */
 
-#endif /* ENVIRONMENT_H_ */
+#endif /* HABITAT_H_ */

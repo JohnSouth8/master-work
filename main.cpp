@@ -15,7 +15,7 @@
 #include <Eigen/Dense>
 
 #include "Animat.h"
-#include "Environment.h"
+#include "Habitat.h"
 #include "util.h"
 
 using namespace std;
@@ -35,16 +35,9 @@ int main( void ) {
 	int sy = 160;
 	float density = 0.01;
 
-	Environment env ( sx, sy, density );
+	Habitat env ( sx, sy, density );
 	MatrixXf foods = env.getFoodReserve();
 
-//	Gnuplot gp;
-//	gp.set_xrange( -1, sx+1 ).set_yrange( -1, sy+1 ).set_cbrange( 0, 1 );
-//	gp.set_xautoscale();
-//	gp.set_yautoscale();
-//	gp.cmd( "set palette gray" );
-//	gp.cmd( "set pm3d" );
-//	gp.plot_image( foods, sx, sy, "food reserves" );
 
 	float allFood = foods.sum()/( sx * sy );
 	cout << allFood << endl;
@@ -58,7 +51,7 @@ int main( void ) {
 	double randy = ( double( rand() ) / double( RAND_MAX ) ) * sy;
 	double randdir = ( double( rand() ) / double( RAND_MAX ) ) * M_PI;
 
-	Animat ani( randx, randy, 0.0, randdir, 100 );
+	Animat ani( randx, randy, 0.0, randdir, 100, 10, 2*M_PI );
 	ani.toString();
 
 	// life loop

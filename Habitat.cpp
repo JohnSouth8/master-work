@@ -5,13 +5,17 @@
  *      Author: south
  */
 
-#include "Environment.h"
+
+#include "Habitat.h"
 
 #include <cstdlib>
 #include <iostream>
 #include <map>
 #include <Eigen/Dense>
+
 #include "util.h"
+
+#include "Animat.h"
 
 using namespace std;
 using namespace Eigen;
@@ -20,17 +24,17 @@ namespace ecosystem {
 
 /* constructors */
 
-Environment::Environment() {
+Habitat::Habitat() {
 
 	sizeX = 1000;
 	sizeY = 1000;
 //	population = map<const char*, Animat>();
 	foodReserve = MatrixXf( sizeX, sizeY );
-	distributeFood( 0.5 );
+	distributeFood( 0.01 );
 
 }
 
-Environment::Environment( int sx, int sy, float density ) {
+Habitat::Habitat( int sx, int sy, float density ) {
 
 	sizeX = sx;
 	sizeY = sy;
@@ -42,7 +46,7 @@ Environment::Environment( int sx, int sy, float density ) {
 
 /* destructor */
 
-Environment::~Environment() {
+Habitat::~Habitat() {
 
 }
 
@@ -50,7 +54,7 @@ Environment::~Environment() {
 
 /* member functions */
 
-void Environment::birth( Animat ani ) {
+void Habitat::birth( Animat ani ) {
 
 	const char* name = ani.getName();
 	population[name] = ani;
@@ -59,7 +63,7 @@ void Environment::birth( Animat ani ) {
 
 
 
-void Environment::distributeFood( float density ) {
+void Habitat::distributeFood( float density ) {
 
 	double fraction;
 
@@ -77,7 +81,7 @@ void Environment::distributeFood( float density ) {
 }
 
 
-Eigen::MatrixXf Environment::getFoodReserve() {
+Eigen::MatrixXf Habitat::getFoodReserve() {
 	return foodReserve;
 }
 
