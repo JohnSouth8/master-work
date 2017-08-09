@@ -54,9 +54,9 @@ Habitat::~Habitat() {
 
 /* member functions */
 
-void Habitat::birth( Animat ani ) {
+void Habitat::birth( Animat* ani ) {
 
-	const char* name = ani.getName();
+	const char* name = ani->getName();
 	population[name] = ani;
 
 }
@@ -67,8 +67,8 @@ void Habitat::distributeFood( float density ) {
 
 	double fraction;
 
-	for ( int x = 0; x < sizeX; x++ ) {
-		for ( int y = 0; y < sizeY; y++ ) {
+	for ( int x = 0; x < sizeX; ++x ) {
+		for ( int y = 0; y < sizeY; ++y ) {
 
 			fraction = util::randFromUnitInterval();
 			if ( fraction < density ) {
@@ -79,6 +79,19 @@ void Habitat::distributeFood( float density ) {
 	}
 
 }
+
+
+
+int Habitat::getXSize() {
+	return sizeX;
+}
+
+
+
+int Habitat::getYSize() {
+	return sizeY;
+}
+
 
 
 Eigen::MatrixXf Habitat::getFoodReserve() {

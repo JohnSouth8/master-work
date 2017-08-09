@@ -33,7 +33,7 @@ int main( void ) {
 
 	int sx = 160;
 	int sy = 160;
-	float density = 0.01;
+	float density = 0.2;
 
 	Habitat env ( sx, sy, density );
 	MatrixXf foods = env.getFoodReserve();
@@ -42,7 +42,7 @@ int main( void ) {
 	float allFood = foods.sum()/( sx * sy );
 	cout << allFood << endl;
 
-	char fname[] = "foodReserve.txt";
+	const char* fname = "foodReserve.txt";
 	util::printMatrixToFile( foods, fname );
 
 	// TODO: implement one moving agent who is searching for food until it dies
@@ -51,8 +51,18 @@ int main( void ) {
 	double randy = ( double( rand() ) / double( RAND_MAX ) ) * sy;
 	double randdir = ( double( rand() ) / double( RAND_MAX ) ) * M_PI;
 
-	Animat ani( randx, randy, 0.0, randdir, 100, 10, 2*M_PI );
+	Animat ani( randx, randy, 0.0, randdir, 100, 20, 2*M_PI, &env );
+	env.birth( &ani );
+
+	ani.sense();
 	ani.toString();
+//	ani.printSensations();
+
+	const char* fname2 = "sensations.txt";
+	util::printSensationsToFile( ani.sensedObjs, fname2 );
+
+	const char* fname3 = "population.txt";
+	util::printAnimatLocationsToFile( env.population, fname3 );
 
 	// life loop
 //	while ( true ) {

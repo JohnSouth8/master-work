@@ -30,13 +30,15 @@ public:
 	// member variables
 	int sizeX;
 	int sizeY;
-	map<const char*, Animat> population;
+	map<const char*, Animat*> population;
 	Eigen::MatrixXf foodReserve;
 
 
 	// member functions
 	void distributeFood( float );
-	void birth( Animat );
+	void birth( Animat* );
+	int getXSize();
+	int getYSize();
 	Eigen::MatrixXf getFoodReserve();
 
 };

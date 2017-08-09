@@ -18,6 +18,7 @@ namespace ecosystem {
 class Habitat;
 
 class Animat {
+	// TODO: think about public and private vars - are they required? (for clean code purposes they should be, for efficiency maybe rather not)
 public:
 
 	// constructors
@@ -48,6 +49,7 @@ public:
 	void sense();
 	void makeDecision();
 	void addSensation( coord );
+	void printSensations();
 
 
 };

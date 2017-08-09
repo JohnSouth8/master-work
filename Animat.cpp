@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <iostream>
+#include <Eigen/Dense>
 #include "util.h"
 
 #include "Animat.h"
@@ -57,7 +58,7 @@ char* Animat::generateName() {
 	int charmin = 65, charmax = 90, randint;
 	char* cname = new char[11];
 
-	for ( int i = 0; i < 10; i++ ) {
+	for ( int i = 0; i < 10; ++i ) {
 		randint = util::randIntFrom( charmin, charmax );
 		cname[i] = randint;
 	}
@@ -111,24 +112,33 @@ void Animat::turn( float rads ) {
 void Animat::sense() {
 
 	// check all points in local (+- r squarely) neighbourhood if they are inside the circle
-	// TODO: take care of edges!!
+
 	int x_max = std::ceil( posX + senseRadius );
 	int y_max = std::ceil( posY + senseRadius );
 	int x_min = std::ceil( posX - senseRadius );
 	int y_min = std::ceil( posY - senseRadius );
 
+	Eigen::MatrixXf foods = environment->getFoodReserve();
+	int env_x = environment->getXSize();
+	int env_y = environment->getYSize();
+
 	// TODO: debug this!
-	for ( int i = x_min; i <= x_max; i++ ) {
-		for ( int j = y_min; j <= y_max; j++ ) {
-			if ( environment->foodReserve(i, j) == 1 ) {
+	for ( int i = x_min; i <= x_max; ++i ) {
+		for ( int j = y_min; j <= y_max; ++j ) {
+
+			int i_c = i % env_x;
+			int j_c = j % env_y;
+
+			if ( foods(i_c, j_c) != 0 ) {
 
 				float x_sq = pow( (i - posX), 2 );
 				float y_sq = pow( (j - posY), 2 );
 
 				if ( x_sq + y_sq <= pow( senseRadius, 2 ) ) {
-					coord co = { i, j };
+					coord co = { i_c, j_c };
 					addSensation( co );
 				}
+
 			}
 		}
 	}
@@ -157,6 +167,18 @@ void Animat::toString() {
 	cout << posX << ", " << posY << "; ";
 	cout << "a: " << direction << " rad; ";
 	cout << endl;
+
+}
+
+
+
+void Animat::printSensations() {
+
+	vector<coord>::iterator it;
+
+	for ( it = sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
+		cout << it->x << " " << it->y << endl;
+	}
 
 }
 
