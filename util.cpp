@@ -27,6 +27,24 @@ namespace util {
 		return double( rand() ) / double( RAND_MAX );
 	}
 
+	int getWrappedIndex( int index, int domainSize ) {
+
+		int retval = -1;
+
+		if ( index >= 0 && index < domainSize ) {
+			retval = index;
+		}
+		else if ( index < 0 ) {
+			retval = domainSize - index;
+		}
+		else if ( index >= domainSize ) {
+			retval = index % domainSize;
+		}
+
+		return retval;
+
+	}
+
 	void printMatrixToFile( Eigen::MatrixXf data, const char* fname ) {
 		std::ofstream outputFile;
 		outputFile.open(fname);
@@ -40,9 +58,9 @@ namespace util {
 
 		std::vector<ecosystem::coord>::iterator it;
 
-		// TODO: because of x/y swap in gnuplot heatmap plot, the coords are printed swapped -- fix it in gnuplot and here
+		// TODO: because of x/y is weird in gnuplot heatmap plot, the coords are printed swapped -- fix it in gnuplot and here
 		for ( it = sss.begin(); it != sss.end(); ++it ) {
-			outputFile << it->y << " " << it->x << std::endl;
+			outputFile << it->x << " " << it->y << std::endl;
 		}
 
 		outputFile.close();
@@ -55,7 +73,7 @@ namespace util {
 		std::map<const char*, ecosystem::Animat*>::iterator it;
 
 		for ( it = pop.begin(); it != pop.end(); ++it ) {
-			outputFile << it->second->posY << " " << it->second->posX << std::endl;
+			outputFile << it->second->posX << " " << it->second->posY << std::endl;
 		}
 
 		outputFile.close();

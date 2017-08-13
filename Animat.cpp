@@ -111,35 +111,32 @@ void Animat::turn( float rads ) {
 
 void Animat::sense() {
 
-	// check all points in local (+- r squarely) neighbourhood if they are inside the circle
-
-	int x_max = std::ceil( posX + senseRadius );
-	int y_max = std::ceil( posY + senseRadius );
-	int x_min = std::ceil( posX - senseRadius );
-	int y_min = std::ceil( posY - senseRadius );
 
 	Eigen::MatrixXf foods = environment->getFoodReserve();
 	int env_x = environment->getXSize();
 	int env_y = environment->getYSize();
 
-	// TODO: debug this!
-	for ( int i = x_min; i <= x_max; ++i ) {
-		for ( int j = y_min; j <= y_max; ++j ) {
+	// check all points in local (+- r squarely) neighbourhood if they are inside the circle
+	int x_max = std::ceil( posX + senseRadius );
+	int y_max = std::ceil( posY + senseRadius );
+	int x_min = std::ceil( posX - senseRadius );
+	int y_min = std::ceil( posY - senseRadius );
 
-			int i_c = i % env_x;
-			int j_c = j % env_y;
 
-			if ( foods(i_c, j_c) != 0 ) {
+	for ( int x = x_min; x <= x_max; ++x ) {
+		for ( int y = y_min; y <= y_max; ++y ) {
 
-				float x_sq = pow( (i - posX), 2 );
-				float y_sq = pow( (j - posY), 2 );
+			// correct indices for env's out of bounds
+			int ix = util::getWrappedIndex( x, env_x );
+			int iy = util::getWrappedIndex( y, env_y );
 
-				if ( x_sq + y_sq <= pow( senseRadius, 2 ) ) {
-					coord co = { i_c, j_c };
+			if ( foods(ix, iy) != 0 ) {
+				if ( pow( (x - posX), 2 ) + pow( (y - posY), 2 ) <= pow( senseRadius, 2 ) ) {
+					coord co = { ix, iy };
 					addSensation( co );
 				}
-
 			}
+
 		}
 	}
 

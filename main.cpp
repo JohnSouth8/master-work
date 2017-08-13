@@ -31,9 +31,9 @@ int main( void ) {
 	srand(time(0));
 
 
-	int sx = 160;
-	int sy = 160;
-	float density = 0.2;
+	int sx = 16;
+	int sy = 16;
+	float density = 0.02;
 
 	Habitat env ( sx, sy, density );
 	MatrixXf foods = env.getFoodReserve();
@@ -51,7 +51,7 @@ int main( void ) {
 	double randy = ( double( rand() ) / double( RAND_MAX ) ) * sy;
 	double randdir = ( double( rand() ) / double( RAND_MAX ) ) * M_PI;
 
-	Animat ani( randx, randy, 0.0, randdir, 100, 20, 2*M_PI, &env );
+	Animat ani( randx, randy, 0.0, randdir, 100, 5, 2*M_PI, &env );
 	env.birth( &ani );
 
 	ani.sense();
