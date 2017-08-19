@@ -82,6 +82,20 @@ void Habitat::distributeFood( float density ) {
 
 
 
+int Habitat::consumeFood( int x, int y ) {
+
+	if ( foodReserve( x, y ) == 0 ) {
+		return 0;
+	}
+	else {
+		foodReserve( x, y ) = 0.0;
+		return 10;
+	}
+
+}
+
+
+
 int Habitat::getXSize() {
 	return sizeX;
 }

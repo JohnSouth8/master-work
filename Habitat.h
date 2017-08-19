@@ -37,6 +37,7 @@ public:
 	// member functions
 	void distributeFood( float );
 	void birth( Animat* );
+	int consumeFood( int, int );
 	int getXSize();
 	int getYSize();
 	Eigen::MatrixXf getFoodReserve();

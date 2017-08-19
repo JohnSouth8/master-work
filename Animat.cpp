@@ -48,7 +48,7 @@ Animat::Animat( float px, float py, float v, float dir, int e, float senseR, flo
 }
 
 Animat::~Animat() {
-	// TODO Auto-generated destructor stub
+
 }
 
 
@@ -88,14 +88,31 @@ void Animat::changeVelocity( float delta ) {
 
 void Animat::move() {
 
+	int env_x = environment->getXSize();
+	int env_y = environment->getYSize();
 	float newX, newY, deltaX, deltaY;
-	deltaX = velocity * sin( direction );
-	deltaY = velocity * cos( direction );
+
+	deltaX = velocity * cos( direction );
+	deltaY = velocity * sin( direction );
 	newX = posX + deltaX;
 	newY = posY + deltaY;
-	posX = newX;
-	posY = newY;
+
+	posX = util::getWrappedCoordinate( newX, env_x );
+	posY = util::getWrappedCoordinate( newY, env_y );
 	energy -= 1;
+
+}
+
+
+void Animat::eat() {
+
+	int indexX = floor( posX );
+	int indexY = floor( posY );
+
+	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
+		energy += environment->consumeFood( indexX, indexY );
+		cout << "I ate!" << endl;
+	}
 
 }
 
@@ -119,21 +136,27 @@ void Animat::sense() {
 	// check all points in local (+- r squarely) neighbourhood if they are inside the circle
 	int x_max = std::ceil( posX + senseRadius );
 	int y_max = std::ceil( posY + senseRadius );
-	int x_min = std::ceil( posX - senseRadius );
-	int y_min = std::ceil( posY - senseRadius );
+	int x_min = std::floor( posX - senseRadius );
+	int y_min = std::floor( posY - senseRadius );
 
+	int ix, iy;
+	float dist, reach = pow( senseRadius, 2 );
 
 	for ( int x = x_min; x <= x_max; ++x ) {
 		for ( int y = y_min; y <= y_max; ++y ) {
 
 			// correct indices for env's out of bounds
-			int ix = util::getWrappedIndex( x, env_x );
-			int iy = util::getWrappedIndex( y, env_y );
+			ix = util::getWrappedIndex( x, env_x );
+			iy = util::getWrappedIndex( y, env_y );
 
 			if ( foods(ix, iy) != 0 ) {
-				if ( pow( (x - posX), 2 ) + pow( (y - posY), 2 ) <= pow( senseRadius, 2 ) ) {
-					coord co = { ix, iy };
-					addSensation( co );
+				dist = pow( (x - posX), 2 ) + pow( (y - posY), 2 );
+				if ( dist <= reach ) {
+					addSensation( {
+							ix,
+							iy,
+							sqrt( dist )
+					} );
 				}
 			}
 
@@ -146,13 +169,48 @@ void Animat::sense() {
 
 void Animat::makeDecision() {
 
+	// if there is food, eat it
+	int indexX = floor( posX );
+	int indexY = floor( posY );
+
+	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
+		energy += environment->consumeFood( indexX, indexY );
+		return;
+	}
+
+	// plan to reach the closest food target
+	vector<f_sens>::iterator it;
+	int index = -1, counter = 0;
+	float min_dist = environment->sizeX*10; // definitely farther than any point on map
+
+	for ( it=sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
+		if ( it->d < min_dist ) {
+			index = counter;
+			min_dist = it->d;
+		}
+		++counter;
+	}
+
+	if ( index == -1 )
+		return;
+
+	Eigen::Vector2f v( posX + velocity*cos( direction ), posY + velocity*sin( direction ) );
+	Eigen::Vector2f g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
+
+	float turn_angle = acos( v.dot( g ) / (v.norm() * g.norm()) );
+
+	turn(turn_angle);
+	velocity = g.norm();
+
+	if ( velocity > 5 )		// TODO: add maxVelocity attribute
+		velocity = 5;
 
 
 }
 
 
 
-void Animat::addSensation( coord loc ) {
+void Animat::addSensation( f_sens loc ) {
 	sensedObjs.push_back( loc );
 }
 
@@ -171,10 +229,10 @@ void Animat::toString() {
 
 void Animat::printSensations() {
 
-	vector<coord>::iterator it;
+	vector<f_sens>::iterator it;
 
 	for ( it = sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
-		cout << it->x << " " << it->y << endl;
+		cout << it->x << " " << it->y << "" << it->d << endl;
 	}
 
 }

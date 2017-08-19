@@ -35,7 +35,7 @@ public:
 	int energy;
 	float senseAngle;
 	float senseRadius;
-	std::vector<coord> sensedObjs;
+	std::vector<f_sens> sensedObjs;
 	Habitat* environment;
 
 	// member functions
@@ -44,11 +44,12 @@ public:
 	int getEnergy();
 	void changeVelocity( float );
 	void move();
+	void eat();
 	void turn( float );
 	void toString();
 	void sense();
 	void makeDecision();
-	void addSensation( coord );
+	void addSensation( f_sens );
 	void printSensations();
 
 
