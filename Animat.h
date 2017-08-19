@@ -43,6 +43,7 @@ public:
 	const char* getName();
 	int getEnergy();
 	void changeVelocity( float );
+	void setVelocity( float );
 	void move();
 	void eat();
 	void turn( float );
@@ -50,6 +51,7 @@ public:
 	void sense();
 	void makeDecision();
 	void addSensation( f_sens );
+	void forgetSensations();
 	void printSensations();
 
 

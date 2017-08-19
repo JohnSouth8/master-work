@@ -29,7 +29,7 @@ Habitat::Habitat() {
 	sizeX = 1000;
 	sizeY = 1000;
 //	population = map<const char*, Animat>();
-	foodReserve = MatrixXf( sizeX, sizeY );
+	foodReserve = MatrixXf::Zero( sizeX, sizeY );
 	distributeFood( 0.01 );
 
 }
@@ -39,7 +39,7 @@ Habitat::Habitat( int sx, int sy, float density ) {
 	sizeX = sx;
 	sizeY = sy;
 //	population = map<const char*, Animat>();
-	foodReserve = MatrixXf( sizeX, sizeY );
+	foodReserve = MatrixXf::Zero( sizeX, sizeY );
 	distributeFood( density );
 
 }
@@ -73,6 +73,7 @@ void Habitat::distributeFood( float density ) {
 			fraction = util::randFromUnitInterval();
 			if ( fraction < density ) {
 				foodReserve(x,y) = 1.0;
+//				cout << "x: " << x << ", y: " << y << ", val: " << foodReserve(x,y) << endl;
 			}
 
 		}

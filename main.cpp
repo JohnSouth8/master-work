@@ -44,12 +44,12 @@ int main( void ) {
 	util::cleanFile( fname_sens );
 
 
-	int sx = 100;
-	int sy = 100;
+	int sx = 250;
+	int sy = 250;
 	float density = 0.01;
 
 	Habitat env ( sx, sy, density );
-	MatrixXf foods = env.getFoodReserve();
+	util::printMatrixToFile( env.getFoodReserve(), fname_food0 );
 
 
 //	float allFood = foods.sum()/( sx * sy );
@@ -57,9 +57,9 @@ int main( void ) {
 
 	// TODO: implement one moving agent who is searching for food until it dies
 
-	double randx = ( double( rand() ) / double( RAND_MAX ) ) * sx;
-	double randy = ( double( rand() ) / double( RAND_MAX ) ) * sy;
-	double randdir = ( double( rand() ) / double( RAND_MAX ) ) * M_PI;
+	double randx = util::randFromUnitInterval() * sx;
+	double randy = util::randFromUnitInterval() * sy;
+	double randdir = util::randFromUnitInterval() * M_PI;
 
 	Animat ani(
 			randx,		// x
@@ -75,13 +75,12 @@ int main( void ) {
 	ani.toString();
 	env.birth( &ani );
 
-	util::printMatrixToFile( foods, fname_food0 );
 	util::printAnimatLocationsToFile( env.population, fname_pop );
 
-	ani.sense();
+//	ani.sense();
 //	ani.printSensations();
 
-	util::printSensationsToFile( ani.sensedObjs, fname_sens );
+//	util::printSensationsToFile( ani.sensedObjs, fname_sens );
 
 	// TODO: sort out smooth operation and visual debugging with switches and stuff
 
@@ -103,12 +102,13 @@ int main( void ) {
 		if ( ani.getEnergy() <= 0 )
 			break;
 
+		ani.forgetSensations();
 		++time_counter;
 
 	}
 
-
-	util::printMatrixToFile( foods, fname_food1 );
+	cout << "The animat survived " << time_counter << " steps of the simulation" << endl;
+	util::printMatrixToFile( env.getFoodReserve(), fname_food1 );
 
 //    getchar();
 

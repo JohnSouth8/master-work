@@ -86,6 +86,13 @@ void Animat::changeVelocity( float delta ) {
 }
 
 
+
+void Animat::setVelocity( float v_new ) {
+	velocity = v_new;
+}
+
+
+
 void Animat::move() {
 
 	int env_x = environment->getXSize();
@@ -111,7 +118,7 @@ void Animat::eat() {
 
 	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
 		energy += environment->consumeFood( indexX, indexY );
-		cout << "I ate!" << endl;
+//		cout << "I ate!" << endl;
 	}
 
 }
@@ -174,7 +181,7 @@ void Animat::makeDecision() {
 	int indexY = floor( posY );
 
 	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
-		energy += environment->consumeFood( indexX, indexY );
+		eat();
 		return;
 	}
 
@@ -191,19 +198,33 @@ void Animat::makeDecision() {
 		++counter;
 	}
 
-	if ( index == -1 )
+	if ( index == -1 ) {
+		//turn in random direction and with random speed
+		double randturn = util::randFromUnitInterval() * M_PI;
+		double randvel = util::randFromUnitInterval() * 5;
+		turn( randturn );
+		setVelocity( randvel );
 		return;
+	}
 
-	Eigen::Vector2f v( posX + velocity*cos( direction ), posY + velocity*sin( direction ) );
+
+	Eigen::Vector2f v( cos( direction ), sin( direction ) );
 	Eigen::Vector2f g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
 
-	float turn_angle = acos( v.dot( g ) / (v.norm() * g.norm()) );
+//	float v_norm = v.norm(), g_norm = g.norm(), turn_angle = 0;
+//	if ( v_norm != 0 && g_norm != 0 ) turn_angle = acos( v.dot( g )/(v_norm*g_norm) );
+
+	// get absolute angles
+	float v_angle = atan2( v(1), v(0) );
+	float g_angle = atan2( g(1), g(0) );
+
+	float turn_angle = g_angle - v_angle;
 
 	turn(turn_angle);
-	velocity = g.norm();
+	setVelocity( g.norm() );
 
 	if ( velocity > 5 )		// TODO: add maxVelocity attribute
-		velocity = 5;
+		setVelocity( 5 );
 
 
 }
@@ -212,6 +233,12 @@ void Animat::makeDecision() {
 
 void Animat::addSensation( f_sens loc ) {
 	sensedObjs.push_back( loc );
+}
+
+
+
+void Animat::forgetSensations() {
+	sensedObjs.clear();
 }
 
 
