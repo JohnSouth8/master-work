@@ -75,7 +75,7 @@ const char* Animat::getName() {
 
 
 
-int Animat::getEnergy() {
+int Animat::getEnergy() {		// TODO maxEnergy attribute
 	return energy;
 }
 
@@ -199,11 +199,25 @@ void Animat::makeDecision() {
 	}
 
 	if ( index == -1 ) {
-		//turn in random direction and with random speed
+
 		double randturn = util::randFromUnitInterval() * M_PI;
 		double randvel = util::randFromUnitInterval() * 5;
-		turn( randturn );
-		setVelocity( randvel );
+
+		if ( velocity == 0 ) {
+			// turn in random direction and with random speed
+			turn( randturn );
+			setVelocity( randvel );
+		}
+		else {
+			// continue in this direction or turn with small probability
+			if ( util::randFromUnitInterval() < 0.2 )
+				turn ( randturn );
+
+			// change speed with small probability
+			if ( util::randFromUnitInterval() < 0.3 )
+				setVelocity( randvel );
+
+		}
 		return;
 	}
 

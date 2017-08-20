@@ -24,12 +24,13 @@ public:
 
 	// constructors
 	Habitat();
-	Habitat( int, int, float );
+	Habitat( int, int, int, float );
 	virtual ~Habitat();
 
 	// member variables
 	int sizeX;
 	int sizeY;
+	int foodEnergyVal;
 	map<const char*, Animat*> population;
 	Eigen::MatrixXf foodReserve;			// posibly swap this with Eigen::Array
 

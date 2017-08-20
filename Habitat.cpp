@@ -28,16 +28,18 @@ Habitat::Habitat() {
 
 	sizeX = 1000;
 	sizeY = 1000;
+	foodEnergyVal = 10;
 //	population = map<const char*, Animat>();
 	foodReserve = MatrixXf::Zero( sizeX, sizeY );
 	distributeFood( 0.01 );
 
 }
 
-Habitat::Habitat( int sx, int sy, float density ) {
+Habitat::Habitat( int sx, int sy, int fe, float density ) {
 
 	sizeX = sx;
 	sizeY = sy;
+	foodEnergyVal = fe;
 //	population = map<const char*, Animat>();
 	foodReserve = MatrixXf::Zero( sizeX, sizeY );
 	distributeFood( density );
@@ -90,7 +92,7 @@ int Habitat::consumeFood( int x, int y ) {
 	}
 	else {
 		foodReserve( x, y ) = 0.0;
-		return 10;
+		return foodEnergyVal;
 	}
 
 }
