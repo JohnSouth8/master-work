@@ -16,6 +16,7 @@
 
 
 using namespace std;
+using namespace Eigen;
 
 namespace ecosystem {
 
@@ -136,7 +137,7 @@ void Animat::turn( float rads ) {
 void Animat::sense() {
 
 
-	Eigen::MatrixXf foods = environment->getFoodReserve();
+	MatrixXf foods = environment->getFoodReserve();
 	int env_x = environment->getXSize();
 	int env_y = environment->getYSize();
 
@@ -222,19 +223,15 @@ void Animat::makeDecision() {
 	}
 
 
-	Eigen::Vector2f v( cos( direction ), sin( direction ) );
-	Eigen::Vector2f g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
+	Vector2f v( cos( direction ), sin( direction ) );
+	Vector2f g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
 
 //	float v_norm = v.norm(), g_norm = g.norm(), turn_angle = 0;
 //	if ( v_norm != 0 && g_norm != 0 ) turn_angle = acos( v.dot( g )/(v_norm*g_norm) );
 
 	// get absolute angles
-	float v_angle = atan2( v(1), v(0) );
-	float g_angle = atan2( g(1), g(0) );
+	turn( util::getAngleBetween( v, g ) );
 
-	float turn_angle = g_angle - v_angle;
-
-	turn(turn_angle);
 	setVelocity( g.norm() );
 
 	if ( velocity > 5 )		// TODO: add maxVelocity attribute
@@ -253,6 +250,31 @@ void Animat::addSensation( f_sens loc ) {
 
 void Animat::forgetSensations() {
 	sensedObjs.clear();
+}
+
+
+
+void Animat::initFCM( int nConcepts ) {
+	cognition = FCM( nConcepts );
+}
+
+
+
+void Animat::initFCM( int nConcepts, std::vector<std::string> concepts ) {
+	cognition = FCM( nConcepts, concepts );
+}
+
+
+
+void Animat::initFCM( int nConcepts, std::vector<std::string> concepts, MatrixXf fcm ) {
+	cognition = FCM( nConcepts, concepts );
+	cognition.setFCMap( fcm );
+}
+
+
+
+void Animat::setFCM( MatrixXf newfcm ) {
+	cognition.setFCMap( newfcm );
 }
 
 

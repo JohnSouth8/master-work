@@ -10,6 +10,7 @@
 
 
 #include "structs.h"
+#include "FCM.h"
 
 #include <vector>
 
@@ -36,20 +37,33 @@ public:
 	float senseAngle;
 	float senseRadius;
 	std::vector<f_sens> sensedObjs;
+	FCM cognition;
 	Habitat* environment;
 
+
+	///*****************
 	// member functions
-	char* generateName();
-	const char* getName();
-	int getEnergy();
+
+	// life functions
+	void eat();
+	void sense();
+	void makeDecision();
+
+	// movement functions
 	void changeVelocity( float );
 	void setVelocity( float );
 	void move();
-	void eat();
 	void turn( float );
+
+	// utility functions
+	void initFCM( int );
+	void initFCM( int, std::vector<std::string> );
+	void initFCM( int, std::vector<std::string>, Eigen::MatrixXf );
+	void setFCM( Eigen::MatrixXf );
+	char* generateName();
+	const char* getName();
+	int getEnergy();
 	void toString();
-	void sense();
-	void makeDecision();
 	void addSensation( f_sens );
 	void forgetSensations();
 	void printSensations();

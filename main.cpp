@@ -31,9 +31,12 @@ string fname_food1 = "foodReserve1.txt";
 string fname_pop = "population.txt";
 string fname_sens = "sensations.txt";
 
+string fname_fcm = "fcm_0.1.txt";
+string fname_test = "test.txt";
 
-
-int animat_test();
+int test();
+int fcm_test( Animat*, Habitat* );
+int animat_test( Animat*, Habitat* );
 
 
 
@@ -45,14 +48,16 @@ int main( void ) {
 	util::cleanFile( fname_pop );
 	util::cleanFile( fname_sens );
 
-	animat_test();
+//	string fcontent = util::readFileContent( fname_fcm );
+
+	return test();
 }
 
 
 
-int animat_test() {
+int test() {
 
-	// TODO: sort out smooth operation and visual debugging with switches and stuff
+	// TODO: sort out smooth operation and visual debugging with switches and stuff --!! maybe with config files??
 
 	int sx = 250;
 	int sy = 250;
@@ -85,33 +90,74 @@ int animat_test() {
 
 	util::printAnimatLocationsToFile( env.population, fname_pop );
 
+
+	int nConcepts = 5;
+	// TODO move this onto a file as well
+	std::vector<std::string> concepts( nConcepts );
+	concepts[0] = "sensAngle";
+	concepts[1] = "sensDist";
+	concepts[2] = "sensEnergy";
+	concepts[3] = "changeVel";
+	concepts[4] = "turn";
+
+	ani.initFCM( nConcepts, concepts );
+
+	ani.cognition.loadFCMapFromFile( fname_fcm );
+
+
+//	ani.setFCM( fcm );
+
+
+
+
 	// TODO: sort out smooth operation and visual debugging with switches and stuff
 
 	int time_counter = 0;
 
 	// life loop
-	while ( true ) {
-//	while ( time_counter < 5 ) {
+//	while ( true ) {
+	while ( time_counter < 5 ) {
 
-		ani.sense();
-		ani.makeDecision();
-		ani.move();
-
-		util::printAnimatLocationsToFile( env.population, fname_pop );
-		util::printSensationsToFile( ani.sensedObjs, fname_sens );
+//		animat_test( &ani, &env );
+		fcm_test( &ani, &env );
 
 		if ( ani.getEnergy() <= 0 )
 			break;
 
-		ani.forgetSensations();
 		++time_counter;
-
 	}
 
 	cout << "The animat survived " << time_counter << " steps of the simulation" << endl;
 	util::printMatrixToFile( env.getFoodReserve(), fname_food1 );
 
 //    getchar();
+	return 0;
+
+}
+
+
+
+int fcm_test( Animat* ani, Habitat* env ) {
+
+	ani->sense();
+
+
+	return 0;
+
+}
+
+
+
+int animat_test( Animat* ani, Habitat* env ) {
+
+	ani->sense();
+	ani->makeDecision();
+	ani->move();
+
+	util::printAnimatLocationsToFile( env->population, fname_pop );
+	util::printSensationsToFile( ani->sensedObjs, fname_sens );
+
+	ani->forgetSensations();
 
 	return 0;
 

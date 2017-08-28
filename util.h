@@ -25,9 +25,11 @@ namespace util {
 	double randFromUnitInterval();
 	int getWrappedIndex( int, int );
 	float getWrappedCoordinate( float, int );
+	float getAngleBetween( Eigen::Vector2f, Eigen::Vector2f );
 
+	std::string readFileContent( std::string );
 	void cleanFile ( std::string );
-	void printMatrixToFile( Eigen::MatrixXf, std::string );
+	void printMatrixToFile( Eigen::MatrixXf, std::string, bool = true );
 	void printSensationsToFile( std::vector<ecosystem::f_sens>, std::string );
 	void printAnimatLocationsToFile( std::map<const char*, ecosystem::Animat*>, std::string );
 

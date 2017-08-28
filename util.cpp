@@ -66,6 +66,34 @@ namespace util {
 
 	}
 
+	float getAngleBetween( Eigen::Vector2f v1, Eigen::Vector2f v2 ) {
+
+		float v_angle = atan2( v1(1), v1(0) );
+		float g_angle = atan2( v2(1), v2(0) );
+
+		return g_angle - v_angle;
+
+	}
+
+
+
+	std::string readFileContent( std::string fname ) {
+
+		std::ifstream inputFile;
+		inputFile.open( fname.c_str(), std::ifstream::in );
+
+		std::string fileContent = "";
+		std::string line;
+		while( std::getline( inputFile, line ) ) {
+			fileContent += line;
+			fileContent += '\n';
+		}
+
+		return fileContent;
+
+	}
+
+
 
 	void cleanFile( std::string fname ) {
 		std::ofstream outputFile;
@@ -73,11 +101,13 @@ namespace util {
 		outputFile.close();
 	}
 
-	void printMatrixToFile( Eigen::MatrixXf data, std::string fname ) {
+	void printMatrixToFile( Eigen::MatrixXf data, std::string fname, bool transpose ) {
 
-		// print transposed version of the matrix because matrix with origin in up-left is mirrored in coordinate system with origin in low-left
-		// 		i.e. row-major order is not compatible with x-axis first order in coordinate system
-		Eigen::MatrixXf outputData = data.transpose();
+		Eigen::MatrixXf outputData = data;
+		if ( transpose )
+			// print transposed version of the matrix because matrix with origin in up-left is mirrored in coordinate system with origin in low-left
+			// 		i.e. row-major order is not compatible with x-axis first order in coordinate system
+			outputData = data.transpose();
 
 		std::ofstream outputFile;
 		outputFile.open( fname.c_str() );
