@@ -89,6 +89,7 @@ namespace util {
 			fileContent += '\n';
 		}
 
+		inputFile.close();
 		return fileContent;
 
 	}
@@ -105,7 +106,7 @@ namespace util {
 
 		Eigen::MatrixXf outputData = data;
 		if ( transpose )
-			// print transposed version of the matrix because matrix with origin in up-left is mirrored in coordinate system with origin in low-left
+			// print transposed version of the matrix because matrix with origin in upper-left is mirrored in coordinate system with origin in lower-left
 			// 		i.e. row-major order is not compatible with x-axis first order in coordinate system
 			outputData = data.transpose();
 

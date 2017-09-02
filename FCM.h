@@ -19,21 +19,35 @@ public:
 	// constructors
 	FCM();
 	FCM( int );
-	FCM( int, std::vector<std::string> );
 	virtual ~FCM();
 
 private:
 	// member variables
 	int nConcepts;
+	int nInput;
+	int nInternal;
+	int nOutput;
+
 	std::vector<std::string> concepts;
-	Eigen::MatrixXf FCMap;
+	Eigen::VectorXf state;
+	Eigen::MatrixXf L;
+//	int initialized;
 
 public:
 	// member functions
-	void setConcepts( std::vector<std::string> );
-	void setFCMap( Eigen::MatrixXf );
-	void loadFCMapFromFile( std::string );
-	Eigen::MatrixXf getFCMap();
+//	void setConcepts( std::vector<std::string> );
+	void loadConceptsFromFile( std::string );
+	void loadLinkMatrixFromFile( std::string );
+	void propagateInput( Eigen::VectorXf );
+
+	// getters & setters
+	void setState( Eigen::VectorXf );
+	Eigen::VectorXf getState();
+	int getNConcepts();
+	int getNInput();
+	int getNInternal();
+	int getNOutput();
+
 
 
 };

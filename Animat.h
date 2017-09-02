@@ -13,6 +13,7 @@
 #include "FCM.h"
 
 #include <vector>
+#include <Eigen/Dense>
 
 namespace ecosystem {
 
@@ -20,6 +21,7 @@ class Habitat;
 
 class Animat {
 	// TODO: think about public and private vars - are they required? (for clean code purposes they should be, for efficiency maybe rather not)
+	// TODO: write inits based on config files rather than passing of a myriad of parameters
 public:
 
 	// constructors
@@ -34,9 +36,11 @@ public:
 	float velocity;
 	float direction;
 	int energy;
+	int maxEnergy;
 	float senseAngle;
 	float senseRadius;
 	std::vector<f_sens> sensedObjs;
+	Eigen::VectorXf sensations;
 	FCM cognition;
 	Habitat* environment;
 
@@ -47,7 +51,9 @@ public:
 	// life functions
 	void eat();
 	void sense();
+	void sense_analytic();
 	void makeDecision();
+	void reason();
 
 	// movement functions
 	void changeVelocity( float );
@@ -56,17 +62,19 @@ public:
 	void turn( float );
 
 	// utility functions
-	void initFCM( int );
-	void initFCM( int, std::vector<std::string> );
-	void initFCM( int, std::vector<std::string>, Eigen::MatrixXf );
-	void setFCM( Eigen::MatrixXf );
+//	void initFCM( int );
+//	void initFCM( int, std::vector<std::string> );
+//	void initFCM( int, std::vector<std::string>, Eigen::MatrixXf );
+	void initFCM( int, std::string, std::string );
+//	void setFCM( Eigen::MatrixXf );
 	char* generateName();
 	const char* getName();
 	int getEnergy();
 	void toString();
-	void addSensation( f_sens );
 	void forgetSensations();
-	void printSensations();
+	void addSensedObject( f_sens );
+	void forgetSensedObjects();
+	void printSensedObjects();
 
 
 };

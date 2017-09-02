@@ -31,6 +31,7 @@ string fname_food1 = "foodReserve1.txt";
 string fname_pop = "population.txt";
 string fname_sens = "sensations.txt";
 
+string fname_fcm_cs = "fcm_0.1.concepts.txt";
 string fname_fcm = "fcm_0.1.txt";
 string fname_test = "test.txt";
 
@@ -91,21 +92,9 @@ int test() {
 	util::printAnimatLocationsToFile( env.population, fname_pop );
 
 
-	int nConcepts = 5;
-	// TODO move this onto a file as well
-	std::vector<std::string> concepts( nConcepts );
-	concepts[0] = "sensAngle";
-	concepts[1] = "sensDist";
-	concepts[2] = "sensEnergy";
-	concepts[3] = "changeVel";
-	concepts[4] = "turn";
+	int nConcepts = 9;
+	ani.initFCM( nConcepts, fname_fcm_cs, fname_fcm );
 
-	ani.initFCM( nConcepts, concepts );
-
-	ani.cognition.loadFCMapFromFile( fname_fcm );
-
-
-//	ani.setFCM( fcm );
 
 
 
@@ -157,7 +146,7 @@ int animat_test( Animat* ani, Habitat* env ) {
 	util::printAnimatLocationsToFile( env->population, fname_pop );
 	util::printSensationsToFile( ani->sensedObjs, fname_sens );
 
-	ani->forgetSensations();
+	ani->forgetSensedObjects();
 
 	return 0;
 

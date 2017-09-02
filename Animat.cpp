@@ -29,6 +29,7 @@ Animat::Animat() {
 	velocity = 0.0;
 	direction = 0.0;
 	energy = 0;
+	maxEnergy = 100;
 	senseRadius = 1;
 	senseAngle = 2*M_PI;
 
@@ -42,6 +43,7 @@ Animat::Animat( float px, float py, float v, float dir, int e, float senseR, flo
 	velocity = v;
 	direction = dir;
 	energy = e;
+	maxEnergy = e;	// TODO: sort out
 	senseRadius = senseR;
 	senseAngle = senseA;
 	environment = hab;
@@ -134,7 +136,7 @@ void Animat::turn( float rads ) {
 
 
 
-void Animat::sense() {
+void Animat::sense_analytic() {
 
 
 	MatrixXf foods = environment->getFoodReserve();
@@ -160,7 +162,7 @@ void Animat::sense() {
 			if ( foods(ix, iy) != 0 ) {
 				dist = pow( (x - posX), 2 ) + pow( (y - posY), 2 );
 				if ( dist <= reach ) {
-					addSensation( {
+					addSensedObject( {
 							ix,
 							iy,
 							sqrt( dist )
@@ -170,6 +172,55 @@ void Animat::sense() {
 
 		}
 	}
+
+}
+
+
+
+void Animat::sense() {
+
+	forgetSensedObjects();
+	sense_analytic();
+
+	// plan to reach the closest food target
+	std::vector<f_sens>::iterator it;
+	int index = -1, counter = 0;
+	float min_dist = environment->sizeX*10; // definitely farther than any point on map
+
+	for ( it=sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
+		if ( it->d < min_dist ) {
+			index = counter;
+			min_dist = it->d;
+		}
+		++counter;
+	}
+
+	if ( index == -1 )
+		min_dist = senseRadius;
+
+	Vector2f v( cos( direction ), sin( direction ) );
+	Vector2f g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
+
+	float dAngle = util::getAngleBetween( v, g );
+
+	sensations(0) = 1 - 2*min_dist/senseRadius;
+
+	if ( dAngle > 0 ) {
+		sensations(1) = dAngle / M_PI;
+	}
+	if ( dAngle < 0 ) {
+		sensations(2) = -dAngle / M_PI;
+	}
+
+	sensations(3) = -1 + 2.0*energy / maxEnergy;
+
+}
+
+
+
+void Animat::reason() {
+
+
 
 }
 
@@ -187,7 +238,7 @@ void Animat::makeDecision() {
 	}
 
 	// plan to reach the closest food target
-	vector<f_sens>::iterator it;
+	std::vector<f_sens>::iterator it;
 	int index = -1, counter = 0;
 	float min_dist = environment->sizeX*10; // definitely farther than any point on map
 
@@ -242,40 +293,55 @@ void Animat::makeDecision() {
 
 
 
-void Animat::addSensation( f_sens loc ) {
+void Animat::forgetSensations() {
+	sensations = Eigen::VectorXf::Zero( cognition.getNInput() );
+}
+
+
+
+void Animat::addSensedObject( f_sens loc ) {
 	sensedObjs.push_back( loc );
 }
 
 
 
-void Animat::forgetSensations() {
+void Animat::forgetSensedObjects() {
 	sensedObjs.clear();
 }
 
 
 
-void Animat::initFCM( int nConcepts ) {
+//void Animat::initFCM( int nConcepts ) {
+//	cognition = FCM( nConcepts );
+//}
+//
+//
+//
+//void Animat::initFCM( int nConcepts, std::vector<string> concepts ) {
+//	cognition = FCM( nConcepts, concepts );
+//}
+//
+//
+//
+//void Animat::initFCM( int nConcepts, std::vector<string> concepts, MatrixXf fcm ) {
+//	cognition = FCM( nConcepts, concepts );
+//	cognition.setFCMap( fcm );
+//}
+
+
+
+void Animat::initFCM( int nConcepts, string filename_cs, string filename_fcm ) {
 	cognition = FCM( nConcepts );
+	cognition.loadConceptsFromFile( filename_cs );
+	cognition.loadLinkMatrixFromFile( filename_fcm );
+	sensations = Eigen::VectorXf::Zero( cognition.getNInput() );
 }
 
 
 
-void Animat::initFCM( int nConcepts, std::vector<std::string> concepts ) {
-	cognition = FCM( nConcepts, concepts );
-}
-
-
-
-void Animat::initFCM( int nConcepts, std::vector<std::string> concepts, MatrixXf fcm ) {
-	cognition = FCM( nConcepts, concepts );
-	cognition.setFCMap( fcm );
-}
-
-
-
-void Animat::setFCM( MatrixXf newfcm ) {
-	cognition.setFCMap( newfcm );
-}
+//void Animat::setFCM( MatrixXf newfcm ) {
+//	cognition.setFCMap( newfcm );
+//}
 
 
 
@@ -290,7 +356,7 @@ void Animat::toString() {
 
 
 
-void Animat::printSensations() {
+void Animat::printSensedObjects() {
 
 	vector<f_sens>::iterator it;
 

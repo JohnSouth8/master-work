@@ -1,0 +1,9 @@
+s_foodClose
+s_foodLeft
+s_foodRight
+s_energy
+m_turnLeft
+m_turnRight
+m_slowDown
+m_speedUp
+m_eat

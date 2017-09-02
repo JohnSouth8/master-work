@@ -15,23 +15,25 @@ using namespace Eigen;
 
 namespace ecosystem {
 
-FCM::FCM() {}
+FCM::FCM() {
+	nConcepts = 0;
+	nInput = 0;
+	nInternal = 0;
+	nOutput = 0;
+}
 
 FCM::FCM( int nc ) {
 
 	nConcepts = nc;
-	concepts = std::vector<std::string>( nConcepts );
-	FCMap = MatrixXf::Zero( nConcepts, nConcepts );
+	nInput = 0;
+	nInternal = 0;
+	nOutput = 0;
+//	concepts = std::vector<std::string>( nConcepts );
+	state = VectorXf::Zero( nConcepts );		// TODO: rename
+	L = MatrixXf::Zero( nConcepts, nConcepts );
 
 }
 
-FCM::FCM( int nc, std::vector<std::string> cs ) {
-
-	nConcepts = nc;
-	concepts = cs;
-	FCMap = MatrixXf::Zero( nConcepts, nConcepts );
-
-}
 
 FCM::~FCM() {
 	// TODO Auto-generated destructor stub
@@ -39,30 +41,59 @@ FCM::~FCM() {
 
 
 
-void FCM::setConcepts( std::vector<std::string> cs ) {
-	concepts = cs;
-}
+//void FCM::setConcepts( std::vector<string> cs ) {
+//	concepts = cs;
+//}
 
 
 
-void FCM::setFCMap( MatrixXf fcm ) {
-	FCMap = fcm;
-}
-
-
-
-void FCM::loadFCMapFromFile( string filename ) {
+void FCM::loadConceptsFromFile( string filename ) {
 
 	string fcontent = util::readFileContent( filename );
 
 	istringstream strstream( fcontent );
 	string buf;
 
-	for ( int i = 0; i < nConcepts; i++ ){
-		for ( int j = 0; j < nConcepts; j++ ){
+	for ( int i = 0; i < nConcepts; ++i ) {
+		if ( !strstream.eof() ) {
+			strstream >> buf;
+			concepts.push_back( buf );
+			char type = buf[0];
+			switch ( type ) {
+				case 's':
+					++nInput;
+					break;
+				case 'i':
+					++nInternal;
+					break;
+				case 'm':
+					++nOutput;
+					break;
+			}
+		}
+	}
+}
+
+
+
+void FCM::setState( VectorXf fcm ) {
+	state = fcm;
+}
+
+
+
+void FCM::loadLinkMatrixFromFile( string filename ) {
+
+	string fcontent = util::readFileContent( filename );
+
+	istringstream strstream( fcontent );
+	string buf;
+
+	for ( int i = 0; i < nConcepts; ++i ){
+		for ( int j = 0; j < nConcepts; ++j ){
 			if ( !strstream.eof() ) {
 				strstream >> buf;
-				FCMap( i, j ) = atof( buf.c_str() );
+				L( i, j ) = atof( buf.c_str() );
 			}
 		}
 	}
@@ -71,9 +102,45 @@ void FCM::loadFCMapFromFile( string filename ) {
 
 
 
+void FCM::propagateInput( VectorXf input ) {
 
-MatrixXf FCM::getFCMap() {
-	return FCMap;
+
+
+}
+
+
+
+
+VectorXf FCM::getState() {
+	return state;
+}
+
+
+
+
+int FCM::getNConcepts() {
+	return nConcepts;
+}
+
+
+
+
+int FCM::getNInput() {
+	return nInput;
+}
+
+
+
+
+int FCM::getNInternal() {
+	return nInternal;
+}
+
+
+
+
+int FCM::getNOutput() {
+	return nOutput;
 }
 
 
