@@ -28,9 +28,9 @@ FCM::FCM( int nc ) {
 	nInput = 0;
 	nInternal = 0;
 	nOutput = 0;
-//	concepts = std::vector<std::string>( nConcepts );
-	state = VectorXf::Zero( nConcepts );		// TODO: rename
-	L = MatrixXf::Zero( nConcepts, nConcepts );
+//	concepts = std::vector<string>( nConcepts );
+	state = VectorXd::Zero( nConcepts );		// TODO: rename
+	L = MatrixXd::Zero( nConcepts, nConcepts );
 
 }
 
@@ -62,12 +62,15 @@ void FCM::loadConceptsFromFile( string filename ) {
 			switch ( type ) {
 				case 's':
 					++nInput;
+					inputConcepts.push_back( i );
 					break;
 				case 'i':
 					++nInternal;
+					internalConcepts.push_back( i );
 					break;
 				case 'm':
 					++nOutput;
+					outputConcepts.push_back( i );
 					break;
 			}
 		}
@@ -76,7 +79,7 @@ void FCM::loadConceptsFromFile( string filename ) {
 
 
 
-void FCM::setState( VectorXf fcm ) {
+void FCM::setState( VectorXd fcm ) {
 	state = fcm;
 }
 
@@ -102,16 +105,39 @@ void FCM::loadLinkMatrixFromFile( string filename ) {
 
 
 
-void FCM::propagateInput( VectorXf input ) {
+void FCM::applySensations( VectorXd sensations ) {
 
+	// sensations is not the input vector
+	if ( sensations.size() != nInput )
+		return;
 
+	// put sensations into current state
+	for ( int i = 0; i < nInput; ++i ) {
+		state(i) = sensations(i);
+	}
+
+//	VectorXd nonSensorState = state.tail( nInternal + nOutput );
+//	VectorXd input(nConcepts);
+//	input << sensations, nonSensorState;
+
+	// delta = link^T * state
+	// newstate = transform(state + delta)
+	MatrixXd Lt = L.transpose();
+	VectorXd dS = Lt * state;
+	state = util::tanh( state + dS );
 
 }
 
 
 
+VectorXd FCM::getOutput() {
+	return state.tail( nOutput );
+}
 
-VectorXf FCM::getState() {
+
+
+
+VectorXd FCM::getState() {
 	return state;
 }
 

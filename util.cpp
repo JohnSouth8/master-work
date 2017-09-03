@@ -6,6 +6,7 @@
  */
 
 #include <cstdlib>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -18,6 +19,33 @@
 
 
 namespace util {
+
+
+	Eigen::VectorXd sigmoid( const Eigen::VectorXd in ) {
+
+		const unsigned int size = in.size();
+		Eigen::VectorXd out(size);
+
+		for ( unsigned int i = 0; i < size; ++i ) {
+			out(i) = 1.0 / (1 + exp( -in(i) ));
+		}
+
+		return out;
+
+	}
+
+	Eigen::VectorXd tanh( const Eigen::VectorXd in ) {
+
+		const unsigned int size = in.size();
+		Eigen::VectorXd out( size );
+
+		for ( unsigned int i = 0; i < size; ++i ){
+			out(i) = std::tanh( in(i) );
+		}
+
+		return out;
+
+	}
 
 	int randIntFrom( int min, int max ) {
 		int range = max - min + 1;
@@ -47,9 +75,9 @@ namespace util {
 
 	}
 
-	float getWrappedCoordinate( float coordinate, int domainSize ) {
+	double getWrappedCoordinate( double coordinate, int domainSize ) {
 
-		float retval = coordinate;
+		double retval = coordinate;
 
 //		if ( coordinate >= 0 && coordinate < domainSize ) {
 //			retval = coordinate;
@@ -66,10 +94,10 @@ namespace util {
 
 	}
 
-	float getAngleBetween( Eigen::Vector2f v1, Eigen::Vector2f v2 ) {
+	double getAngleBetween( Eigen::Vector2d v1, Eigen::Vector2d v2 ) {
 
-		float v_angle = atan2( v1(1), v1(0) );
-		float g_angle = atan2( v2(1), v2(0) );
+		double v_angle = atan2( v1(1), v1(0) );
+		double g_angle = atan2( v2(1), v2(0) );
 
 		return g_angle - v_angle;
 
@@ -102,9 +130,9 @@ namespace util {
 		outputFile.close();
 	}
 
-	void printMatrixToFile( Eigen::MatrixXf data, std::string fname, bool transpose ) {
+	void printMatrixToFile( Eigen::MatrixXd data, std::string fname, bool transpose ) {
 
-		Eigen::MatrixXf outputData = data;
+		Eigen::MatrixXd outputData = data;
 		if ( transpose )
 			// print transposed version of the matrix because matrix with origin in upper-left is mirrored in coordinate system with origin in lower-left
 			// 		i.e. row-major order is not compatible with x-axis first order in coordinate system

@@ -24,7 +24,7 @@ public:
 
 	// constructors
 	Habitat();
-	Habitat( int, int, int, float );
+	Habitat( int, int, int, double );
 	virtual ~Habitat();
 
 	// member variables
@@ -32,16 +32,16 @@ public:
 	int sizeY;
 	int foodEnergyVal;
 	map<const char*, Animat*> population;
-	Eigen::MatrixXf foodReserve;			// possibly swap this with Eigen::Array
+	Eigen::MatrixXd foodReserve;			// possibly swap this with Eigen::Array
 
 
 	// member functions
-	void distributeFood( float );
+	void distributeFood( double );
 	void birth( Animat* );
 	int consumeFood( int, int );
 	int getXSize();
 	int getYSize();
-	Eigen::MatrixXf getFoodReserve();
+	Eigen::MatrixXd getFoodReserve();
 
 };
 

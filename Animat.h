@@ -26,21 +26,22 @@ public:
 
 	// constructors
 	Animat();
-	Animat( float, float, float, float, int, float, float, Habitat* );
+	Animat( double, double, double, double, int, double, double, Habitat* );
 	virtual ~Animat();
 
 	// member vars
 	const char* name;
-	float posX;
-	float posY;
-	float velocity;
-	float direction;
+	double posX;
+	double posY;
+	double velocity;
+	double maxVelocity;
+	double direction;
 	int energy;
 	int maxEnergy;
-	float senseAngle;
-	float senseRadius;
+	double senseAngle;
+	double senseRadius;
 	std::vector<f_sens> sensedObjs;
-	Eigen::VectorXf sensations;
+	Eigen::VectorXd sensations;
 	FCM cognition;
 	Habitat* environment;
 
@@ -49,24 +50,26 @@ public:
 	// member functions
 
 	// life functions
-	void eat();
+	int eat();
 	void sense();
 	void sense_analytic();
 	void makeDecision();
 	void reason();
+	void react( Eigen::VectorXd );
 
 	// movement functions
-	void changeVelocity( float );
-	void setVelocity( float );
+	void changeVelocityAbsolute( double );
+	void changeVelocity( double );
+	void setVelocity( double );
 	void move();
-	void turn( float );
+	void turn( double );
 
 	// utility functions
 //	void initFCM( int );
 //	void initFCM( int, std::vector<std::string> );
-//	void initFCM( int, std::vector<std::string>, Eigen::MatrixXf );
+//	void initFCM( int, std::vector<std::string>, Eigen::MatrixXd );
 	void initFCM( int, std::string, std::string );
-//	void setFCM( Eigen::MatrixXf );
+//	void setFCM( Eigen::MatrixXd );
 	char* generateName();
 	const char* getName();
 	int getEnergy();

@@ -38,6 +38,7 @@ string fname_test = "test.txt";
 int test();
 int fcm_test( Animat*, Habitat* );
 int animat_test( Animat*, Habitat* );
+int test_algebra();
 
 
 
@@ -51,7 +52,9 @@ int main( void ) {
 
 //	string fcontent = util::readFileContent( fname_fcm );
 
-	return test();
+
+	return test_algebra();
+//	return test();
 }
 
 
@@ -62,7 +65,7 @@ int test() {
 
 	int sx = 250;
 	int sy = 250;
-	float density = 0.005;
+	double density = 0.05;
 
 	Habitat env ( sx, sy, 5, density );
 	util::printMatrixToFile( env.getFoodReserve(), fname_food0 );
@@ -128,7 +131,7 @@ int test() {
 
 int fcm_test( Animat* ani, Habitat* env ) {
 
-	ani->sense();
+	ani->reason();
 
 
 	return 0;
@@ -153,7 +156,52 @@ int animat_test( Animat* ani, Habitat* env ) {
 }
 
 
-// TODO: destruct everything in classes with the 'new' keyword
+
+int test_algebra() {
+
+	MatrixXd L( 5, 5 );
+
+	L << 	0, 0, -0.5, 0.75, 0,
+			0, 0, 0, 1, -0.5,
+			0, 0, 0.5, 0.66, 0,
+			0, 0, 0.33, 0, 1,
+			0, 0, -1, 0.25, 0.25;
+
+	cout << "Link matrix:" << endl;
+	cout << L << endl;
+
+	VectorXd vec(5);
+
+	vec << 0.5, 0.7, 0, 0, 0;
+
+	cout << "input vector:" << endl;
+	cout << vec << endl;
+
+	VectorXd state = VectorXd::Zero( 5 );
+
+	cout << "state:" << endl;
+	cout << state << endl;
+
+	MatrixXd Lt = L.transpose();
+	VectorXd dS = Lt * vec;
+
+	cout << "activation propagation ~ Lt * input ~:" << endl;
+	cout << dS << endl;
+
+	for ( int i = 0; i < 3; ++i ){
+
+		state = util::sigmoid( state + dS );
+
+		cout << "delta state:" << endl;
+		cout << dS << endl;
+		cout << "new state:" << endl;
+		cout << state << endl;
+
+	}
+
+	return 0;
+
+}
 
 
 

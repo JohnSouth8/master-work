@@ -35,7 +35,7 @@ Animat::Animat() {
 
 }
 
-Animat::Animat( float px, float py, float v, float dir, int e, float senseR, float senseA, Habitat* hab ) {
+Animat::Animat( double px, double py, double v, double dir, int e, double senseR, double senseA, Habitat* hab ) {
 
 	name = generateName();
 	posX = px;
@@ -84,13 +84,20 @@ int Animat::getEnergy() {		// TODO maxEnergy attribute
 
 
 
-void Animat::changeVelocity( float delta ) {
+void Animat::changeVelocity( double factor ) {
+	velocity += factor*velocity;
+	// TODO velocity limits should be respected here
+}
+
+
+
+void Animat::changeVelocityAbsolute( double delta ) {
 	velocity += delta;
 }
 
 
 
-void Animat::setVelocity( float v_new ) {
+void Animat::setVelocity( double v_new ) {
 	velocity = v_new;
 }
 
@@ -100,7 +107,7 @@ void Animat::move() {
 
 	int env_x = environment->getXSize();
 	int env_y = environment->getYSize();
-	float newX, newY, deltaX, deltaY;
+	double newX, newY, deltaX, deltaY;
 
 	deltaX = velocity * cos( direction );
 	deltaY = velocity * sin( direction );
@@ -114,20 +121,24 @@ void Animat::move() {
 }
 
 
-void Animat::eat() {
+int Animat::eat() {
 
 	int indexX = floor( posX );
 	int indexY = floor( posY );
+	int deltaE;
 
 	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
-		energy += environment->consumeFood( indexX, indexY );
-//		cout << "I ate!" << endl;
+		deltaE = environment->consumeFood( indexX, indexY );
+		energy += deltaE;
+		return deltaE;
 	}
+
+	return 0;
 
 }
 
 
-void Animat::turn( float rads ) {
+void Animat::turn( double rads ) {
 
 	direction += rads;
 	direction = fmod( direction, M_PI );
@@ -139,7 +150,7 @@ void Animat::turn( float rads ) {
 void Animat::sense_analytic() {
 
 
-	MatrixXf foods = environment->getFoodReserve();
+	MatrixXd foods = environment->getFoodReserve();
 	int env_x = environment->getXSize();
 	int env_y = environment->getYSize();
 
@@ -150,7 +161,7 @@ void Animat::sense_analytic() {
 	int y_min = std::floor( posY - senseRadius );
 
 	int ix, iy;
-	float dist, reach = pow( senseRadius, 2 );
+	double dist, reach = pow( senseRadius, 2 );
 
 	for ( int x = x_min; x <= x_max; ++x ) {
 		for ( int y = y_min; y <= y_max; ++y ) {
@@ -185,7 +196,7 @@ void Animat::sense() {
 	// plan to reach the closest food target
 	std::vector<f_sens>::iterator it;
 	int index = -1, counter = 0;
-	float min_dist = environment->sizeX*10; // definitely farther than any point on map
+	double min_dist = environment->sizeX*10; // definitely farther than any point on map
 
 	for ( it=sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
 		if ( it->d < min_dist ) {
@@ -198,19 +209,17 @@ void Animat::sense() {
 	if ( index == -1 )
 		min_dist = senseRadius;
 
-	Vector2f v( cos( direction ), sin( direction ) );
-	Vector2f g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
-
-	float dAngle = util::getAngleBetween( v, g );
+	Eigen::Vector2d v( cos( direction ), sin( direction ) );
+	Eigen::Vector2d g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
+	double dAngle = util::getAngleBetween( v, g );
 
 	sensations(0) = 1 - 2*min_dist/senseRadius;
 
-	if ( dAngle > 0 ) {
+	if ( dAngle > 0 )
 		sensations(1) = dAngle / M_PI;
-	}
-	if ( dAngle < 0 ) {
+
+	if ( dAngle < 0 )
 		sensations(2) = -dAngle / M_PI;
-	}
 
 	sensations(3) = -1 + 2.0*energy / maxEnergy;
 
@@ -220,6 +229,68 @@ void Animat::sense() {
 
 void Animat::reason() {
 
+//	int nConcepts = cognition.getNConcepts();  // TODO nconcepts should be animat's value too... or should it?
+//	int nSensual = cognition.getNInput();
+//	int nPadding = nConcepts - nSensual;
+
+	sense();
+
+	cout << cognition.getState() << endl;
+
+	cognition.applySensations( sensations );
+
+	cout << cognition.getState() << endl;
+
+	VectorXd motor = cognition.getOutput();
+
+	react( motor );
+
+}
+
+
+
+void Animat::react( VectorXd motor ) {
+
+	// defuzzify motor concepts' commands and apply them to the world
+
+//	m0 turnLeft
+//	m1 turnRight
+//	m2 slowDown
+//	m3 speedUp
+//	m4 eat
+
+	if ( motor(4) > 0.8 ) {
+		// if eat action is successful (some energy is gained), the animat can no longer act
+		if ( eat() != 0 ) return;
+	}
+
+	// only one turn action at a time:
+	double ta;
+	if ( motor(0) > motor(1) && motor(0) > 0.25 ) {
+		ta = (motor(0) - 0.25) / 0.75;
+		turn( ta );
+	}
+	else if ( motor(1) > motor(0) && motor(1) > 0.25 ) {
+		ta = (motor(1) - 0.25) / 0.75;
+		turn( -ta );
+	}
+
+	// speed change
+	double dvf = 0.0;
+	if ( motor(2) > 0.25 && motor(2) <= 0.75 ) {
+		dvf -= (motor(2) - 0.25) / 0.5;
+	}
+	else if ( motor(2) > 0.75 ){
+		dvf -= 1;
+	}
+
+	if ( motor(3) > 0.25 && motor(3) <= 0.75 ) {
+		dvf += (motor(2) - 0.25) / 0.5;
+	}
+	else if ( motor(3) > 0.75 ) {
+		dvf += 1;
+	}
+	changeVelocity( dvf );
 
 
 }
@@ -240,7 +311,7 @@ void Animat::makeDecision() {
 	// plan to reach the closest food target
 	std::vector<f_sens>::iterator it;
 	int index = -1, counter = 0;
-	float min_dist = environment->sizeX*10; // definitely farther than any point on map
+	double min_dist = environment->sizeX*10; // definitely farther than any point on map
 
 	for ( it=sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
 		if ( it->d < min_dist ) {
@@ -274,11 +345,8 @@ void Animat::makeDecision() {
 	}
 
 
-	Vector2f v( cos( direction ), sin( direction ) );
-	Vector2f g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
-
-//	float v_norm = v.norm(), g_norm = g.norm(), turn_angle = 0;
-//	if ( v_norm != 0 && g_norm != 0 ) turn_angle = acos( v.dot( g )/(v_norm*g_norm) );
+	Vector2d v( cos( direction ), sin( direction ) );
+	Vector2d g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
 
 	// get absolute angles
 	turn( util::getAngleBetween( v, g ) );
@@ -294,7 +362,7 @@ void Animat::makeDecision() {
 
 
 void Animat::forgetSensations() {
-	sensations = Eigen::VectorXf::Zero( cognition.getNInput() );
+	sensations = Eigen::VectorXd::Zero( cognition.getNInput() );
 }
 
 
@@ -323,7 +391,7 @@ void Animat::forgetSensedObjects() {
 //
 //
 //
-//void Animat::initFCM( int nConcepts, std::vector<string> concepts, MatrixXf fcm ) {
+//void Animat::initFCM( int nConcepts, std::vector<string> concepts, MatrixXd fcm ) {
 //	cognition = FCM( nConcepts, concepts );
 //	cognition.setFCMap( fcm );
 //}
@@ -334,12 +402,12 @@ void Animat::initFCM( int nConcepts, string filename_cs, string filename_fcm ) {
 	cognition = FCM( nConcepts );
 	cognition.loadConceptsFromFile( filename_cs );
 	cognition.loadLinkMatrixFromFile( filename_fcm );
-	sensations = Eigen::VectorXf::Zero( cognition.getNInput() );
+	sensations = Eigen::VectorXd::Zero( cognition.getNInput() );
 }
 
 
 
-//void Animat::setFCM( MatrixXf newfcm ) {
+//void Animat::setFCM( MatrixXd newfcm ) {
 //	cognition.setFCMap( newfcm );
 //}
 

@@ -18,7 +18,7 @@ struct coordinate {
 struct foodSensation {
 	int x;		// x coordinate
 	int y;		// y coordinate
-	float d;	// distance to sensation
+	double d;	// distance to sensation
 } typedef f_sens;
 
 }

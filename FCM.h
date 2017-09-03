@@ -28,9 +28,13 @@ private:
 	int nInternal;
 	int nOutput;
 
+	std::vector<int> inputConcepts;
+	std::vector<int> internalConcepts;
+	std::vector<int> outputConcepts;
+
 	std::vector<std::string> concepts;
-	Eigen::VectorXf state;
-	Eigen::MatrixXf L;
+	Eigen::VectorXd state;
+	Eigen::MatrixXd L;
 //	int initialized;
 
 public:
@@ -38,11 +42,12 @@ public:
 //	void setConcepts( std::vector<std::string> );
 	void loadConceptsFromFile( std::string );
 	void loadLinkMatrixFromFile( std::string );
-	void propagateInput( Eigen::VectorXf );
+	void applySensations( Eigen::VectorXd );
+	Eigen::VectorXd getOutput();
 
 	// getters & setters
-	void setState( Eigen::VectorXf );
-	Eigen::VectorXf getState();
+	void setState( Eigen::VectorXd );
+	Eigen::VectorXd getState();
 	int getNConcepts();
 	int getNInput();
 	int getNInternal();
