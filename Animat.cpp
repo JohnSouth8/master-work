@@ -35,12 +35,14 @@ Animat::Animat() {
 
 }
 
-Animat::Animat( double px, double py, double v, double dir, int e, double senseR, double senseA, Habitat* hab ) {
+// TODO: think about initializer lists
+Animat::Animat( double px, double py, double v, double maxV, double dir, int e, double senseR, double senseA, Habitat* hab ) {
 
 	name = generateName();
 	posX = px;
 	posY = py;
 	velocity = v;
+	maxVelocity = maxV;
 	direction = dir;
 	energy = e;
 	maxEnergy = e;	// TODO: sort out
@@ -85,8 +87,17 @@ int Animat::getEnergy() {		// TODO maxEnergy attribute
 
 
 void Animat::changeVelocity( double factor ) {
-	velocity += factor*velocity;
-	// TODO velocity limits should be respected here
+
+	if ( velocity == 0)
+		velocity += factor*maxVelocity;
+	else
+		velocity += factor*velocity;
+
+	if ( velocity > maxVelocity )
+		velocity = maxVelocity;
+	else if ( velocity < 0 )
+		velocity = 0;
+
 }
 
 
@@ -116,7 +127,7 @@ void Animat::move() {
 
 	posX = util::getWrappedCoordinate( newX, env_x );
 	posY = util::getWrappedCoordinate( newY, env_y );
-	energy -= 1;
+	energy -= 1;	// TODO: energy loss should be proportional to action (so not int? or rather some linguistic classes i.e. 'some', 'a lot of' energy lost)
 
 }
 
@@ -162,7 +173,7 @@ void Animat::sense_analytic() {
 
 	int ix, iy;
 	double dist, reach = pow( senseRadius, 2 );
-
+	// TODO: do this with an Eigen block, not looping
 	for ( int x = x_min; x <= x_max; ++x ) {
 		for ( int y = y_min; y <= y_max; ++y ) {
 
@@ -213,7 +224,16 @@ void Animat::sense() {
 	Eigen::Vector2d g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
 	double dAngle = util::getAngleBetween( v, g );
 
-	sensations(0) = 1 - 2*min_dist/senseRadius;
+//	sensations(0) = 1 - 2*min_dist/senseRadius;
+	if ( velocity == 0 )
+		sensations(0) = 0; // TODO should be 1 when on a cell containing food
+	else {
+		double dv = min_dist / velocity;
+		if ( dv > 2*maxVelocity )
+			sensations(0) = -1;
+		else
+			sensations(0) = 1 - 2 * (dv / (2 * maxVelocity));
+	}
 
 	if ( dAngle > 0 )
 		sensations(1) = dAngle / M_PI;
@@ -235,11 +255,11 @@ void Animat::reason() {
 
 	sense();
 
-	cout << cognition.getState() << endl;
+	cout << cognition.getState().transpose() << endl;
 
 	cognition.applySensations( sensations );
 
-	cout << cognition.getState() << endl;
+	cout << cognition.getState().transpose() << endl;
 
 	VectorXd motor = cognition.getOutput();
 
@@ -285,19 +305,20 @@ void Animat::react( VectorXd motor ) {
 	}
 
 	if ( motor(3) > 0.25 && motor(3) <= 0.75 ) {
-		dvf += (motor(2) - 0.25) / 0.5;
+		dvf += (motor(3) - 0.25) / 0.5;
 	}
 	else if ( motor(3) > 0.75 ) {
 		dvf += 1;
 	}
 	changeVelocity( dvf );
 
+	move();
 
 }
 
 
 
-void Animat::makeDecision() {
+void Animat::calculateDecision() {
 
 	// if there is food, eat it
 	int indexX = floor( posX );

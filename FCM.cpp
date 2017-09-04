@@ -116,15 +116,12 @@ void FCM::applySensations( VectorXd sensations ) {
 		state(i) = sensations(i);
 	}
 
-//	VectorXd nonSensorState = state.tail( nInternal + nOutput );
-//	VectorXd input(nConcepts);
-//	input << sensations, nonSensorState;
-
-	// delta = link^T * state
+	// delta = state^T * L
 	// newstate = transform(state + delta)
-	MatrixXd Lt = L.transpose();
-	VectorXd dS = Lt * state;
-	state = util::tanh( state + dS );
+	VectorXd dS = state.transpose() * L;
+	state = util::tanh( state + dS );		// << modified Kosko rule: A(t+1) = f(A(t) + dA)
+
+	// TODO: maybe more than iteration with the same sensations will be needed to reach a decision
 
 }
 

@@ -28,7 +28,7 @@ private:
 	int nInternal;
 	int nOutput;
 
-	std::vector<int> inputConcepts;
+	std::vector<int> inputConcepts;		// use map with state indices
 	std::vector<int> internalConcepts;
 	std::vector<int> outputConcepts;
 

@@ -26,7 +26,7 @@ public:
 
 	// constructors
 	Animat();
-	Animat( double, double, double, double, int, double, double, Habitat* );
+	Animat( double, double, double, double, double, int, double, double, Habitat* );
 	virtual ~Animat();
 
 	// member vars
@@ -53,7 +53,7 @@ public:
 	int eat();
 	void sense();
 	void sense_analytic();
-	void makeDecision();
+	void calculateDecision();
 	void reason();
 	void react( Eigen::VectorXd );
 

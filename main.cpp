@@ -35,8 +35,9 @@ string fname_fcm_cs = "fcm_0.1.concepts.txt";
 string fname_fcm = "fcm_0.1.txt";
 string fname_test = "test.txt";
 
+
 int test();
-int fcm_test( Animat*, Habitat* );
+int fcm_test( Animat* );
 int animat_test( Animat*, Habitat* );
 int test_algebra();
 
@@ -53,8 +54,9 @@ int main( void ) {
 //	string fcontent = util::readFileContent( fname_fcm );
 
 
-	return test_algebra();
-//	return test();
+//	return test_algebra();
+	return test();
+
 }
 
 
@@ -63,11 +65,12 @@ int test() {
 
 	// TODO: sort out smooth operation and visual debugging with switches and stuff --!! maybe with config files??
 
-	int sx = 250;
-	int sy = 250;
-	double density = 0.05;
+	int sx = 50;
+	int sy = 50;
+	int foodEnergy = 5;
+	double density = 0.001;
 
-	Habitat env ( sx, sy, 5, density );
+	Habitat env ( sx, sy, foodEnergy, density );
 	util::printMatrixToFile( env.getFoodReserve(), fname_food0 );
 
 
@@ -82,8 +85,9 @@ int test() {
 			randx,		// x
 			randy, 		// y
 			0, 			// velocity
+			3,			// max velocity
 			randdir, 	// direction
-			20, 		// energy
+			50, 		// energy
 			12, 		// vision range
 			2*M_PI, 	// vision angle  TODO: implement it's usage
 			&env		// world pointer
@@ -107,11 +111,14 @@ int test() {
 	int time_counter = 0;
 
 	// life loop
-//	while ( true ) {
-	while ( time_counter < 5 ) {
+	while ( true ) {
+//	while ( time_counter < 5 ) {
 
 //		animat_test( &ani, &env );
-		fcm_test( &ani, &env );
+		fcm_test( &ani );
+
+		util::printAnimatLocationsToFile( env.population, fname_pop );
+		util::printSensationsToFile( ani.sensedObjs, fname_sens );
 
 		if ( ani.getEnergy() <= 0 )
 			break;
@@ -129,10 +136,9 @@ int test() {
 
 
 
-int fcm_test( Animat* ani, Habitat* env ) {
+int fcm_test( Animat* ani ) {
 
 	ani->reason();
-
 
 	return 0;
 
@@ -142,14 +148,12 @@ int fcm_test( Animat* ani, Habitat* env ) {
 
 int animat_test( Animat* ani, Habitat* env ) {
 
+	ani->forgetSensedObjects();
+
 	ani->sense();
-	ani->makeDecision();
+	ani->calculateDecision();
 	ani->move();
 
-	util::printAnimatLocationsToFile( env->population, fname_pop );
-	util::printSensationsToFile( ani->sensedObjs, fname_sens );
-
-	ani->forgetSensedObjects();
 
 	return 0;
 
@@ -182,22 +186,27 @@ int test_algebra() {
 	cout << "state:" << endl;
 	cout << state << endl;
 
-	MatrixXd Lt = L.transpose();
-	VectorXd dS = Lt * vec;
+//	MatrixXd Lt = L.transpose();
+	VectorXd dS = vec.transpose() * L;
 
-	cout << "activation propagation ~ Lt * input ~:" << endl;
+	cout << "activation propagation ~ input^t * L ~:" << endl;
 	cout << dS << endl;
 
 	for ( int i = 0; i < 3; ++i ){
 
-		state = util::sigmoid( state + dS );
+		dS = vec.transpose() * L;
+		state = util::tanh( state + dS );
 
+		cout << "activation propagation" << endl;
+		cout << dS << endl;
 		cout << "delta state:" << endl;
 		cout << dS << endl;
 		cout << "new state:" << endl;
 		cout << state << endl;
 
 	}
+
+
 
 	return 0;
 
