@@ -13,10 +13,12 @@
 #include <ctime>
 #include <cmath>
 #include <Eigen/Dense>
+#include <unistd.h>
 
 #include "Animat.h"
 #include "Habitat.h"
 #include "util.h"
+#include "graphx.h"
 
 using namespace std;
 using namespace Eigen;
@@ -40,6 +42,7 @@ int test();
 int fcm_test( Animat* );
 int animat_test( Animat*, Habitat* );
 int test_algebra();
+int test_graphics();
 
 
 
@@ -47,16 +50,38 @@ int main( void ) {
 
 	srand(time(0));
 
-	// empty files
-	util::cleanFile( fname_pop );
-	util::cleanFile( fname_sens );
+//	// empty files
+//	util::cleanFile( fname_pop );
+//	util::cleanFile( fname_sens );
+//
+////	string fcontent = util::readFileContent( fname_fcm );
+//
+//
+////	return test_algebra();
+//	return test();
 
-//	string fcontent = util::readFileContent( fname_fcm );
 
 
-//	return test_algebra();
-	return test();
+	// graphical output debug
+	return test_graphics();
 
+}
+
+
+
+int test_graphics() {
+
+	gx::openWindow( 800, 600, "testtest" );
+
+	gx::loadShaders( "shader.vert", "shader.frag" );
+	gx::setBackground( 1.0f, 0.95f, 0.9f, 1.0f );
+	gx::enableKeyboard();
+
+	gx::drawingLoop();
+
+	gx::closeWindow();
+
+	return 0;
 }
 
 
