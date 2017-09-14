@@ -50,20 +50,21 @@ int main( void ) {
 
 	srand(time(0));
 
-//	// empty files
-//	util::cleanFile( fname_pop );
-//	util::cleanFile( fname_sens );
-//
-////	string fcontent = util::readFileContent( fname_fcm );
-//
-//
-////	return test_algebra();
-//	return test();
+	// empty files
+	util::cleanFile( fname_pop );
+	util::cleanFile( fname_sens );
 
+//	string fcontent = util::readFileContent( fname_fcm );
+
+
+//	return test_algebra();
+	return test();
+
+	// TODO: nicely put stuff together - happening and rendering
 
 
 	// graphical output debug
-	return test_graphics();
+//	return test_graphics();
 
 }
 
