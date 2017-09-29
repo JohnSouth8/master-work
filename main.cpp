@@ -64,7 +64,7 @@ int main( void ) {
 
 
 	// graphical output debug
-//	return test_graphics();
+	return test_graphics();
 
 }
 
@@ -75,7 +75,7 @@ int test_graphics() {
 	gx::openWindow( 800, 600, "testtest" );
 
 	gx::loadShaders( "shader.vert", "shader.frag" );
-	gx::setBackground( 1.0f, 0.95f, 0.9f, 1.0f );
+	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
 	gx::enableKeyboard();
 
 	gx::drawingLoop();
@@ -91,13 +91,13 @@ int test() {
 
 	// TODO: sort out smooth operation and visual debugging with switches and stuff --!! maybe with config files??
 
-	int sx = 50;
-	int sy = 50;
+	int sx = 100;
+	int sy = 100;
 	int foodEnergy = 5;
-	double density = 0.001;
+	double density = 0.01;
 
 	Habitat env ( sx, sy, foodEnergy, density );
-	util::printMatrixToFile( env.getFoodReserve(), fname_food0 );
+//	util::printMatrixToFile( env.getFoodReserve(), fname_food0 );
 
 
 //	float allFood = foods.sum()/( sx * sy );
@@ -122,7 +122,7 @@ int test() {
 	ani.toString();
 	env.birth( &ani );
 
-	util::printAnimatLocationsToFile( env.population, fname_pop );
+//	util::printAnimatLocationsToFile( env.population, fname_pop );
 
 
 	int nConcepts = 9;
@@ -134,26 +134,37 @@ int test() {
 
 	// TODO: sort out smooth operation and visual debugging with switches and stuff
 
+
+	// initialize graphics output
+	gx::openWindow( 800, 800, "simulation" );
+	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
+	gx::enableKeyboard();
+
+	// we already have food and animat - lets show them :)
+
+
+
 	int time_counter = 0;
 
 	// life loop
-	while ( true ) {
-//	while ( time_counter < 5 ) {
+	while ( false ) {
 
-//		animat_test( &ani, &env );
-		fcm_test( &ani );
+		ani.reason();
 
-		util::printAnimatLocationsToFile( env.population, fname_pop );
-		util::printSensationsToFile( ani.sensedObjs, fname_sens );
+//		util::printAnimatLocationsToFile( env.population, fname_pop );
+//		util::printSensationsToFile( ani.sensedObjs, fname_sens );
 
 		if ( ani.getEnergy() <= 0 )
 			break;
 
+		usleep( 2000000 );
 		++time_counter;
 	}
 
 	cout << "The animat survived " << time_counter << " steps of the simulation" << endl;
-	util::printMatrixToFile( env.getFoodReserve(), fname_food1 );
+//	util::printMatrixToFile( env.getFoodReserve(), fname_food1 );
+
+	gx::closeWindow();
 
 //    getchar();
 	return 0;
@@ -164,7 +175,7 @@ int test() {
 
 int fcm_test( Animat* ani ) {
 
-	ani->reason();
+
 
 	return 0;
 

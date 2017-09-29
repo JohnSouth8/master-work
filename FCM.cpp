@@ -107,7 +107,7 @@ void FCM::loadLinkMatrixFromFile( string filename ) {
 
 void FCM::applySensations( VectorXd sensations ) {
 
-	// sensations is not the input vector
+	// if sensations is not the input vector
 	if ( sensations.size() != nInput )
 		return;
 
@@ -119,7 +119,7 @@ void FCM::applySensations( VectorXd sensations ) {
 	// delta = state^T * L
 	// newstate = transform(state + delta)
 	VectorXd dS = state.transpose() * L;
-	state = util::tanh( state + dS );		// << modified Kosko rule: A(t+1) = f(A(t) + dA)
+	state = util::tanh( state + dS );		// << modified Kosko rule: A(t+1) = f(A(t) + dA); f:= tanh
 
 	// TODO: maybe more than iteration with the same sensations will be needed to reach a decision
 

@@ -24,6 +24,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 
+class ecosystem::Habitat;
+
 
 namespace gx {
 
@@ -36,10 +38,13 @@ namespace gx {
 	GLuint loadShaders( const char*, const char* );
 	GLuint loadShaders( std::string, std::string );
 
+	GLuint loadDataIntoBuffer( ecosystem::Habitat* );
+
 	void setBackground( float, float, float, float );
 
 	void enableKeyboard( void );
 	void drawingLoop();
+	void draw( GLuint, GLuint );
 
 
 

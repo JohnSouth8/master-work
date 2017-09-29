@@ -13,8 +13,11 @@
 #include <stdlib.h>
 
 #include "util.h"
+#include "Habitat.h"
 
 
+
+using namespace ecosystem;
 
 
 namespace gx {
@@ -25,9 +28,13 @@ namespace gx {
 
 	void drawingLoop() {
 
+		GLuint shaderProg = gx::loadShaders( "shader.vert", "shader.frag" );
+
 		while ( !glfwWindowShouldClose( gwindow ) ) {
 
 			glClear( GL_COLOR_BUFFER_BIT );
+
+			glUseProgram( shaderProg );
 
 			// swap buffers
 			glfwSwapBuffers( gwindow );
@@ -37,6 +44,58 @@ namespace gx {
 			    glfwSetWindowShouldClose( gwindow, GL_TRUE );
 
 		}
+
+	}
+
+
+
+	void draw( GLuint shaderProgramID, GLuint dataBuffer ) {
+
+		glClear( GL_COLOR_BUFFER_BIT );
+
+		glUseProgram( shaderProgramID );
+
+
+
+		// swap buffers
+		glfwSwapBuffers( gwindow );
+		glfwPollEvents();
+
+
+	}
+
+
+
+	GLuint loadDataIntoBuffer( Habitat* environment ) {
+
+		int n_data_food = environment->foodReserve.sum(),		// foodReserve.sum() works for now, when food is 0 or 1
+			n_data_pop = environment->population.size(),
+			n_data = n_data_food + n_data_pop,
+			env_w = environment->sizeX,
+			env_h = environment->sizeY,
+			counter = 0;
+
+		static GLfloat points_buffer_data[n_data*5];		// << each point has 5 datums: X Y R G B
+
+		for ( int i = 0; i < env_w; i++ ) {
+			for ( int j = 0; j < env_h; j++ ) {
+				if ( environment->foodReserve(i,j) != 0 ) {
+
+					points_buffer_data[counter*5 + 0] = 2.0f*i / float(env_w) - 1; 	// X
+					points_buffer_data[counter*5 + 1] = 2.0f*j / float(env_h) - 1; 	// Y
+					points_buffer_data[counter*5 + 2] = 0.2f;						// R
+					points_buffer_data[counter*5 + 3] = 0.0f;						// G
+					points_buffer_data[counter*5 + 4] = 1.0f;						// B
+
+				}
+				if ( counter == n_data_food )
+					break;
+			}
+			if ( counter == n_data_food )
+				break;
+		}
+
+		// to be continued
 
 	}
 

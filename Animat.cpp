@@ -284,7 +284,7 @@ void Animat::react( VectorXd motor ) {
 		if ( eat() != 0 ) return;
 	}
 
-	// only one turn action at a time:
+	// only one turn action at a time: 		<< TODO: maybe both? opposing forces, ya'know....
 	double ta;
 	if ( motor(0) > motor(1) && motor(0) > 0.25 ) {
 		ta = (motor(0) - 0.25) / 0.75;
