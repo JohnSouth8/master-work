@@ -23,8 +23,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Habitat.h"
+#include "Animat.h"
 
-class ecosystem::Habitat;
+
+//class ecosystem::Habitat;
 
 
 namespace gx {
@@ -38,13 +41,17 @@ namespace gx {
 	GLuint loadShaders( const char*, const char* );
 	GLuint loadShaders( std::string, std::string );
 
-	GLuint loadDataIntoBuffer( ecosystem::Habitat* );
+	GLuint createVertexArrayObject( void );
+	GLuint loadHabitatIntoBuffer( ecosystem::Habitat* );
 
 	void setBackground( float, float, float, float );
 
 	void enableKeyboard( void );
 	void drawingLoop();
-	void draw( GLuint, GLuint );
+	void drawHabitat( ecosystem::Habitat*, GLuint );
+
+	int waitForInput();
+	void keyCallback( GLFWwindow*, int, int, int, int );
 
 
 

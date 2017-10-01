@@ -11,9 +11,9 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "util.h"
-#include "Habitat.h"
 
 
 
@@ -23,7 +23,8 @@ using namespace ecosystem;
 namespace gx {
 
 	GLFWwindow* gwindow;
-
+//	bool doProceed = false;
+//	bool doClose = false;
 
 
 	void drawingLoop() {
@@ -48,25 +49,53 @@ namespace gx {
 	}
 
 
+	// draws one step of simulation
+	void drawHabitat( ecosystem::Habitat* env, GLuint shaderProg ) {
 
-	void draw( GLuint shaderProgramID, GLuint dataBuffer ) {
 
+		// draw
 		glClear( GL_COLOR_BUFFER_BIT );
+		glUseProgram( shaderProg );
 
-		glUseProgram( shaderProgramID );
+		// position attributes
+		GLint posAttr = glGetAttribLocation( shaderProg, "position" );
+		glEnableVertexAttribArray( posAttr );
+		glVertexAttribPointer( posAttr, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), 0 );
 
+		// color attributes
+		GLint colAttr = glGetAttribLocation( shaderProg, "inColor" );
+		glEnableVertexAttribArray( colAttr );
+		glVertexAttribPointer( colAttr, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)) );
 
+		int n_points = env->foodReserve.sum() + env->population.size();
+
+		glDrawArrays( GL_POINTS, 0, n_points );
 
 		// swap buffers
 		glfwSwapBuffers( gwindow );
-		glfwPollEvents();
+
+		// here onward does not belong here
+//		while ( !glfwWindowShouldClose( gwindow ) ) {
+//			glfwPollEvents();
+//			if ( glfwGetKey( gwindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+//				glfwSetWindowShouldClose( gwindow, GL_TRUE );
+//		}
 
 
 	}
 
 
 
-	GLuint loadDataIntoBuffer( Habitat* environment ) {
+	GLuint createVertexArrayObject() {
+		GLuint vao;
+		glGenVertexArrays( 1, &vao );
+		glBindVertexArray( vao );
+		return vao;
+	}
+
+
+
+	GLuint loadHabitatIntoBuffer( Habitat* environment ) {
 
 		int n_data_food = environment->foodReserve.sum(),		// foodReserve.sum() works for now, when food is 0 or 1
 			n_data_pop = environment->population.size(),
@@ -75,17 +104,20 @@ namespace gx {
 			env_h = environment->sizeY,
 			counter = 0;
 
-		static GLfloat points_buffer_data[n_data*5];		// << each point has 5 datums: X Y R G B
+		static GLfloat points_buffer_data[50000]; //= new GLfloat[n_data*5];		// << each point has 5 datums: X Y R G B
 
-		for ( int i = 0; i < env_w; i++ ) {
-			for ( int j = 0; j < env_h; j++ ) {
+		// add green food points
+		for ( int i = 0; i < env_w; ++i ) {
+			for ( int j = 0; j < env_h; ++j ) {
 				if ( environment->foodReserve(i,j) != 0 ) {
 
 					points_buffer_data[counter*5 + 0] = 2.0f*i / float(env_w) - 1; 	// X
 					points_buffer_data[counter*5 + 1] = 2.0f*j / float(env_h) - 1; 	// Y
-					points_buffer_data[counter*5 + 2] = 0.2f;						// R
-					points_buffer_data[counter*5 + 3] = 0.0f;						// G
-					points_buffer_data[counter*5 + 4] = 1.0f;						// B
+					points_buffer_data[counter*5 + 2] = 0.0f;						// R
+					points_buffer_data[counter*5 + 3] = 0.9f;						// G
+					points_buffer_data[counter*5 + 4] = 0.0f;						// B
+
+					++counter;
 
 				}
 				if ( counter == n_data_food )
@@ -95,7 +127,31 @@ namespace gx {
 				break;
 		}
 
-		// to be continued
+		// add red animat points
+		std::map<const char*, Animat*>::iterator it;
+		for (  it = environment->population.begin(); it != environment->population.end(); ++it ) {
+
+			points_buffer_data[counter*5 + 0] = float( 2.0f * it->second->posX / float(env_w) - 1 );	// X
+			points_buffer_data[counter*5 + 1] = float( 2.0f * it->second->posY / float(env_h) - 1 );	// Y
+			points_buffer_data[counter*5 + 2] = 0.95f;													// R
+			points_buffer_data[counter*5 + 3] = 0.0f;													// G
+			points_buffer_data[counter*5 + 4] = 0.0f;													// B
+
+			++counter;
+
+		}
+
+		// create the points buffer
+		GLuint vbo;
+		glGenBuffers( 1, &vbo );
+		glBindBuffer( GL_ARRAY_BUFFER, vbo );
+		glBufferData( GL_ARRAY_BUFFER, n_data*5*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
+
+//		// points are loaded, delete the array
+//		delete points_buffer_data;
+
+		// return the buffer address
+		return vbo;
 
 	}
 
@@ -147,6 +203,37 @@ namespace gx {
 
 
 
+	int waitForInput(){
+
+		while ( true ) {
+
+			glfwPollEvents();
+
+			if ( glfwGetKey( gwindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+				return 1;
+
+			if ( glfwWindowShouldClose( gwindow ) )
+				return 1;
+
+			if ( glfwGetKey( gwindow, GLFW_KEY_ENTER ) == GLFW_PRESS )
+				return 2;
+
+//			if ( glfwWindowShouldClose( gwindow ) || doClose )
+//			{
+//				doClose = false;
+//				return 1;
+//			}
+//			if ( doProceed ) {
+//				doProceed = false;
+//				return 2;
+//			}
+
+		}
+
+	}
+
+
+
 	int closeWindow() {
 		// Close OpenGL window and terminate GLFW
 		glfwTerminate();
@@ -163,6 +250,16 @@ namespace gx {
 
 	void enableKeyboard() {
 		glfwSetInputMode( gwindow, GLFW_STICKY_KEYS, GL_TRUE );
+//		glfwSetKeyCallback( gwindow, keyCallback );
+	}
+
+
+
+	void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mods ) {
+		if ( key == GLFW_KEY_ENTER && action == GLFW_PRESS )
+			doProceed = true;
+		if ( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS )
+			doClose = true;
 	}
 
 

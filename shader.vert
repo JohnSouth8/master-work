@@ -1,13 +1,14 @@
 #version 330 core
 
 // inputs
-in vec2 vertPosition;
+in vec2 position;
+in vec3 inColor;
 
-
-// out vec3 fragColor;
+out vec3 fragColor;
 
 void main() {
 
-	gl_Position = vec4( vertPosition, 0.0, 1.0);
+	gl_Position = vec4( position, 0.0, 1.0);
+	fragColor = inColor;
 
 }

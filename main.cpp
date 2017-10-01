@@ -97,7 +97,7 @@ int test() {
 	double density = 0.01;
 
 	Habitat env ( sx, sy, foodEnergy, density );
-//	util::printMatrixToFile( env.getFoodReserve(), fname_food0 );
+	util::printMatrixToFile( env.getFoodReserve(), fname_food0 );
 
 
 //	float allFood = foods.sum()/( sx * sy );
@@ -122,7 +122,7 @@ int test() {
 	ani.toString();
 	env.birth( &ani );
 
-//	util::printAnimatLocationsToFile( env.population, fname_pop );
+	util::printAnimatLocationsToFile( env.population, fname_pop );
 
 
 	int nConcepts = 9;
@@ -142,31 +142,48 @@ int test() {
 
 	// we already have food and animat - lets show them :)
 
+	// load stuff
+	GLuint vao = gx::createVertexArrayObject();
+	GLuint dataBuf = gx::loadHabitatIntoBuffer( &env );
+	GLuint shaderProg = gx::loadShaders( "shader.vert", "shader.frag" );
 
+	gx::drawHabitat( &env, shaderProg );
+
+	gx::waitForInput();		// todo: fix this
 
 	int time_counter = 0;
 
 	// life loop
-	while ( false ) {
+	while ( true ) {
 
 		ani.reason();
+
+		gx::drawHabitat( &env, shaderProg );
+
+		int inputret = gx::waitForInput();
+		cout << inputret << endl;
 
 //		util::printAnimatLocationsToFile( env.population, fname_pop );
 //		util::printSensationsToFile( ani.sensedObjs, fname_sens );
 
-		if ( ani.getEnergy() <= 0 )
+		if ( ani.getEnergy() <= 0 || inputret == 1 )
 			break;
 
-		usleep( 2000000 );
 		++time_counter;
 	}
 
 	cout << "The animat survived " << time_counter << " steps of the simulation" << endl;
 //	util::printMatrixToFile( env.getFoodReserve(), fname_food1 );
 
+
+
+	glDeleteBuffers( 1, &dataBuf );
+	glDeleteProgram( shaderProg );
+	glDeleteVertexArrays( 1, &vao );
+
 	gx::closeWindow();
 
-//    getchar();
+
 	return 0;
 
 }

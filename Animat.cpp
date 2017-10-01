@@ -255,11 +255,11 @@ void Animat::reason() {
 
 	sense();
 
-	cout << cognition.getState().transpose() << endl;
+//	cout << cognition.getState().transpose() << endl;
 
 	cognition.applySensations( sensations );
 
-	cout << cognition.getState().transpose() << endl;
+//	cout << cognition.getState().transpose() << endl;
 
 	VectorXd motor = cognition.getOutput();
 
