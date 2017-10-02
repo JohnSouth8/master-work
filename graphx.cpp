@@ -22,35 +22,35 @@ using namespace ecosystem;
 
 namespace gx {
 
-	GLFWwindow* gwindow;
+//	GLFWwindow* gwindow;
 //	bool doProceed = false;
 //	bool doClose = false;
 
 
-	void drawingLoop() {
-
-		GLuint shaderProg = gx::loadShaders( "shader.vert", "shader.frag" );
-
-		while ( !glfwWindowShouldClose( gwindow ) ) {
-
-			glClear( GL_COLOR_BUFFER_BIT );
-
-			glUseProgram( shaderProg );
-
-			// swap buffers
-			glfwSwapBuffers( gwindow );
-			glfwPollEvents();
-
-			if ( glfwGetKey( gwindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
-			    glfwSetWindowShouldClose( gwindow, GL_TRUE );
-
-		}
-
-	}
+//	void drawingLoop() {
+//
+//		GLuint shaderProg = gx::loadShaders( "shader.vert", "shader.frag" );
+//
+//		while ( !glfwWindowShouldClose( gwindow ) ) {
+//
+//			glClear( GL_COLOR_BUFFER_BIT );
+//
+//			glUseProgram( shaderProg );
+//
+//			// swap buffers
+//			glfwSwapBuffers( gwindow );
+//			glfwPollEvents();
+//
+//			if ( glfwGetKey( gwindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+//			    glfwSetWindowShouldClose( gwindow, GL_TRUE );
+//
+//		}
+//
+//	}
 
 
 	// draws one step of simulation
-	void drawHabitat( ecosystem::Habitat* env, GLuint shaderProg ) {
+	void drawHabitat( GLFWwindow* window, ecosystem::Habitat* env, GLuint shaderProg ) {
 
 
 		// draw
@@ -69,10 +69,10 @@ namespace gx {
 
 		int n_points = env->foodReserve.sum() + env->population.size();
 
-		glDrawArrays( GL_POINTS, 0, n_points );
+		glDrawArrays( GL_LINES, 0, n_points );
 
 		// swap buffers
-		glfwSwapBuffers( gwindow );
+		glfwSwapBuffers( window );
 
 		// here onward does not belong here
 //		while ( !glfwWindowShouldClose( gwindow ) ) {
@@ -86,6 +86,14 @@ namespace gx {
 
 
 
+	GLuint createVertexBufferObject() {
+		GLuint vbo;
+		glGenBuffers( 1, &vbo );
+		return vbo;
+	}
+
+
+
 	GLuint createVertexArrayObject() {
 		GLuint vao;
 		glGenVertexArrays( 1, &vao );
@@ -95,7 +103,7 @@ namespace gx {
 
 
 
-	GLuint loadHabitatIntoBuffer( Habitat* environment ) {
+	void loadHabitatIntoBuffer( Habitat* environment, GLuint vbo ) {
 
 		int n_data_food = environment->foodReserve.sum(),		// foodReserve.sum() works for now, when food is 0 or 1
 			n_data_pop = environment->population.size(),
@@ -141,33 +149,28 @@ namespace gx {
 
 		}
 
-		// create the points buffer
-		GLuint vbo;
-		glGenBuffers( 1, &vbo );
+		// load the points into buffer
 		glBindBuffer( GL_ARRAY_BUFFER, vbo );
 		glBufferData( GL_ARRAY_BUFFER, n_data*5*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
 
 //		// points are loaded, delete the array
 //		delete points_buffer_data;
 
-		// return the buffer address
-		return vbo;
-
 	}
 
 
 
-	int openWindow( int widthPx, int heightPx, std::string title ) {
-		return openWindow( widthPx, heightPx, title.c_str() );
+	GLFWwindow* createWindow( int widthPx, int heightPx, std::string title ) {
+		return createWindow( widthPx, heightPx, title.c_str() );
 	}
 
-	int openWindow( int widthPx, int heightPx, const char* title ) {
+	GLFWwindow* createWindow( int widthPx, int heightPx, const char* title ) {
 
 
 		// initialize glfw first
 		if ( !glfwInit() ) {
 			std::cout << "Failed to initialize GLFW" << std::endl;
-			return -1;
+			return NULL;
 		}
 
 		// set some properties
@@ -179,11 +182,11 @@ namespace gx {
 		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);							// self-explanatory
 
 		// create a window context			the two NULLs are for fullscreen and resource sharing with existing context, respectively
-		gwindow = glfwCreateWindow( widthPx, heightPx, title, NULL, NULL );
+		GLFWwindow* gwindow = glfwCreateWindow( widthPx, heightPx, title, NULL, NULL );
 		if ( gwindow == NULL ){
 			std::cout << "Failed to open a window" << std::endl;
 			glfwTerminate();
-			return -1;
+			return NULL;
 		}
 
 		glfwMakeContextCurrent( gwindow );
@@ -193,48 +196,38 @@ namespace gx {
 		// initialize GLEW
 		if ( glewInit() != GLEW_OK ) {
 			std::cout << "Failed to initialize GLEW" << std::endl;
-			return -1;
+			return NULL;
 		}
 
 
-		return 0;
+		return gwindow;
 
 	}
 
 
 
-	int waitForInput(){
-
-		while ( true ) {
-
-			glfwPollEvents();
-
-			if ( glfwGetKey( gwindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
-				return 1;
-
-			if ( glfwWindowShouldClose( gwindow ) )
-				return 1;
-
-			if ( glfwGetKey( gwindow, GLFW_KEY_ENTER ) == GLFW_PRESS )
-				return 2;
-
-//			if ( glfwWindowShouldClose( gwindow ) || doClose )
-//			{
-//				doClose = false;
+//	int waitForInput(){
+//
+//		while ( true ) {
+//
+//			glfwPollEvents();
+//
+//			if ( glfwGetKey( gwindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
 //				return 1;
-//			}
-//			if ( doProceed ) {
-//				doProceed = false;
+//
+//			if ( glfwWindowShouldClose( gwindow ) )
+//				return 1;
+//
+//			if ( glfwGetKey( gwindow, GLFW_KEY_ENTER ) == GLFW_PRESS )
 //				return 2;
-//			}
-
-		}
-
-	}
-
+//
+//		}
+//
+//	}
 
 
-	int closeWindow() {
+
+	int destroyWindow() {
 		// Close OpenGL window and terminate GLFW
 		glfwTerminate();
 		return 0;
@@ -248,19 +241,14 @@ namespace gx {
 
 
 
-	void enableKeyboard() {
-		glfwSetInputMode( gwindow, GLFW_STICKY_KEYS, GL_TRUE );
-//		glfwSetKeyCallback( gwindow, keyCallback );
+	void enableKeyboard( GLFWwindow* window, GLFWkeyfun keyCallback ) {
+		glfwSetInputMode( window, GLFW_STICKY_KEYS, GL_TRUE );
+		glfwSetKeyCallback( window, keyCallback );
 	}
 
 
 
-	void keyCallback( GLFWwindow* window, int key, int scancode, int action, int mods ) {
-		if ( key == GLFW_KEY_ENTER && action == GLFW_PRESS )
-			doProceed = true;
-		if ( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS )
-			doClose = true;
-	}
+
 
 
 

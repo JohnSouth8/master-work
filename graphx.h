@@ -34,24 +34,25 @@ namespace gx {
 
 
 
-	int openWindow( int, int, const char* );
-	int openWindow( int, int, std::string );
-	int closeWindow( void );
+	GLFWwindow* createWindow( int, int, const char* );
+	GLFWwindow* createWindow( int, int, std::string );
+	int destroyWindow( void );
 
 	GLuint loadShaders( const char*, const char* );
 	GLuint loadShaders( std::string, std::string );
 
+	GLuint createVertexBufferObject( void );
 	GLuint createVertexArrayObject( void );
-	GLuint loadHabitatIntoBuffer( ecosystem::Habitat* );
+
+	void loadHabitatIntoBuffer( ecosystem::Habitat*, GLuint );
 
 	void setBackground( float, float, float, float );
 
-	void enableKeyboard( void );
+	void enableKeyboard( GLFWwindow*, GLFWkeyfun );
 	void drawingLoop();
-	void drawHabitat( ecosystem::Habitat*, GLuint );
+	void drawHabitat( GLFWwindow*, ecosystem::Habitat*, GLuint );
 
 	int waitForInput();
-	void keyCallback( GLFWwindow*, int, int, int, int );
 
 
 

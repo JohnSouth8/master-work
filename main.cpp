@@ -38,11 +38,17 @@ string fname_fcm = "fcm_0.1.txt";
 string fname_test = "test.txt";
 
 
+GLFWwindow* simWindow;
+bool simulationProceed = false;
+
+
+
 int test();
 int fcm_test( Animat* );
 int animat_test( Animat*, Habitat* );
 int test_algebra();
 int test_graphics();
+void keyActions( GLFWwindow*, int, int, int, int );
 
 
 
@@ -72,15 +78,15 @@ int main( void ) {
 
 int test_graphics() {
 
-	gx::openWindow( 800, 600, "testtest" );
+	simWindow = gx::createWindow( 800, 600, "testtest" );
 
 	gx::loadShaders( "shader.vert", "shader.frag" );
 	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
-	gx::enableKeyboard();
+	gx::enableKeyboard( simWindow, keyActions );
 
-	gx::drawingLoop();
+//	gx::drawingLoop();
 
-	gx::closeWindow();
+	gx::destroyWindow();
 
 	return 0;
 }
@@ -136,44 +142,73 @@ int test() {
 
 
 	// initialize graphics output
-	gx::openWindow( 800, 800, "simulation" );
+	simWindow = gx::createWindow( 800, 800, "simulation" );
 	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
-	gx::enableKeyboard();
+	gx::enableKeyboard( simWindow, keyActions );
 
 	// we already have food and animat - lets show them :)
 
 	// load stuff
 	GLuint vao = gx::createVertexArrayObject();
-	GLuint dataBuf = gx::loadHabitatIntoBuffer( &env );
+	GLuint dataBuf = gx::createVertexBufferObject();
+	gx::loadHabitatIntoBuffer( &env, dataBuf );
 	GLuint shaderProg = gx::loadShaders( "shader.vert", "shader.frag" );
 
-	gx::drawHabitat( &env, shaderProg );
+	glEnable( GL_PROGRAM_POINT_SIZE );
 
-	gx::waitForInput();		// todo: fix this
+	gx::drawHabitat( simWindow, &env, shaderProg );
+
+//	gx::waitForInput();		// todo: fix this
 
 	int time_counter = 0;
 
-	// life loop
-	while ( true ) {
+	// drawing loop
+	while ( !glfwWindowShouldClose( simWindow ) ) {
 
-		ani.reason();
+//		ani.reason();
 
-		gx::drawHabitat( &env, shaderProg );
 
-		int inputret = gx::waitForInput();
-		cout << inputret << endl;
+		if ( simulationProceed ){
+			ani.reason();
+			gx::loadHabitatIntoBuffer( &env, dataBuf );
+			++time_counter;
+			cout << "simulation step no" << time_counter << "!" << endl;
+			simulationProceed = false;
+		}
+
+
+
+//		gx::loadHabitatIntoBuffer( &env, dataBuf );
+		gx::drawHabitat( simWindow, &env, shaderProg );
+
+//		int inputret = gx::waitForInput();
+//		cout << inputret << endl;
 
 //		util::printAnimatLocationsToFile( env.population, fname_pop );
 //		util::printSensationsToFile( ani.sensedObjs, fname_sens );
 
-		if ( ani.getEnergy() <= 0 || inputret == 1 )
+		if ( ani.getEnergy() <= 0 )
 			break;
 
-		++time_counter;
+		glfwPollEvents();
+
+		if ( glfwGetKey( simWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+			glfwSetWindowShouldClose( simWindow, GL_TRUE );
+
+		// this is useless... try with key_callbacks
+//		if ( glfwGetKey( simWindow, GLFW_KEY_ENTER ) == GLFW_PRESS ) {
+//			ani.reason();
+//			gx::loadHabitatIntoBuffer( &env, dataBuf );
+//			time_counter++;
+//		}
+
+
+
+//		++time_counter;
 	}
 
 	cout << "The animat survived " << time_counter << " steps of the simulation" << endl;
-//	util::printMatrixToFile( env.getFoodReserve(), fname_food1 );
+	util::printMatrixToFile( env.getFoodReserve(), fname_food1 );
 
 
 
@@ -181,11 +216,17 @@ int test() {
 	glDeleteProgram( shaderProg );
 	glDeleteVertexArrays( 1, &vao );
 
-	gx::closeWindow();
+	gx::destroyWindow();
 
 
 	return 0;
 
+}
+
+
+void keyActions( GLFWwindow* window, int key, int scancode, int action, int mods ) {
+	if ( key == GLFW_KEY_ENTER && action == GLFW_PRESS )
+		simulationProceed = true;
 }
 
 
