@@ -21,7 +21,6 @@ public:
 	FCM( int );
 	virtual ~FCM();
 
-private:
 	// member variables
 	int nConcepts;
 	int nInput;
@@ -37,7 +36,6 @@ private:
 	Eigen::MatrixXd L;
 //	int initialized;
 
-public:
 	// member functions
 //	void setConcepts( std::vector<std::string> );
 	void loadConceptsFromFile( std::string );
@@ -52,6 +50,9 @@ public:
 	int getNInput();
 	int getNInternal();
 	int getNOutput();
+
+	// some fix for some eigen alignment, don't fully understand it: https://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 
 

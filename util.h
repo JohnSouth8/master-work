@@ -29,6 +29,8 @@ namespace util {
 	int getWrappedIndex( int, int );
 	double getWrappedCoordinate( double, int );
 	double getAngleBetween( Eigen::Vector2d, Eigen::Vector2d );
+	int countNonZeroElements( Eigen::MatrixXd );
+	std::vector<float> getColourFromGradient( std::vector<float>, std::vector<float>, float );
 
 	std::string readFileContent( std::string );
 	void cleanFile ( std::string );

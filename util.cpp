@@ -105,6 +105,38 @@ namespace util {
 
 
 
+	int countNonZeroElements( Eigen::MatrixXd mat ) {
+
+		int rows = mat.rows();
+		int cols = mat.cols();
+		int count = 0;
+
+		for ( int i = 0; i < rows; ++i ) {
+			for ( int j = 0; j < cols; ++j ) {
+				if ( mat(i,j) != 0 )
+					++count;
+			}
+		}
+
+		return count;
+
+	}
+
+
+
+	std::vector<float> getColourFromGradient( std::vector<float> minColour, std::vector<float> maxColour, float value ) {
+
+		std::vector<float> outColour(3, 0.0f);
+		for ( int i = 0; i < 3; ++i ){
+			outColour[i] = minColour[i] + value * (maxColour[i] - minColour[i]);
+		}
+
+		return outColour;
+
+	}
+
+
+
 	std::string readFileContent( std::string fname ) {
 
 		std::ifstream inputFile;

@@ -50,8 +50,10 @@ namespace gx {
 
 
 	// draws one step of simulation
-	void drawHabitat( GLFWwindow* window, ecosystem::Habitat* env, GLuint shaderProg ) {
+	void drawHabitat( GLFWwindow* context, ecosystem::Habitat* env, GLuint shaderProg ) {
 
+		// in case it is not so
+		glfwMakeContextCurrent( context );
 
 		// draw
 		glClear( GL_COLOR_BUFFER_BIT );
@@ -69,10 +71,10 @@ namespace gx {
 
 		int n_points = env->foodReserve.sum() + env->population.size();
 
-		glDrawArrays( GL_LINES, 0, n_points );
+		glDrawArrays( GL_POINTS, 0, n_points );
 
 		// swap buffers
-		glfwSwapBuffers( window );
+		glfwSwapBuffers( context );
 
 		// here onward does not belong here
 //		while ( !glfwWindowShouldClose( gwindow ) ) {
@@ -86,7 +88,39 @@ namespace gx {
 
 
 
-	GLuint createVertexBufferObject() {
+	void drawFCM( GLFWwindow* context, ecosystem::Animat* ani, GLuint shaderProg, GLuint posBuffer, GLuint colBuffer ) {
+
+		// in case it is not so
+		glfwMakeContextCurrent( context );
+
+		// draw
+		glClear( GL_COLOR_BUFFER_BIT );
+		glUseProgram( shaderProg );
+
+		// position attributes
+		GLint posAttr = glGetAttribLocation( shaderProg, "position" );
+		glBindBuffer( GL_ARRAY_BUFFER, posBuffer );
+		glEnableVertexAttribArray( posAttr );
+		glVertexAttribPointer( posAttr, 2, GL_FLOAT, GL_FALSE, 0, 0 );
+
+		// color attributes
+		GLint colAttr = glGetAttribLocation( shaderProg, "inColor" );
+		glBindBuffer( GL_ARRAY_BUFFER, colBuffer );
+		glEnableVertexAttribArray( colAttr );
+		glVertexAttribPointer( colAttr, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+
+		int n_points = ani->cognition.nConcepts;
+
+		glDrawArrays( GL_POINTS, 0, n_points );
+
+		// swap buffers
+		glfwSwapBuffers( context );
+
+	}
+
+
+
+	GLuint createVBO() {
 		GLuint vbo;
 		glGenBuffers( 1, &vbo );
 		return vbo;
@@ -94,7 +128,7 @@ namespace gx {
 
 
 
-	GLuint createVertexArrayObject() {
+	GLuint createAndBindVAO() {
 		GLuint vao;
 		glGenVertexArrays( 1, &vao );
 		glBindVertexArray( vao );
@@ -103,7 +137,15 @@ namespace gx {
 
 
 
-	void loadHabitatIntoBuffer( Habitat* environment, GLuint vbo ) {
+	void bindVAO( GLuint vao ) {
+		glBindVertexArray( vao );
+	}
+
+
+
+	void loadHabitatIntoBuffer( Habitat* environment, GLuint vao, GLuint vbo ) {
+
+		glBindVertexArray( vao );
 
 		int n_data_food = environment->foodReserve.sum(),		// foodReserve.sum() works for now, when food is 0 or 1
 			n_data_pop = environment->population.size(),
@@ -153,10 +195,119 @@ namespace gx {
 		glBindBuffer( GL_ARRAY_BUFFER, vbo );
 		glBufferData( GL_ARRAY_BUFFER, n_data*5*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
 
-//		// points are loaded, delete the array
-//		delete points_buffer_data;
+		// enable gl_PointSize in the shader
+		glEnable( GL_PROGRAM_POINT_SIZE );
 
 	}
+
+
+
+	void loadFCMIntoBuffer( ecosystem::Animat* ani, GLuint vao, GLuint vbo_pos, GLuint vbo_col ) {
+
+		glBindVertexArray( vao );
+
+		int n_in = ani->cognition.nInput,
+			n_int = ani->cognition.nInternal,
+			n_out = ani->cognition.nOutput,
+//			n_links = util::countNonZeroElements( ani->cognition.L ),
+			n_data = (n_in + n_int + n_out) * 2,
+			n_colours = (n_in + n_int + n_out) * 3,
+			counter = 0;
+
+		Eigen::VectorXd state = ani->cognition.state;
+		std::vector<float> colour0 (3, 0.0f);
+		std::vector<float> colour1 (3, 0.0f);
+		std::vector<float> gradColour;
+		colour0[2] = 1.0f;
+		colour1[1] = 0.0f;
+
+		static GLfloat points_buffer_data[1000];
+		static GLfloat colours_buffer_data[1000];
+
+		// create a triangle
+//		GLfloat triangle_vertices[] = {
+//				-0.1f, -0.1f,
+//				0.1f, -0.1f,
+//				0.0f, 0.14f
+//		};
+
+		// input concepts
+		float x_cur = -0.5f;
+		float y_step = 2.0f/float(n_in + 1);
+		float y_cur;
+
+		for ( int i = 0; i < n_in; ++i ) {
+
+			y_cur = -1 + (i+1)*y_step;
+			gradColour = util::getColourFromGradient( colour0, colour1, ani->cognition.state(counter) );
+
+			// vertex 1 position
+			points_buffer_data[counter*2 + 0] = x_cur;
+			points_buffer_data[counter*2 + 1] = y_cur;
+
+			// vertex 1 color
+			colours_buffer_data[counter*3 + 0] = gradColour[0];
+			colours_buffer_data[counter*3 + 1] = gradColour[1];
+			colours_buffer_data[counter*3 + 2] = gradColour[2];
+
+			++counter;
+
+		}
+
+		// internal concepts
+		x_cur = 0.0f;
+		y_step = 2.0f/float(n_int + 1);
+		for ( int i = 0; i < n_int; ++i ) {
+
+			y_cur = -1 + (i+1)*y_step;
+			gradColour = util::getColourFromGradient( colour0, colour1, state(counter) );
+
+			// vertex 1
+			points_buffer_data[counter*2 + 0] = x_cur;
+			points_buffer_data[counter*2 + 1] = y_cur;
+
+
+			// vertex 1 color
+			colours_buffer_data[counter*3 + 0] = gradColour[0];
+			colours_buffer_data[counter*3 + 1] = gradColour[1];
+			colours_buffer_data[counter*3 + 2] = gradColour[2];
+
+			++counter;
+
+		}
+
+		// output concepts
+		x_cur = 0.5f;
+		y_step = 2.0f/float(n_out + 1);
+		for ( int i = 0; i < n_out; ++i ) {
+
+			y_cur = -1 + (i+1)*y_step;
+			gradColour = util::getColourFromGradient( colour0, colour1, state(counter) );
+
+			// vertex 1
+			points_buffer_data[counter*2 + 0] = x_cur;
+			points_buffer_data[counter*2 + 1] = y_cur;
+
+
+			// vertex 1 color
+			colours_buffer_data[counter*3 + 0] = gradColour[0];
+			colours_buffer_data[counter*3 + 1] = gradColour[1];
+			colours_buffer_data[counter*3 + 2] = gradColour[2];
+
+			++counter;
+
+		}
+
+		// load data points into position buffer
+		glBindBuffer( GL_ARRAY_BUFFER, vbo_pos );
+		glBufferData( GL_ARRAY_BUFFER, n_data*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
+
+		// load colours data into colour buffer
+		glBindBuffer( GL_ARRAY_BUFFER, vbo_col );
+		glBufferData( GL_ARRAY_BUFFER, n_colours*sizeof(float), colours_buffer_data, GL_STATIC_DRAW );
+
+	}
+
 
 
 
@@ -166,20 +317,13 @@ namespace gx {
 
 	GLFWwindow* createWindow( int widthPx, int heightPx, const char* title ) {
 
-
-		// initialize glfw first
-		if ( !glfwInit() ) {
-			std::cout << "Failed to initialize GLFW" << std::endl;
-			return NULL;
-		}
-
 		// set some properties
 //		glfwWindowHint( GLFW_SAMPLES, 4 );									// anti-aliasing
 		glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );					// ogl version n1
 		glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );					// ogl version n2
 		glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );	// only the new style opengl
 		glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
-		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);							// self-explanatory
+		glfwWindowHint( GLFW_RESIZABLE, GL_FALSE );							// self-explanatory
 
 		// create a window context			the two NULLs are for fullscreen and resource sharing with existing context, respectively
 		GLFWwindow* gwindow = glfwCreateWindow( widthPx, heightPx, title, NULL, NULL );
@@ -191,9 +335,8 @@ namespace gx {
 
 		glfwMakeContextCurrent( gwindow );
 
-
-		glewExperimental=true;				// something to do with experimental extensions, better keep to it on (supposedly)
 		// initialize GLEW
+		glewExperimental = true;				// something to do with experimental extensions, better keep to it on (supposedly)
 		if ( glewInit() != GLEW_OK ) {
 			std::cout << "Failed to initialize GLEW" << std::endl;
 			return NULL;
@@ -241,7 +384,7 @@ namespace gx {
 
 
 
-	void enableKeyboard( GLFWwindow* window, GLFWkeyfun keyCallback ) {
+	void setupKeyboard( GLFWwindow* window, GLFWkeyfun keyCallback ) {
 		glfwSetInputMode( window, GLFW_STICKY_KEYS, GL_TRUE );
 		glfwSetKeyCallback( window, keyCallback );
 	}

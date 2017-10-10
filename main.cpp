@@ -39,6 +39,7 @@ string fname_test = "test.txt";
 
 
 GLFWwindow* simWindow;
+GLFWwindow* fcmWindow;
 bool simulationProceed = false;
 
 
@@ -82,7 +83,7 @@ int test_graphics() {
 
 	gx::loadShaders( "shader.vert", "shader.frag" );
 	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
-	gx::enableKeyboard( simWindow, keyActions );
+	gx::setupKeyboard( simWindow, keyActions );
 
 //	gx::drawingLoop();
 
@@ -141,46 +142,77 @@ int test() {
 	// TODO: sort out smooth operation and visual debugging with switches and stuff
 
 
-	// initialize graphics output
+	// initialize graphics output for simulation
+	// initialize glfw first
+	if ( !glfwInit() ) {
+		std::cout << "Failed to initialize GLFW" << std::endl;
+		return -1;
+	}
 	simWindow = gx::createWindow( 800, 800, "simulation" );
+
+
 	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
-	gx::enableKeyboard( simWindow, keyActions );
+	gx::setupKeyboard( simWindow, keyActions );
 
 	// we already have food and animat - lets show them :)
 
 	// load stuff
-	GLuint vao = gx::createVertexArrayObject();
-	GLuint dataBuf = gx::createVertexBufferObject();
-	gx::loadHabitatIntoBuffer( &env, dataBuf );
+	GLuint vaoEnv = gx::createAndBindVAO();
+	GLuint dataBufEnv = gx::createVBO();
 	GLuint shaderProg = gx::loadShaders( "shader.vert", "shader.frag" );
-
-	glEnable( GL_PROGRAM_POINT_SIZE );
-
+	gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
 	gx::drawHabitat( simWindow, &env, shaderProg );
 
-//	gx::waitForInput();		// todo: fix this
+
+	// create new window for fcm
+	fcmWindow = gx::createWindow( 400, 400, "fcm visualisation" );
+	GLuint vaoFCM = gx::createAndBindVAO();
+	GLuint dataBufFCM = gx::createVBO();
+	GLuint colourBufFCM = gx::createVBO();
+	gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, colourBufFCM );
+	gx::drawFCM( fcmWindow, &ani, shaderProg, dataBufFCM, colourBufFCM );
+
+
+	glfwMakeContextCurrent( simWindow );
 
 	int time_counter = 0;
 
 	// drawing loop
-	while ( !glfwWindowShouldClose( simWindow ) ) {
+	while ( !glfwWindowShouldClose( simWindow ) && !glfwWindowShouldClose( fcmWindow ) ) {
 
 //		ani.reason();
 
 
 		if ( simulationProceed ){
+
 			ani.reason();
-			gx::loadHabitatIntoBuffer( &env, dataBuf );
+
+			// upload habitat data
+			glfwMakeContextCurrent( simWindow );
+			gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
+
+			// upload fcm data
+			glfwMakeContextCurrent( fcmWindow );
+			gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, colourBufFCM );
+
 			++time_counter;
 			cout << "simulation step no" << time_counter << "!" << endl;
 			simulationProceed = false;
+
 		}
 
 
 
 //		gx::loadHabitatIntoBuffer( &env, dataBuf );
+		glfwMakeContextCurrent( simWindow );
+		gx::bindVAO( vaoEnv );
 		gx::drawHabitat( simWindow, &env, shaderProg );
 
+		glfwMakeContextCurrent( fcmWindow );
+		gx::bindVAO( vaoFCM );
+		gx::drawFCM( fcmWindow, &ani, shaderProg, dataBufFCM, colourBufFCM );
+
+		glfwMakeContextCurrent( simWindow );
 //		int inputret = gx::waitForInput();
 //		cout << inputret << endl;
 
@@ -212,9 +244,12 @@ int test() {
 
 
 
-	glDeleteBuffers( 1, &dataBuf );
+	glDeleteBuffers( 1, &dataBufEnv );
+	glDeleteBuffers( 1, &dataBufFCM );
+	glDeleteBuffers( 1, &colourBufFCM );
 	glDeleteProgram( shaderProg );
-	glDeleteVertexArrays( 1, &vao );
+	glDeleteVertexArrays( 1, &vaoEnv );
+	glDeleteVertexArrays( 1, &vaoFCM );
 
 	gx::destroyWindow();
 

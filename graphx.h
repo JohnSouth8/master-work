@@ -41,16 +41,19 @@ namespace gx {
 	GLuint loadShaders( const char*, const char* );
 	GLuint loadShaders( std::string, std::string );
 
-	GLuint createVertexBufferObject( void );
-	GLuint createVertexArrayObject( void );
+	GLuint createVBO( void );
+	GLuint createAndBindVAO( void );
+	void bindVAO( GLuint );
 
-	void loadHabitatIntoBuffer( ecosystem::Habitat*, GLuint );
+	void loadHabitatIntoBuffer( ecosystem::Habitat*, GLuint, GLuint );
+	void loadFCMIntoBuffer( ecosystem::Animat*, GLuint, GLuint, GLuint );
 
 	void setBackground( float, float, float, float );
+	void setupKeyboard( GLFWwindow*, GLFWkeyfun );
 
-	void enableKeyboard( GLFWwindow*, GLFWkeyfun );
 	void drawingLoop();
 	void drawHabitat( GLFWwindow*, ecosystem::Habitat*, GLuint );
+	void drawFCM( GLFWwindow*, ecosystem::Animat*, GLuint, GLuint, GLuint );
 
 	int waitForInput();
 
