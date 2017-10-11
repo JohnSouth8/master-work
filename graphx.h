@@ -45,6 +45,8 @@ namespace gx {
 	GLuint createAndBindVAO( void );
 	void bindVAO( GLuint );
 
+	int switchContextToWindow( GLFWwindow* );
+
 	void loadHabitatIntoBuffer( ecosystem::Habitat*, GLuint, GLuint );
 	void loadFCMIntoBuffer( ecosystem::Animat*, GLuint, GLuint, GLuint );
 

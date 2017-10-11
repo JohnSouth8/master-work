@@ -149,31 +149,35 @@ int test() {
 		return -1;
 	}
 	simWindow = gx::createWindow( 800, 800, "simulation" );
+//	fcmWindow = gx::createWindow( 400, 400, "fcm visualisation" );
 
 
 	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
 	gx::setupKeyboard( simWindow, keyActions );
+//	gx::setupKeyboard( fcmWindow, keyActions );
 
 	// we already have food and animat - lets show them :)
 
 	// load stuff
 	GLuint vaoEnv = gx::createAndBindVAO();
 	GLuint dataBufEnv = gx::createVBO();
-	GLuint shaderProg = gx::loadShaders( "shader.vert", "shader.frag" );
+	GLuint shaderProg1 = gx::loadShaders( "shader.vert", "shader.frag" );
 	gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
-	gx::drawHabitat( simWindow, &env, shaderProg );
+	gx::drawHabitat( simWindow, &env, shaderProg1 );
 
 
 	// create new window for fcm
 	fcmWindow = gx::createWindow( 400, 400, "fcm visualisation" );
+	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
 	GLuint vaoFCM = gx::createAndBindVAO();
 	GLuint dataBufFCM = gx::createVBO();
 	GLuint colourBufFCM = gx::createVBO();
+	GLuint shaderProg2 = gx::loadShaders( "shader.vert", "shader.frag" );
 	gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, colourBufFCM );
-	gx::drawFCM( fcmWindow, &ani, shaderProg, dataBufFCM, colourBufFCM );
+	gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, colourBufFCM );
 
 
-	glfwMakeContextCurrent( simWindow );
+//	glfwMakeContextCurrent( simWindow );
 
 	int time_counter = 0;
 
@@ -202,17 +206,16 @@ int test() {
 		}
 
 
-
-//		gx::loadHabitatIntoBuffer( &env, dataBuf );
 		glfwMakeContextCurrent( simWindow );
-		gx::bindVAO( vaoEnv );
-		gx::drawHabitat( simWindow, &env, shaderProg );
+//		gx::bindVAO( vaoEnv );
+		gx::drawHabitat( simWindow, &env, shaderProg1 );
 
 		glfwMakeContextCurrent( fcmWindow );
-		gx::bindVAO( vaoFCM );
-		gx::drawFCM( fcmWindow, &ani, shaderProg, dataBufFCM, colourBufFCM );
+//		gx::bindVAO( vaoFCM );
+		gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, colourBufFCM );
 
-		glfwMakeContextCurrent( simWindow );
+//		glfwMakeContextCurrent( simWindow );
+//		gx::switchContextToWindow( simWindow );
 //		int inputret = gx::waitForInput();
 //		cout << inputret << endl;
 
@@ -227,12 +230,8 @@ int test() {
 		if ( glfwGetKey( simWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
 			glfwSetWindowShouldClose( simWindow, GL_TRUE );
 
-		// this is useless... try with key_callbacks
-//		if ( glfwGetKey( simWindow, GLFW_KEY_ENTER ) == GLFW_PRESS ) {
-//			ani.reason();
-//			gx::loadHabitatIntoBuffer( &env, dataBuf );
-//			time_counter++;
-//		}
+		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
 
 
 
@@ -247,7 +246,7 @@ int test() {
 	glDeleteBuffers( 1, &dataBufEnv );
 	glDeleteBuffers( 1, &dataBufFCM );
 	glDeleteBuffers( 1, &colourBufFCM );
-	glDeleteProgram( shaderProg );
+	glDeleteProgram( shaderProg1 );
 	glDeleteVertexArrays( 1, &vaoEnv );
 	glDeleteVertexArrays( 1, &vaoFCM );
 

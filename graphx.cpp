@@ -53,7 +53,10 @@ namespace gx {
 	void drawHabitat( GLFWwindow* context, ecosystem::Habitat* env, GLuint shaderProg ) {
 
 		// in case it is not so
-		glfwMakeContextCurrent( context );
+		if ( gx::switchContextToWindow( context ) != 0 ) {
+			glfwWindowShouldClose( context );
+			return;
+		}
 
 		// draw
 		glClear( GL_COLOR_BUFFER_BIT );
@@ -91,7 +94,10 @@ namespace gx {
 	void drawFCM( GLFWwindow* context, ecosystem::Animat* ani, GLuint shaderProg, GLuint posBuffer, GLuint colBuffer ) {
 
 		// in case it is not so
-		glfwMakeContextCurrent( context );
+		if ( gx::switchContextToWindow( context ) != 0 ) {
+			glfwWindowShouldClose( context );
+			return;
+		}
 
 		// draw
 		glClear( GL_COLOR_BUFFER_BIT );
@@ -219,7 +225,7 @@ namespace gx {
 		std::vector<float> colour1 (3, 0.0f);
 		std::vector<float> gradColour;
 		colour0[2] = 1.0f;
-		colour1[1] = 0.0f;
+		colour1[0] = 1.0f;
 
 		static GLfloat points_buffer_data[1000];
 		static GLfloat colours_buffer_data[1000];
@@ -306,6 +312,9 @@ namespace gx {
 		glBindBuffer( GL_ARRAY_BUFFER, vbo_col );
 		glBufferData( GL_ARRAY_BUFFER, n_colours*sizeof(float), colours_buffer_data, GL_STATIC_DRAW );
 
+		// enable gl_PointSize in the shader
+		glEnable( GL_PROGRAM_POINT_SIZE );
+
 	}
 
 
@@ -344,6 +353,23 @@ namespace gx {
 
 
 		return gwindow;
+
+	}
+
+
+
+	int switchContextToWindow( GLFWwindow* window ){
+
+		glfwMakeContextCurrent( window );
+
+		// initialize GLEW
+		glewExperimental = true;
+		if ( glewInit() != GLEW_OK ) {
+			std::cout << "Failed to initialize GLEW" << std::endl;
+			return -1;
+		}
+
+		return 0;
 
 	}
 
