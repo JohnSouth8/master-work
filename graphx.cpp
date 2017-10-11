@@ -53,10 +53,7 @@ namespace gx {
 	void drawHabitat( GLFWwindow* context, ecosystem::Habitat* env, GLuint shaderProg ) {
 
 		// in case it is not so
-		if ( gx::switchContextToWindow( context ) != 0 ) {
-			glfwWindowShouldClose( context );
-			return;
-		}
+		glfwMakeContextCurrent( context );
 
 		// draw
 		glClear( GL_COLOR_BUFFER_BIT );
@@ -91,29 +88,26 @@ namespace gx {
 
 
 
-	void drawFCM( GLFWwindow* context, ecosystem::Animat* ani, GLuint shaderProg, GLuint posBuffer, GLuint colBuffer ) {
+	void drawFCM( GLFWwindow* context, ecosystem::Animat* ani, GLuint shaderProg, GLuint posBuffer, GLuint linBuffer ) {
 
 		// in case it is not so
-		if ( gx::switchContextToWindow( context ) != 0 ) {
-			glfwWindowShouldClose( context );
-			return;
-		}
+		glfwMakeContextCurrent( context );
 
 		// draw
 		glClear( GL_COLOR_BUFFER_BIT );
 		glUseProgram( shaderProg );
 
+		glBindBuffer( GL_ARRAY_BUFFER, posBuffer );
+
 		// position attributes
 		GLint posAttr = glGetAttribLocation( shaderProg, "position" );
-		glBindBuffer( GL_ARRAY_BUFFER, posBuffer );
 		glEnableVertexAttribArray( posAttr );
-		glVertexAttribPointer( posAttr, 2, GL_FLOAT, GL_FALSE, 0, 0 );
+		glVertexAttribPointer( posAttr, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), 0 );
 
 		// color attributes
 		GLint colAttr = glGetAttribLocation( shaderProg, "inColor" );
-		glBindBuffer( GL_ARRAY_BUFFER, colBuffer );
 		glEnableVertexAttribArray( colAttr );
-		glVertexAttribPointer( colAttr, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+		glVertexAttribPointer( colAttr, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)) );
 
 		int n_points = ani->cognition.nConcepts;
 
@@ -208,19 +202,21 @@ namespace gx {
 
 
 
-	void loadFCMIntoBuffer( ecosystem::Animat* ani, GLuint vao, GLuint vbo_pos, GLuint vbo_col ) {
+	void loadFCMIntoBuffer( ecosystem::Animat* ani, GLuint vao, GLuint vbo_pos, GLuint vbo_lin ) {
 
 		glBindVertexArray( vao );
 
-		int n_in = ani->cognition.nInput,
-			n_int = ani->cognition.nInternal,
-			n_out = ani->cognition.nOutput,
-//			n_links = util::countNonZeroElements( ani->cognition.L ),
-			n_data = (n_in + n_int + n_out) * 2,
-			n_colours = (n_in + n_int + n_out) * 3,
-			counter = 0;
+		int n_concepts = ani->cognition.nConcepts;
+		int n_conceptsInLayer[3] = {ani->cognition.nInput, ani->cognition.nInternal, ani->cognition.nOutput};
+		int n_data = n_concepts * 5;
+		int n_lines = util::countNonZeroElements( ani->cognition.L ) * 2;
+		int i_concept = 0;
+		int i_link = 0;
 
 		Eigen::VectorXd state = ani->cognition.state;
+		Eigen::MatrixXd l_mat = ani->cognition.L;
+
+		// colours
 		std::vector<float> colour0 (3, 0.0f);
 		std::vector<float> colour1 (3, 0.0f);
 		std::vector<float> gradColour;
@@ -228,79 +224,49 @@ namespace gx {
 		colour1[0] = 1.0f;
 
 		static GLfloat points_buffer_data[1000];
-		static GLfloat colours_buffer_data[1000];
+		static GLfloat lines_buffer_data[1000];
 
-		// create a triangle
-//		GLfloat triangle_vertices[] = {
-//				-0.1f, -0.1f,
-//				0.1f, -0.1f,
-//				0.0f, 0.14f
-//		};
+		int n_cur;
+		float c_x_pos[3] = {-0.5f, 0.0f, 0.5f};
+		float x_cur, y_step, y_cur, x_end, y_end;
 
-		// input concepts
-		float x_cur = -0.5f;
-		float y_step = 2.0f/float(n_in + 1);
-		float y_cur;
+		for ( int i = 0; i < 3; ++i ){
 
-		for ( int i = 0; i < n_in; ++i ) {
+			n_cur = n_conceptsInLayer[i];
+			x_cur = c_x_pos[i];
+			y_step = 2.0f/float(n_cur + 1);
 
-			y_cur = -1 + (i+1)*y_step;
-			gradColour = util::getColourFromGradient( colour0, colour1, ani->cognition.state(counter) );
+			for ( int j = 0; j < n_cur; ++j ) {
 
-			// vertex 1 position
-			points_buffer_data[counter*2 + 0] = x_cur;
-			points_buffer_data[counter*2 + 1] = y_cur;
+				y_cur = 1 - (j+1)*y_step;
+				gradColour = util::getColourFromGradient( colour0, colour1, state(i_concept) );
 
-			// vertex 1 color
-			colours_buffer_data[counter*3 + 0] = gradColour[0];
-			colours_buffer_data[counter*3 + 1] = gradColour[1];
-			colours_buffer_data[counter*3 + 2] = gradColour[2];
+				// concept vertex data
+				points_buffer_data[i_concept*5 + 0] = x_cur;
+				points_buffer_data[i_concept*5 + 1] = y_cur;
+				points_buffer_data[i_concept*5 + 2] = gradColour[0];
+				points_buffer_data[i_concept*5 + 3] = gradColour[1];
+				points_buffer_data[i_concept*5 + 4] = gradColour[2];
 
-			++counter;
+				++i_concept;
 
-		}
+				// concepts connection lines
+				for ( int k = 0; k < n_concepts; ++k ) {
 
-		// internal concepts
-		x_cur = 0.0f;
-		y_step = 2.0f/float(n_int + 1);
-		for ( int i = 0; i < n_int; ++i ) {
+					if ( l_mat(i_concept, k) != 0 ) {
 
-			y_cur = -1 + (i+1)*y_step;
-			gradColour = util::getColourFromGradient( colour0, colour1, state(counter) );
+						// find where exactly is the ending node... How?!
 
-			// vertex 1
-			points_buffer_data[counter*2 + 0] = x_cur;
-			points_buffer_data[counter*2 + 1] = y_cur;
+						lines_buffer_data[i_link*4 + 0] = x_cur;
+						lines_buffer_data[i_link*4 + 1] = y_cur;
 
+						++i_link;
 
-			// vertex 1 color
-			colours_buffer_data[counter*3 + 0] = gradColour[0];
-			colours_buffer_data[counter*3 + 1] = gradColour[1];
-			colours_buffer_data[counter*3 + 2] = gradColour[2];
+					}
 
-			++counter;
+				}
 
-		}
-
-		// output concepts
-		x_cur = 0.5f;
-		y_step = 2.0f/float(n_out + 1);
-		for ( int i = 0; i < n_out; ++i ) {
-
-			y_cur = -1 + (i+1)*y_step;
-			gradColour = util::getColourFromGradient( colour0, colour1, state(counter) );
-
-			// vertex 1
-			points_buffer_data[counter*2 + 0] = x_cur;
-			points_buffer_data[counter*2 + 1] = y_cur;
-
-
-			// vertex 1 color
-			colours_buffer_data[counter*3 + 0] = gradColour[0];
-			colours_buffer_data[counter*3 + 1] = gradColour[1];
-			colours_buffer_data[counter*3 + 2] = gradColour[2];
-
-			++counter;
+			}
 
 		}
 
@@ -309,8 +275,8 @@ namespace gx {
 		glBufferData( GL_ARRAY_BUFFER, n_data*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
 
 		// load colours data into colour buffer
-		glBindBuffer( GL_ARRAY_BUFFER, vbo_col );
-		glBufferData( GL_ARRAY_BUFFER, n_colours*sizeof(float), colours_buffer_data, GL_STATIC_DRAW );
+//		glBindBuffer( GL_ARRAY_BUFFER, vbo_lin );
+//		glBufferData( GL_ARRAY_BUFFER, n_lines*sizeof(float), lines_buffer_data, GL_STATIC_DRAW );
 
 		// enable gl_PointSize in the shader
 		glEnable( GL_PROGRAM_POINT_SIZE );
@@ -436,7 +402,7 @@ namespace gx {
 		glCompileShader( vertexShader );
 
 		GLint status;
-		glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
+		glGetShaderiv( vertexShader, GL_COMPILE_STATUS, &status );
 		if ( status != GL_TRUE ) {
 			std::cout << "Vertex shader compilation failed!" << std::endl;
 			return 0;
@@ -448,7 +414,7 @@ namespace gx {
 		glShaderSource( fragmentShader, 1, &fragmentShaderSrc, NULL );
 		glCompileShader( fragmentShader );
 
-		glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &status);
+		glGetShaderiv( fragmentShader, GL_COMPILE_STATUS, &status );
 		if ( status != GL_TRUE ) {
 			std::cout << "Fragment shader compilation failed!" << std::endl;
 			return 0;
@@ -461,6 +427,13 @@ namespace gx {
 
 		// link the program
 		glLinkProgram( shaderProgram );
+
+		// check if link successful
+		glGetProgramiv( shaderProgram, GL_LINK_STATUS, &status );
+		if ( status != GL_TRUE ) {
+			std::cout << "Shader program linking failed!" << std::endl;
+			return 0;
+		}
 
 		// the shader objects are linked into the program and thus not needed anymore
 		glDetachShader( shaderProgram, vertexShader );

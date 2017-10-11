@@ -137,8 +137,6 @@ int test() {
 
 
 
-
-
 	// TODO: sort out smooth operation and visual debugging with switches and stuff
 
 
@@ -168,13 +166,13 @@ int test() {
 
 	// create new window for fcm
 	fcmWindow = gx::createWindow( 400, 400, "fcm visualisation" );
-	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
+	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
 	GLuint vaoFCM = gx::createAndBindVAO();
 	GLuint dataBufFCM = gx::createVBO();
-	GLuint colourBufFCM = gx::createVBO();
+	GLuint linesBufFCM = gx::createVBO();
 	GLuint shaderProg2 = gx::loadShaders( "shader.vert", "shader.frag" );
-	gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, colourBufFCM );
-	gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, colourBufFCM );
+	gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
+	gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, linesBufFCM );
 
 
 //	glfwMakeContextCurrent( simWindow );
@@ -197,7 +195,7 @@ int test() {
 
 			// upload fcm data
 			glfwMakeContextCurrent( fcmWindow );
-			gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, colourBufFCM );
+			gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
 
 			++time_counter;
 			cout << "simulation step no" << time_counter << "!" << endl;
@@ -207,12 +205,10 @@ int test() {
 
 
 		glfwMakeContextCurrent( simWindow );
-//		gx::bindVAO( vaoEnv );
 		gx::drawHabitat( simWindow, &env, shaderProg1 );
 
 		glfwMakeContextCurrent( fcmWindow );
-//		gx::bindVAO( vaoFCM );
-		gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, colourBufFCM );
+		gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, linesBufFCM );
 
 //		glfwMakeContextCurrent( simWindow );
 //		gx::switchContextToWindow( simWindow );
@@ -245,8 +241,9 @@ int test() {
 
 	glDeleteBuffers( 1, &dataBufEnv );
 	glDeleteBuffers( 1, &dataBufFCM );
-	glDeleteBuffers( 1, &colourBufFCM );
+	glDeleteBuffers( 1, &linesBufFCM );
 	glDeleteProgram( shaderProg1 );
+	glDeleteProgram( shaderProg2 );
 	glDeleteVertexArrays( 1, &vaoEnv );
 	glDeleteVertexArrays( 1, &vaoFCM );
 

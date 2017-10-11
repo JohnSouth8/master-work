@@ -24,12 +24,17 @@ namespace util {
 
 	Eigen::VectorXd sigmoid( Eigen::VectorXd );
 	Eigen::VectorXd tanh( Eigen::VectorXd );
+
 	int randIntFrom( int, int );
 	double randFromUnitInterval();
+
 	int getWrappedIndex( int, int );
 	double getWrappedCoordinate( double, int );
+
 	double getAngleBetween( Eigen::Vector2d, Eigen::Vector2d );
+
 	int countNonZeroElements( Eigen::MatrixXd );
+
 	std::vector<float> getColourFromGradient( std::vector<float>, std::vector<float>, float );
 
 	std::string readFileContent( std::string );
