@@ -198,7 +198,8 @@ int test() {
 			gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
 
 			++time_counter;
-			cout << "simulation step no" << time_counter << "!" << endl;
+//			cout << "simulation step no" << time_counter << "!" << endl;
+			cout << "current animat direction " << ani.direction << endl;
 			simulationProceed = false;
 
 		}

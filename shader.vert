@@ -1,8 +1,8 @@
 #version 330 core
 
 // inputs
-layout(location = 0) in vec2 position;
-layout(location = 1) in vec3 inColor;
+in vec2 position;
+in vec3 inColor;
 
 out vec3 fragColor;
 

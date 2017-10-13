@@ -136,10 +136,9 @@ int Animat::eat() {
 
 	int indexX = floor( posX );
 	int indexY = floor( posY );
-	int deltaE;
 
 	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
-		deltaE = environment->consumeFood( indexX, indexY );
+		int deltaE = environment->consumeFood( indexX, indexY );
 		energy += deltaE;
 		return deltaE;
 	}
@@ -171,18 +170,17 @@ void Animat::sense_analytic() {
 	int x_min = std::floor( posX - senseRadius );
 	int y_min = std::floor( posY - senseRadius );
 
-	int ix, iy;
-	double dist, reach = pow( senseRadius, 2 );
+	double reach = pow( senseRadius, 2 );
 	// TODO: do this with an Eigen block, not looping
 	for ( int x = x_min; x <= x_max; ++x ) {
 		for ( int y = y_min; y <= y_max; ++y ) {
 
 			// correct indices for env's out of bounds
-			ix = util::getWrappedIndex( x, env_x );
-			iy = util::getWrappedIndex( y, env_y );
+			int ix = util::getWrappedIndex( x, env_x );
+			int iy = util::getWrappedIndex( y, env_y );
 
 			if ( foods(ix, iy) != 0 ) {
-				dist = pow( (x - posX), 2 ) + pow( (y - posY), 2 );
+				double dist = pow( (x - posX), 2 ) + pow( (y - posY), 2 );
 				if ( dist <= reach ) {
 					addSensedObject( {
 							ix,
@@ -285,13 +283,12 @@ void Animat::react( VectorXd motor ) {
 	}
 
 	// only one turn action at a time: 		<< TODO: maybe both? opposing forces, ya'know....
-	double ta;
 	if ( motor(0) > motor(1) && motor(0) > 0.25 ) {
-		ta = (motor(0) - 0.25) / 0.75;
+		double ta = (motor(0) - 0.25) / 0.75;
 		turn( ta );
 	}
 	else if ( motor(1) > motor(0) && motor(1) > 0.25 ) {
-		ta = (motor(1) - 0.25) / 0.75;
+		double ta = (motor(1) - 0.25) / 0.75;
 		turn( -ta );
 	}
 

@@ -97,7 +97,9 @@ namespace gx {
 		glClear( GL_COLOR_BUFFER_BIT );
 		glUseProgram( shaderProg );
 
-		glBindBuffer( GL_ARRAY_BUFFER, posBuffer );
+
+		// first draw the links
+		glBindBuffer( GL_ARRAY_BUFFER, linBuffer );
 
 		// position attributes
 		GLint posAttr = glGetAttribLocation( shaderProg, "position" );
@@ -107,6 +109,20 @@ namespace gx {
 		// color attributes
 		GLint colAttr = glGetAttribLocation( shaderProg, "inColor" );
 		glEnableVertexAttribArray( colAttr );
+		glVertexAttribPointer( colAttr, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)) );
+
+		int n_line_v = util::countNonZeroElements( ani->cognition.L ) * 2;
+
+		glDrawArrays( GL_LINES, 0, n_line_v );
+
+
+		// now draw the concepts
+		glBindBuffer( GL_ARRAY_BUFFER, posBuffer );
+
+		// position attributes
+		glVertexAttribPointer( posAttr, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), 0 );
+
+		// color attributes
 		glVertexAttribPointer( colAttr, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)) );
 
 		int n_points = ani->cognition.nConcepts;
@@ -208,8 +224,10 @@ namespace gx {
 
 		int n_concepts = ani->cognition.nConcepts;
 		int n_conceptsInLayer[3] = {ani->cognition.nInput, ani->cognition.nInternal, ani->cognition.nOutput};
-		int n_data = n_concepts * 5;
-		int n_lines = util::countNonZeroElements( ani->cognition.L ) * 2;
+		std::vector<int> concepts_layers[3] = {ani->cognition.inputConcepts, ani->cognition.internalConcepts, ani->cognition.outputConcepts};
+
+		int n_point_data = n_concepts * 5;
+		int n_line_data = util::countNonZeroElements( ani->cognition.L ) * 10;		// 2 vertices per line
 		int i_concept = 0;
 		int i_link = 0;
 
@@ -219,27 +237,28 @@ namespace gx {
 		// colours
 		std::vector<float> colour0 (3, 0.0f);
 		std::vector<float> colour1 (3, 0.0f);
-		std::vector<float> gradColour;
 		colour0[2] = 1.0f;
 		colour1[0] = 1.0f;
 
 		static GLfloat points_buffer_data[1000];
-		static GLfloat lines_buffer_data[1000];
+		static GLfloat lines_buffer_data[2000];
 
-		int n_cur;
+		// concept related vars
 		float c_x_pos[3] = {-0.5f, 0.0f, 0.5f};
-		float x_cur, y_step, y_cur, x_end, y_end;
 
-		for ( int i = 0; i < 3; ++i ){
+		// line ending related vars
 
-			n_cur = n_conceptsInLayer[i];
-			x_cur = c_x_pos[i];
-			y_step = 2.0f/float(n_cur + 1);
+
+		for ( int i = 0; i < 3; ++i ) {
+
+			int n_cur = n_conceptsInLayer[i];
+			float x_cur = c_x_pos[i];
+			float y_step = 2.0f/float(n_cur + 1);
 
 			for ( int j = 0; j < n_cur; ++j ) {
 
-				y_cur = 1 - (j+1)*y_step;
-				gradColour = util::getColourFromGradient( colour0, colour1, state(i_concept) );
+				float y_cur = 1 - (j+1)*y_step;
+				std::vector<float> gradColour = util::getColourFromGradient( colour0, colour1, state(i_concept) );
 
 				// concept vertex data
 				points_buffer_data[i_concept*5 + 0] = x_cur;
@@ -248,17 +267,64 @@ namespace gx {
 				points_buffer_data[i_concept*5 + 3] = gradColour[1];
 				points_buffer_data[i_concept*5 + 4] = gradColour[2];
 
-				++i_concept;
-
 				// concepts connection lines
 				for ( int k = 0; k < n_concepts; ++k ) {
 
 					if ( l_mat(i_concept, k) != 0 ) {
 
-						// find where exactly is the ending node... How?!
+						int end_layer = -1, i_in_end_layer = -1;
+						std::vector<int> current_layer;
+						std::vector<int>::iterator it;
+						// find where exactly is the ending node...
+						for ( int l = 0; l < 3; l++ ) {
 
-						lines_buffer_data[i_link*4 + 0] = x_cur;
-						lines_buffer_data[i_link*4 + 1] = y_cur;
+							current_layer = concepts_layers[l];
+							it = std::find( current_layer.begin(), current_layer.end(), k );
+
+							if ( it != current_layer.end() ) {
+								end_layer = l;
+								i_in_end_layer = it-current_layer.begin();
+								break;
+							}
+
+						}
+
+						if ( end_layer < 0 || i_in_end_layer < 0 )
+							// there was some kind of error, what to do?
+							continue;
+
+
+						// line start
+						lines_buffer_data[i_link*10 + 0] = x_cur;
+						lines_buffer_data[i_link*10 + 1] = y_cur;
+						if ( l_mat(i_concept, k) < 0 ) {
+							lines_buffer_data[i_link*10 + 2] = 1.0;
+							lines_buffer_data[i_link*10 + 3] = 0.0;
+							lines_buffer_data[i_link*10 + 4] = 0.0;
+						}
+						else {
+							lines_buffer_data[i_link*10 + 2] = 0.0;
+							lines_buffer_data[i_link*10 + 3] = 1.0;
+							lines_buffer_data[i_link*10 + 4] = 0.0;
+						}
+
+						// line end
+						float x_end = c_x_pos[end_layer];
+						float y_end_step = 2.0f/float(n_conceptsInLayer[end_layer] + 1);
+						float y_end = 1 - (i_in_end_layer+1)*y_end_step;
+
+						lines_buffer_data[i_link*10 + 5] = x_end;
+						lines_buffer_data[i_link*10 + 6] = y_end;
+						if ( l_mat(i_concept, k) < 0 ) {
+							lines_buffer_data[i_link*10 + 7] = 1.0;
+							lines_buffer_data[i_link*10 + 8] = 0.0;
+							lines_buffer_data[i_link*10 + 9] = 0.0;
+						}
+						else {
+							lines_buffer_data[i_link*10 + 7] = 0.0;
+							lines_buffer_data[i_link*10 + 8] = 1.0;
+							lines_buffer_data[i_link*10 + 9] = 0.0;
+						}
 
 						++i_link;
 
@@ -266,17 +332,19 @@ namespace gx {
 
 				}
 
+				++i_concept;
+
 			}
 
 		}
 
 		// load data points into position buffer
 		glBindBuffer( GL_ARRAY_BUFFER, vbo_pos );
-		glBufferData( GL_ARRAY_BUFFER, n_data*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
+		glBufferData( GL_ARRAY_BUFFER, n_point_data*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
 
 		// load colours data into colour buffer
-//		glBindBuffer( GL_ARRAY_BUFFER, vbo_lin );
-//		glBufferData( GL_ARRAY_BUFFER, n_lines*sizeof(float), lines_buffer_data, GL_STATIC_DRAW );
+		glBindBuffer( GL_ARRAY_BUFFER, vbo_lin );
+		glBufferData( GL_ARRAY_BUFFER, n_line_data*sizeof(float), lines_buffer_data, GL_STATIC_DRAW );
 
 		// enable gl_PointSize in the shader
 		glEnable( GL_PROGRAM_POINT_SIZE );
