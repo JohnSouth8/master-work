@@ -36,7 +36,7 @@ Animat::Animat() {
 }
 
 // TODO: think about initializer lists
-Animat::Animat( double px, double py, double v, double maxV, double dir, int e, double senseR, double senseA, Habitat* hab ) {
+Animat::Animat( double px, double py, double v, double maxV, double dir, int e, double senseR, double senseA, double rch, Habitat* hab ) {
 
 	name = generateName();
 	posX = px;
@@ -48,6 +48,7 @@ Animat::Animat( double px, double py, double v, double maxV, double dir, int e, 
 	maxEnergy = e;	// TODO: sort out
 	senseRadius = senseR;
 	senseAngle = senseA;
+	reach = rch;
 	environment = hab;
 
 }
@@ -86,7 +87,7 @@ int Animat::getEnergy() {		// TODO maxEnergy attribute
 
 
 
-void Animat::changeVelocity( double factor ) {
+void Animat::adjustVelocity( double factor ) {
 
 	if ( velocity == 0)
 		velocity += factor*maxVelocity;
@@ -148,6 +149,19 @@ int Animat::eat() {
 }
 
 
+int Animat::eat( int indexX, int indexY ) {
+
+	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
+		int deltaE = environment->consumeFood( indexX, indexY );
+		energy += deltaE;
+		return deltaE;
+	}
+
+	return 0;
+
+}
+
+
 void Animat::turn( double rads ) {
 
 	direction += rads;
@@ -193,55 +207,58 @@ void Animat::sense_analytic() {
 		}
 	}
 
-}
-
-
-
-void Animat::sense() {
-
-	forgetSensedObjects();
-	sense_analytic();
-
-	// plan to reach the closest food target
-	std::vector<f_sens>::iterator it;
-	int index = -1, counter = 0;
-	double min_dist = environment->sizeX*10; // definitely farther than any point on map
-
-	for ( it=sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
-		if ( it->d < min_dist ) {
-			index = counter;
-			min_dist = it->d;
-		}
-		++counter;
-	}
-
-	if ( index == -1 )
-		min_dist = senseRadius;
-
-	Eigen::Vector2d v( cos( direction ), sin( direction ) );
-	Eigen::Vector2d g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
-	double dAngle = util::getAngleBetween( v, g );
-
-//	sensations(0) = 1 - 2*min_dist/senseRadius;
-	if ( velocity == 0 )
-		sensations(0) = 0; // TODO should be 1 when on a cell containing food
-	else {
-		double dv = min_dist / velocity;
-		if ( dv > 2*maxVelocity )
-			sensations(0) = -1;
-		else
-			sensations(0) = 1 - 2 * (dv / (2 * maxVelocity));
-	}
-
-	if ( dAngle > 0 )
-		sensations(1) = dAngle / M_PI;
-
-	if ( dAngle < 0 )
-		sensations(2) = -dAngle / M_PI;
-
-	sensations(3) = -1 + 2.0*energy / maxEnergy;
+	std::sort( sensedObjs.begin(), sensedObjs.end(), util::compareFoodSensations );
 
 }
+
+
+// for FCM version 0.1
+//void Animat::sense() {
+//
+//	forgetSensedObjects();
+//	sense_analytic();
+//
+//	// plan to reach the closest food target
+//	std::vector<f_sens>::iterator it;
+//	int index = -1, counter = 0;
+//	double min_dist = environment->sizeX*10; // definitely farther than any point on map
+//
+//	for ( it=sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
+//		if ( it->d < min_dist ) {
+//			index = counter;
+//			min_dist = it->d;
+//		}
+//		++counter;
+//	}
+//
+//	if ( index == -1 )
+//		min_dist = senseRadius;
+//
+//	Eigen::Vector2d v( cos( direction ), sin( direction ) );
+//	Eigen::Vector2d g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
+//	double dAngle = util::getAngleBetween( v, g );
+//
+//	// TODO: these things should be in own functions for clarity and documentation
+////	sensations(0) = 1 - 2*min_dist/senseRadius;
+//	if ( velocity == 0 )
+//		sensations(0) = 0; // TODO should be 1 when on a cell containing food
+//	else {
+//		double dv = min_dist / velocity;
+//		if ( dv > 2*maxVelocity )
+//			sensations(0) = -1;
+//		else
+//			sensations(0) = 1 - 2 * (dv / (2 * maxVelocity));
+//	}
+//
+//	if ( dAngle > 0 )
+//		sensations(1) = dAngle / M_PI;
+//
+//	if ( dAngle < 0 )
+//		sensations(2) = -dAngle / M_PI;
+//
+//	sensations(3) = -1 + 2.0*energy / maxEnergy;
+//
+//}
 
 
 
@@ -267,51 +284,161 @@ void Animat::reason() {
 
 
 
+void Animat::sense() {
+
+	forgetSensedObjects();
+	sense_analytic();
+
+	// plan to reach the closest food target
+//	std::vector<f_sens>::iterator it;
+//	int index = -1, counter = 0;
+//	double min_dist = environment->sizeX*10; // definitely farther than any point on map
+
+//	for ( it=sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
+//		if ( it->d < min_dist ) {
+//			index = counter;
+//			min_dist = it->d;
+//		}
+//		++counter;
+//	}
+//
+//	if ( index == -1 )
+//		min_dist = senseRadius;
+
+	double min_dist = senseRadius;
+	double dAngle = util::randFromUnitInterval() - 0.5;		// if no food, angle is random somewhere ahead
+	if ( sensedObjs.size() > 0 ) {
+		min_dist = sensedObjs[0].d;
+		Eigen::Vector2d v( cos( direction ), sin( direction ) );
+		Eigen::Vector2d g( sensedObjs[0].x - posX, sensedObjs[0].y - posY );
+		dAngle = util::getAngleBetween( v, g );
+	}
+
+
+	// sensations
+	// s0 fInReach
+	// s1 fClose
+	// s2 fLeft
+	// s3 fRight
+	// s4 fForward
+	// s5 speed
+
+
+	// TODO: these things should be in own functions for clarity and documentation
+//	sensations(0) = 1 - 2*min_dist/senseRadius;
+
+	if ( min_dist <= reach )
+		sensations(0) = 1;
+	else
+		sensations(0) = -1;
+
+	double dv = min_dist / velocity;
+	if ( dv > 3*maxVelocity )
+		sensations(1) = -1;
+	else
+		sensations(1) = 1 - 2 * (dv / (3 * maxVelocity));
+
+
+	if ( dAngle > 0 )
+		sensations(2) = dAngle / M_PI;
+
+	if ( dAngle < 0 )
+		sensations(3) = -dAngle / M_PI;
+
+//	sensations(3) = -1 + 2.0*energy / maxEnergy;
+
+	if ( dAngle < 0.05 )
+		sensations(4) = 1;
+	else
+		sensations(4) = 0;
+
+	// speed
+	double speed = -1 + 2 * ( velocity / maxVelocity );
+	sensations(5) = speed;
+
+}
+
+
+
+// for FCM v0.2
 void Animat::react( VectorXd motor ) {
 
 	// defuzzify motor concepts' commands and apply them to the world
 
-//	m0 turnLeft
-//	m1 turnRight
-//	m2 slowDown
-//	m3 speedUp
-//	m4 eat
+//	m0 eat
+//	m1 turnLeft
+//	m2 turnRight
+//	m3 adjustVelocity
 
-	if ( motor(4) > 0.8 ) {
+	if ( motor(0) > 0.5 ) {
 		// if eat action is successful (some energy is gained), the animat can no longer act
-		if ( eat() != 0 ) return;
+		if ( sensedObjs.size() > 0 && eat( sensedObjs[0].x, sensedObjs[0].y ) != 0 ) return;
 	}
 
 	// only one turn action at a time: 		<< TODO: maybe both? opposing forces, ya'know....
-	if ( motor(0) > motor(1) && motor(0) > 0.25 ) {
-		double ta = (motor(0) - 0.25) / 0.75;
+	if ( motor(1) > motor(2) && motor(1) > 0.25 ) {
+		double ta = (motor(1) - 0.25) / 0.75;
 		turn( ta );
 	}
-	else if ( motor(1) > motor(0) && motor(1) > 0.25 ) {
-		double ta = (motor(1) - 0.25) / 0.75;
+	else if ( motor(2) > motor(1) && motor(2) > 0.25 ) {
+		double ta = (motor(2) - 0.25) / 0.75;
 		turn( -ta );
 	}
 
 	// speed change
-	double dvf = 0.0;
-	if ( motor(2) > 0.25 && motor(2) <= 0.75 ) {
-		dvf -= (motor(2) - 0.25) / 0.5;
-	}
-	else if ( motor(2) > 0.75 ){
-		dvf -= 1;
-	}
-
-	if ( motor(3) > 0.25 && motor(3) <= 0.75 ) {
-		dvf += (motor(3) - 0.25) / 0.5;
-	}
-	else if ( motor(3) > 0.75 ) {
-		dvf += 1;
-	}
-	changeVelocity( dvf );
+	adjustVelocity( motor(3) );
 
 	move();
 
 }
+
+
+// for FCM v0.1
+//void Animat::react( VectorXd motor ) {
+//
+//	// defuzzify motor concepts' commands and apply them to the world
+//
+////	m0 turnLeft
+////	m1 turnRight
+////	m2 slowDown
+////	m3 speedUp
+////	m4 eat
+//
+//	if ( motor(4) > 0.8 ) {
+//		// if eat action is successful (some energy is gained), the animat can no longer act
+//		if ( eat() != 0 ) return;
+//	}
+//
+//	// only one turn action at a time: 		<< TODO: maybe both? opposing forces, ya'know....
+//	if ( motor(0) > motor(1) && motor(0) > 0.25 ) {
+//		double ta = (motor(0) - 0.25) / 0.75;
+//		turn( ta );
+//	}
+//	else if ( motor(1) > motor(0) && motor(1) > 0.25 ) {
+//		double ta = (motor(1) - 0.25) / 0.75;
+//		turn( -ta );
+//	}
+//
+//	// speed change
+//	double dvf = 0.0;
+//	if ( motor(2) > 0.25 && motor(2) <= 0.75 ) {
+//		dvf -= (motor(2) - 0.25) / 0.5;
+//	}
+//	else if ( motor(2) > 0.75 ){
+//		dvf -= 1;
+//	}
+//
+//	if ( motor(3) > 0.25 && motor(3) <= 0.75 ) {
+//		dvf += (motor(3) - 0.25) / 0.5;
+//	}
+//	else if ( motor(3) > 0.75 ) {
+//		dvf += 1;
+//	}
+//	changeVelocity( dvf );
+//
+//	move();
+//
+//}
 
 
 

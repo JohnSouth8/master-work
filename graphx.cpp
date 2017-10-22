@@ -444,13 +444,16 @@ namespace gx {
 
 
 
-	void setupKeyboard( GLFWwindow* window, GLFWkeyfun keyCallback ) {
+	void setupKeyboard( GLFWwindow* window ) {
 		glfwSetInputMode( window, GLFW_STICKY_KEYS, GL_TRUE );
-		glfwSetKeyCallback( window, keyCallback );
 	}
 
 
 
+	void setupKeyboard( GLFWwindow* window, GLFWkeyfun keyCallback ) {
+		glfwSetInputMode( window, GLFW_STICKY_KEYS, GL_TRUE );
+		glfwSetKeyCallback( window, keyCallback );
+	}
 
 
 

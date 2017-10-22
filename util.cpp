@@ -137,6 +137,12 @@ namespace util {
 
 
 
+	bool compareFoodSensations( ecosystem::f_sens arg1, ecosystem::f_sens arg2 ) {
+		return arg1.d < arg2.d;
+	}
+
+
+
 	std::string readFileContent( std::string fname ) {
 
 		std::ifstream inputFile;

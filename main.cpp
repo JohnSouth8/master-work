@@ -33,8 +33,8 @@ string fname_food1 = "foodReserve1.txt";
 string fname_pop = "population.txt";
 string fname_sens = "sensations.txt";
 
-string fname_fcm_cs = "fcm_0.1.concepts.txt";
-string fname_fcm = "fcm_0.1.txt";
+string fname_fcm_cs = "fcm_0.2.concepts.txt";
+string fname_fcm = "fcm_0.2.txt";
 string fname_test = "test.txt";
 
 
@@ -98,10 +98,10 @@ int test() {
 
 	// TODO: sort out smooth operation and visual debugging with switches and stuff --!! maybe with config files??
 
-	int sx = 100;
-	int sy = 100;
-	int foodEnergy = 5;
-	double density = 0.01;
+	int sx = 250;
+	int sy = 250;
+	int foodEnergy = 10;
+	double density = 0.005;
 
 	Habitat env ( sx, sy, foodEnergy, density );
 	util::printMatrixToFile( env.getFoodReserve(), fname_food0 );
@@ -120,19 +120,20 @@ int test() {
 			0, 			// velocity
 			3,			// max velocity
 			randdir, 	// direction
-			50, 		// energy
-			12, 		// vision range
+			250, 		// energy
+			15, 		// vision range
 			2*M_PI, 	// vision angle  TODO: implement it's usage
+			2.0,		// reach
 			&env		// world pointer
 	);
 
 	ani.toString();
 	env.birth( &ani );
 
-	util::printAnimatLocationsToFile( env.population, fname_pop );
+//	util::printAnimatLocationsToFile( env.population, fname_pop );
 
 
-	int nConcepts = 9;
+	int nConcepts = 10;
 	ani.initFCM( nConcepts, fname_fcm_cs, fname_fcm );
 
 
@@ -147,14 +148,9 @@ int test() {
 		return -1;
 	}
 	simWindow = gx::createWindow( 800, 800, "simulation" );
-//	fcmWindow = gx::createWindow( 400, 400, "fcm visualisation" );
-
-
 	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
-	gx::setupKeyboard( simWindow, keyActions );
-//	gx::setupKeyboard( fcmWindow, keyActions );
-
-	// we already have food and animat - lets show them :)
+//	gx::setupKeyboard( simWindow, keyActions );
+	gx::setupKeyboard( simWindow );
 
 	// load stuff
 	GLuint vaoEnv = gx::createAndBindVAO();
@@ -166,7 +162,8 @@ int test() {
 
 	// create new window for fcm
 	fcmWindow = gx::createWindow( 400, 400, "fcm visualisation" );
-	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
+	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
+	// load stuff
 	GLuint vaoFCM = gx::createAndBindVAO();
 	GLuint dataBufFCM = gx::createVBO();
 	GLuint linesBufFCM = gx::createVBO();
@@ -185,7 +182,7 @@ int test() {
 //		ani.reason();
 
 
-		if ( simulationProceed ){
+//		if ( simulationProceed ){
 
 			ani.reason();
 
@@ -199,10 +196,10 @@ int test() {
 
 			++time_counter;
 //			cout << "simulation step no" << time_counter << "!" << endl;
-			cout << "current animat direction " << ani.direction << endl;
+//			cout << "current animat direction " << ani.direction << endl;
 			simulationProceed = false;
 
-		}
+//		}
 
 
 		glfwMakeContextCurrent( simWindow );
@@ -210,11 +207,6 @@ int test() {
 
 		glfwMakeContextCurrent( fcmWindow );
 		gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, linesBufFCM );
-
-//		glfwMakeContextCurrent( simWindow );
-//		gx::switchContextToWindow( simWindow );
-//		int inputret = gx::waitForInput();
-//		cout << inputret << endl;
 
 //		util::printAnimatLocationsToFile( env.population, fname_pop );
 //		util::printSensationsToFile( ani.sensedObjs, fname_sens );
@@ -230,9 +222,9 @@ int test() {
 		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
 			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
 
+		usleep( 400000 );
 
 
-//		++time_counter;
 	}
 
 	cout << "The animat survived " << time_counter << " steps of the simulation" << endl;

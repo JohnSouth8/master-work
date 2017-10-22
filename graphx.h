@@ -51,6 +51,7 @@ namespace gx {
 	void loadFCMIntoBuffer( ecosystem::Animat*, GLuint, GLuint, GLuint );
 
 	void setBackground( float, float, float, float );
+	void setupKeyboard( GLFWwindow* );
 	void setupKeyboard( GLFWwindow*, GLFWkeyfun );
 
 	void drawingLoop();

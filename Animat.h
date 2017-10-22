@@ -26,7 +26,7 @@ public:
 
 	// constructors
 	Animat();
-	Animat( double, double, double, double, double, int, double, double, Habitat* );
+	Animat( double, double, double, double, double, int, double, double, double, Habitat* );
 	virtual ~Animat();
 
 	// member vars
@@ -40,6 +40,7 @@ public:
 	int maxEnergy;
 	double senseAngle;
 	double senseRadius;
+	double reach;
 	std::vector<f_sens> sensedObjs;
 	Eigen::VectorXd sensations;
 	FCM cognition;
@@ -51,6 +52,7 @@ public:
 
 	// life functions
 	int eat();
+	int eat( int, int );
 	void sense();
 	void sense_analytic();
 	void calculateDecision();
@@ -59,7 +61,7 @@ public:
 
 	// movement functions
 	void changeVelocityAbsolute( double );
-	void changeVelocity( double );
+	void adjustVelocity( double );
 	void setVelocity( double );
 	void move();
 	void turn( double );
