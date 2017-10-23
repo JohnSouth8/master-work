@@ -9,6 +9,7 @@
 #include "graphx.h"
 
 #include <iostream>
+#include <iterator>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -71,6 +72,8 @@ namespace gx {
 
 		int n_points = env->foodReserve.sum() + env->population.size();
 
+		glPointSize( 5.0f );
+
 		glDrawArrays( GL_POINTS, 0, n_points );
 
 		// swap buffers
@@ -113,6 +116,7 @@ namespace gx {
 
 		int n_line_v = util::countNonZeroElements( ani->cognition.L ) * 2;
 
+		glLineWidth( 80.0f );
 		glDrawArrays( GL_LINES, 0, n_line_v );
 
 
@@ -127,6 +131,7 @@ namespace gx {
 
 		int n_points = ani->cognition.nConcepts;
 
+		glPointSize( 20.0f );
 		glDrawArrays( GL_POINTS, 0, n_points );
 
 		// swap buffers
@@ -207,12 +212,24 @@ namespace gx {
 
 		}
 
+		// mark also closest food
+		for (  it = environment->population.begin(); it != environment->population.end(); ++it ) {
+			if ( it->second->sensedObjs.size() > 0 ) {
+
+				points_buffer_data[counter*5 + 0] = float( 2.0f * it->second->sensedObjs[0].x / float(env_w) - 1 );		// X
+				points_buffer_data[counter*5 + 1] = float( 2.0f * it->second->sensedObjs[0].y / float(env_h) - 1 );		// Y
+				points_buffer_data[counter*5 + 2] = 1.0f;																// R
+				points_buffer_data[counter*5 + 3] = 1.0f;																// G
+				points_buffer_data[counter*5 + 4] = 0.0f;																// B
+
+				++counter;
+
+			}
+		}
+
 		// load the points into buffer
 		glBindBuffer( GL_ARRAY_BUFFER, vbo );
-		glBufferData( GL_ARRAY_BUFFER, n_data*5*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
-
-		// enable gl_PointSize in the shader
-		glEnable( GL_PROGRAM_POINT_SIZE );
+		glBufferData( GL_ARRAY_BUFFER, counter*5*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
 
 	}
 
@@ -235,10 +252,11 @@ namespace gx {
 		Eigen::MatrixXd l_mat = ani->cognition.L;
 
 		// colours
-		std::vector<float> colour0 (3, 0.0f);
-		std::vector<float> colour1 (3, 0.0f);
-		colour0[2] = 1.0f;
-		colour1[0] = 1.0f;
+		std::vector<float> colour_n1 (3, 0.0f);
+		std::vector<float> colour_0 (3, 0.0f);
+		std::vector<float> colour_p1 (3, 0.0f);
+		colour_n1[2] = 1.0f;
+		colour_p1[0] = 1.0f;
 
 		static GLfloat points_buffer_data[1000];
 		static GLfloat lines_buffer_data[2000];
@@ -258,7 +276,12 @@ namespace gx {
 			for ( int j = 0; j < n_cur; ++j ) {
 
 				float y_cur = 1 - (j+1)*y_step;
-				std::vector<float> gradColour = util::getColourFromGradient( colour0, colour1, state(i_concept) );
+				float s_val = state(i_concept);
+				std::vector<float> gradColour( 3, 0.0f );
+				if ( s_val < 0 )
+					gradColour = util::getColourFromGradient( colour_0, colour_n1, -s_val );
+				else
+					gradColour = util::getColourFromGradient( colour_0, colour_p1, s_val );
 
 				// concept vertex data
 				points_buffer_data[i_concept*5 + 0] = x_cur;
@@ -346,9 +369,6 @@ namespace gx {
 		glBindBuffer( GL_ARRAY_BUFFER, vbo_lin );
 		glBufferData( GL_ARRAY_BUFFER, n_line_data*sizeof(float), lines_buffer_data, GL_STATIC_DRAW );
 
-		// enable gl_PointSize in the shader
-		glEnable( GL_PROGRAM_POINT_SIZE );
-
 	}
 
 
@@ -409,27 +429,6 @@ namespace gx {
 
 
 
-//	int waitForInput(){
-//
-//		while ( true ) {
-//
-//			glfwPollEvents();
-//
-//			if ( glfwGetKey( gwindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
-//				return 1;
-//
-//			if ( glfwWindowShouldClose( gwindow ) )
-//				return 1;
-//
-//			if ( glfwGetKey( gwindow, GLFW_KEY_ENTER ) == GLFW_PRESS )
-//				return 2;
-//
-//		}
-//
-//	}
-
-
-
 	int destroyWindow() {
 		// Close OpenGL window and terminate GLFW
 		glfwTerminate();
@@ -467,7 +466,8 @@ namespace gx {
 	GLuint loadShaders( const char* vertexShaderFile, const char* fragmentShaderFile ) {
 
 		// load and compile vertex shader
-		const char* vertexShaderSrc = util::readFileContent( vertexShaderFile ).c_str();
+		std::string vertexShaderSrcString = util::readFileContent( vertexShaderFile );
+		const char* vertexShaderSrc = vertexShaderSrcString.c_str();
 		GLuint vertexShader = glCreateShader( GL_VERTEX_SHADER );
 		glShaderSource( vertexShader, 1, &vertexShaderSrc, NULL );
 		glCompileShader( vertexShader );
@@ -476,11 +476,27 @@ namespace gx {
 		glGetShaderiv( vertexShader, GL_COMPILE_STATUS, &status );
 		if ( status != GL_TRUE ) {
 			std::cout << "Vertex shader compilation failed!" << std::endl;
+
+			GLint maxLength = 0;
+			glGetShaderiv( vertexShader, GL_INFO_LOG_LENGTH, &maxLength );
+
+			// The maxLength includes the NULL character
+			std::vector<GLchar> errorLog( maxLength );
+			glGetShaderInfoLog( vertexShader, maxLength, &maxLength, &errorLog[0] );
+			std::copy( errorLog.begin(), errorLog.end(), std::ostream_iterator<GLchar>( std::cout, "" ) );
+			std::cout << std::endl;
+
+			std::cout << vertexShaderSrc << std::endl << "###" << std::endl;
+			std::cout << vertexShaderSrcString << std::endl;
+
+			// Exit with failure.
+			glDeleteShader( vertexShader ); // Don't leak the shader.
 			return 0;
 		}
 
 		// load and compile fragment shader
-		const char* fragmentShaderSrc = util::readFileContent( fragmentShaderFile ).c_str();
+		std::string fragmentShaderSrcString = util::readFileContent( fragmentShaderFile );
+		const char* fragmentShaderSrc = fragmentShaderSrcString.c_str();
 		GLuint fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
 		glShaderSource( fragmentShader, 1, &fragmentShaderSrc, NULL );
 		glCompileShader( fragmentShader );
@@ -488,6 +504,21 @@ namespace gx {
 		glGetShaderiv( fragmentShader, GL_COMPILE_STATUS, &status );
 		if ( status != GL_TRUE ) {
 			std::cout << "Fragment shader compilation failed!" << std::endl;
+
+			GLint maxLength = 0;
+			glGetShaderiv( fragmentShader, GL_INFO_LOG_LENGTH, &maxLength );
+
+			// The maxLength includes the NULL character
+			std::vector<GLchar> errorLog( maxLength );
+			glGetShaderInfoLog( fragmentShader, maxLength, &maxLength, &errorLog[0] );
+			std::copy( errorLog.begin(), errorLog.end(), std::ostream_iterator<GLchar>( std::cout, "" ) );
+			std::cout << std::endl;
+
+			std::cout << fragmentShaderSrc << std::endl << "###" << std::endl;
+			std::cout << fragmentShaderSrcString << std::endl;
+
+			// Exit with failure.
+			glDeleteShader( fragmentShader ); // Don't leak the shader.
 			return 0;
 		}
 

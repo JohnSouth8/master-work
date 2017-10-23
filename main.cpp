@@ -144,18 +144,18 @@ int test() {
 	// initialize graphics output for simulation
 	// initialize glfw first
 	if ( !glfwInit() ) {
-		std::cout << "Failed to initialize GLFW" << std::endl;
+		std::cout << "Failed to initialise GLFW" << std::endl;
 		return -1;
 	}
 	simWindow = gx::createWindow( 800, 800, "simulation" );
 	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
-//	gx::setupKeyboard( simWindow, keyActions );
-	gx::setupKeyboard( simWindow );
+	gx::setupKeyboard( simWindow, keyActions );
+//	gx::setupKeyboard( simWindow );
 
 	// load stuff
 	GLuint vaoEnv = gx::createAndBindVAO();
 	GLuint dataBufEnv = gx::createVBO();
-	GLuint shaderProg1 = gx::loadShaders( "shader.vert", "shader.frag" );
+	GLuint shaderProg1 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
 	gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
 	gx::drawHabitat( simWindow, &env, shaderProg1 );
 
@@ -167,7 +167,7 @@ int test() {
 	GLuint vaoFCM = gx::createAndBindVAO();
 	GLuint dataBufFCM = gx::createVBO();
 	GLuint linesBufFCM = gx::createVBO();
-	GLuint shaderProg2 = gx::loadShaders( "shader.vert", "shader.frag" );
+	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
 	gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
 	gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, linesBufFCM );
 
@@ -182,7 +182,7 @@ int test() {
 //		ani.reason();
 
 
-//		if ( simulationProceed ){
+		if ( simulationProceed ){
 
 			ani.reason();
 
@@ -199,7 +199,7 @@ int test() {
 //			cout << "current animat direction " << ani.direction << endl;
 			simulationProceed = false;
 
-//		}
+		}
 
 
 		glfwMakeContextCurrent( simWindow );
@@ -222,7 +222,7 @@ int test() {
 		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
 			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
 
-		usleep( 400000 );
+//		usleep( 400000 );
 
 
 	}

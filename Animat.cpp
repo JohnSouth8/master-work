@@ -305,13 +305,26 @@ void Animat::sense() {
 //	if ( index == -1 )
 //		min_dist = senseRadius;
 
+	bool isFood = false;
 	double min_dist = senseRadius;
 	double dAngle = util::randFromUnitInterval() - 0.5;		// if no food, angle is random somewhere ahead
 	if ( sensedObjs.size() > 0 ) {
+
 		min_dist = sensedObjs[0].d;
+
+		// unit vector in animat's direction
 		Eigen::Vector2d v( cos( direction ), sin( direction ) );
-		Eigen::Vector2d g( sensedObjs[0].x - posX, sensedObjs[0].y - posY );
+
+		double dX = sensedObjs[0].x - posX;
+		double dY = sensedObjs[0].y - posY;
+
+		// if food is over the edge // TODO!!
+
+		Eigen::Vector2d g( dX, dY );
 		dAngle = util::getAngleBetween( v, g );
+		isFood = true;
+
+		std::cout << "closest food distance: " << min_dist << ", delta angle: " << dAngle << std::endl;
 	}
 
 
@@ -330,7 +343,7 @@ void Animat::sense() {
 	if ( min_dist <= reach )
 		sensations(0) = 1;
 	else
-		sensations(0) = -1;
+		sensations(0) = 0;
 
 	double dv = min_dist / velocity;
 	if ( dv > 3*maxVelocity )
@@ -341,13 +354,17 @@ void Animat::sense() {
 
 	if ( dAngle > 0 )
 		sensations(2) = dAngle / M_PI;
+	else
+		sensations(2) = 0;
 
 	if ( dAngle < 0 )
 		sensations(3) = -dAngle / M_PI;
+	else
+		sensations(3) = 0;
 
 //	sensations(3) = -1 + 2.0*energy / maxEnergy;
 
-	if ( dAngle < 0.05 )
+	if ( isFood && abs( dAngle ) < 0.05 )
 		sensations(4) = 1;
 	else
 		sensations(4) = 0;
@@ -372,16 +389,16 @@ void Animat::react( VectorXd motor ) {
 
 	if ( motor(0) > 0.5 ) {
 		// if eat action is successful (some energy is gained), the animat can no longer act
-		if ( sensedObjs.size() > 0 && eat( sensedObjs[0].x, sensedObjs[0].y ) != 0 ) return;
+		if ( sensedObjs.size() > 0 && sensedObjs[0].d <= reach && eat( sensedObjs[0].x, sensedObjs[0].y ) != 0 ) return;
 	}
 
 	// only one turn action at a time: 		<< TODO: maybe both? opposing forces, ya'know....
-	if ( motor(1) > motor(2) && motor(1) > 0.25 ) {
-		double ta = (motor(1) - 0.25) / 0.75;
+	if ( motor(1) > motor(2) && motor(1) > 0.15 ) {
+		double ta = (motor(1) - 0.15) / 0.75;
 		turn( ta );
 	}
-	else if ( motor(2) > motor(1) && motor(2) > 0.25 ) {
-		double ta = (motor(2) - 0.25) / 0.75;
+	else if ( motor(2) > motor(1) && motor(2) > 0.15 ) {
+		double ta = (motor(2) - 0.15) / 0.75;
 		turn( -ta );
 	}
 
