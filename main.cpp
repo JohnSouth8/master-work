@@ -149,8 +149,8 @@ int test() {
 	}
 	simWindow = gx::createWindow( 800, 800, "simulation" );
 	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
-	gx::setupKeyboard( simWindow, keyActions );
-//	gx::setupKeyboard( simWindow );
+//	gx::setupKeyboard( simWindow, keyActions );
+	gx::setupKeyboard( simWindow );
 
 	// load stuff
 	GLuint vaoEnv = gx::createAndBindVAO();
@@ -182,7 +182,7 @@ int test() {
 //		ani.reason();
 
 
-		if ( simulationProceed ){
+//		if ( simulationProceed ){
 
 			ani.reason();
 
@@ -199,7 +199,7 @@ int test() {
 //			cout << "current animat direction " << ani.direction << endl;
 			simulationProceed = false;
 
-		}
+//		}
 
 
 		glfwMakeContextCurrent( simWindow );
@@ -222,7 +222,7 @@ int test() {
 		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
 			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
 
-//		usleep( 400000 );
+		usleep( 50000 );
 
 
 	}

@@ -165,7 +165,12 @@ int Animat::eat( int indexX, int indexY ) {
 void Animat::turn( double rads ) {
 
 	direction += rads;
-	direction = fmod( direction, M_PI );
+	direction = fmod( direction, 2*M_PI );
+	// when angles exceed +- PI, they should be mirrored across the x-axis
+	if ( direction > M_PI )
+		direction = -2*M_PI - direction;
+	if ( direction < -M_PI )
+		direction = 2*M_PI + direction;
 
 }
 
@@ -311,20 +316,45 @@ void Animat::sense() {
 	if ( sensedObjs.size() > 0 ) {
 
 		min_dist = sensedObjs[0].d;
+		int foodX = sensedObjs[0].x;
+		int foodY = sensedObjs[0].y;
+
+		double dX = foodX - posX;
+		double dY = foodY - posY;
+
+		// if food is over the edge
+		if ( dX > senseRadius ) {
+			if ( foodX > posX )
+				dX = foodX - (posX + environment->getXSize());
+			else
+				dX = (foodX + environment->getXSize()) - posX;
+		}
+		if ( dY > senseRadius ) {
+			if ( foodY > posY )
+				dY = foodY - (posY + environment->getYSize());
+			else
+				dY = (foodY + environment->getYSize()) - posY;
+		}
 
 		// unit vector in animat's direction
 		Eigen::Vector2d v( cos( direction ), sin( direction ) );
-
-		double dX = sensedObjs[0].x - posX;
-		double dY = sensedObjs[0].y - posY;
-
-		// if food is over the edge // TODO!!
-
+		// vector from animat to food
 		Eigen::Vector2d g( dX, dY );
+
 		dAngle = util::getAngleBetween( v, g );
+		// when angles are more or less to the left of the vertical, atan2 returns large values which
+		//  lead to turning in the wrong direction (over the x-axis at 0rad) rather than shorter turns
+		//  (over the x-axis at PIrad), thus those values are added to the opposite-signed full circle
+		if ( dAngle > M_PI )
+			dAngle = -2*M_PI + dAngle;
+		if ( dAngle < -M_PI )
+			dAngle = 2*M_PI + dAngle;
+
 		isFood = true;
 
-		std::cout << "closest food distance: " << min_dist << ", delta angle: " << dAngle << std::endl;
+//		std::cout << "closest food distance: " << min_dist << ", delta angle: " << dAngle << std::endl;
+//		std::cout << "animat vector:\n" << v << "\nfood vector:\n" << g << std::endl;
+//		std::cout << "######################" << std::endl;
 	}
 
 
@@ -515,8 +545,8 @@ void Animat::calculateDecision() {
 
 	setVelocity( g.norm() );
 
-	if ( velocity > 5 )		// TODO: add maxVelocity attribute
-		setVelocity( 5 );
+	if ( velocity > maxVelocity )
+		setVelocity( maxVelocity );
 
 
 }
