@@ -55,7 +55,7 @@ void keyActions( GLFWwindow*, int, int, int, int );
 
 int main( void ) {
 
-	srand(time(0));
+	srand( time(0) );
 
 	// empty files
 	util::cleanFile( fname_pop );
@@ -69,9 +69,6 @@ int main( void ) {
 
 	// TODO: nicely put stuff together - happening and rendering
 
-
-	// graphical output debug
-	return test_graphics();
 
 }
 
@@ -98,43 +95,45 @@ int test() {
 
 	// TODO: sort out smooth operation and visual debugging with switches and stuff --!! maybe with config files??
 
-	int sx = 250;
-	int sy = 250;
-	int foodEnergy = 10;
-	double density = 0.005;
+	int sx = 1000;
+	int sy = 1000;
+	int foodEnergy = 8;
+	double density = 0.001;
 
 	Habitat env ( sx, sy, foodEnergy, density );
-	util::printMatrixToFile( env.getFoodReserve(), fname_food0 );
+
+	int n_animats = 20;
+
+	for ( int i = 0; i < n_animats; ++i ) {
+
+		double randx = util::randFromUnitInterval() * sx;
+		double randy = util::randFromUnitInterval() * sy;
+		double randdir = util::randFromUnitInterval() * M_PI;
+		if ( util::randFromUnitInterval() > 0.5 )
+			randdir *= -1;
+
+		Animat* ani = new Animat (
+				randx,		// x
+				randy, 		// y
+				0, 			// velocity
+				10,			// max velocity
+				randdir, 	// direction
+				250, 		// energy
+				40, 		// vision range
+				2*M_PI, 	// vision angle  TODO: implement it's usage
+				4.0,		// reach
+				&env		// world pointer
+		);
+
+		int nConcepts = 10;
+		ani->initFCM( nConcepts, fname_fcm_cs, fname_fcm );
+
+		env.birth( ani );
+		env.population[ani->name]->toString();
+
+	}
 
 
-//	float allFood = foods.sum()/( sx * sy );
-//	cout << allFood << endl;
-
-	double randx = util::randFromUnitInterval() * sx;
-	double randy = util::randFromUnitInterval() * sy;
-	double randdir = util::randFromUnitInterval() * M_PI;
-
-	Animat ani(
-			randx,		// x
-			randy, 		// y
-			0, 			// velocity
-			3,			// max velocity
-			randdir, 	// direction
-			250, 		// energy
-			15, 		// vision range
-			2*M_PI, 	// vision angle  TODO: implement it's usage
-			2.0,		// reach
-			&env		// world pointer
-	);
-
-	ani.toString();
-	env.birth( &ani );
-
-//	util::printAnimatLocationsToFile( env.population, fname_pop );
-
-
-	int nConcepts = 10;
-	ani.initFCM( nConcepts, fname_fcm_cs, fname_fcm );
 
 
 
@@ -147,7 +146,7 @@ int test() {
 		std::cout << "Failed to initialise GLFW" << std::endl;
 		return -1;
 	}
-	simWindow = gx::createWindow( 800, 800, "simulation" );
+	simWindow = gx::createWindow( 1000, 1000, "simulation" );
 	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
 //	gx::setupKeyboard( simWindow, keyActions );
 	gx::setupKeyboard( simWindow );
@@ -161,15 +160,15 @@ int test() {
 
 
 	// create new window for fcm
-	fcmWindow = gx::createWindow( 400, 400, "fcm visualisation" );
-	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
+//	fcmWindow = gx::createWindow( 400, 400, "fcm visualisation" );
+//	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
 	// load stuff
-	GLuint vaoFCM = gx::createAndBindVAO();
-	GLuint dataBufFCM = gx::createVBO();
-	GLuint linesBufFCM = gx::createVBO();
-	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
-	gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
-	gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, linesBufFCM );
+//	GLuint vaoFCM = gx::createAndBindVAO();
+//	GLuint dataBufFCM = gx::createVBO();
+//	GLuint linesBufFCM = gx::createVBO();
+//	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
+//	gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
+//	gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, linesBufFCM );
 
 
 //	glfwMakeContextCurrent( simWindow );
@@ -177,68 +176,85 @@ int test() {
 	int time_counter = 0;
 
 	// drawing loop
-	while ( !glfwWindowShouldClose( simWindow ) && !glfwWindowShouldClose( fcmWindow ) ) {
-
-//		ani.reason();
+	while ( !glfwWindowShouldClose( simWindow ) /*&& !glfwWindowShouldClose( fcmWindow )*/ ) {
 
 
-//		if ( simulationProceed ){
+//		if ( simulationProceed ) {
 
-			ani.reason();
+			vector<const char*> obituary;
+			map<const char*, Animat*>::iterator it;
+			for ( it = env.population.begin(); it != env.population.end(); ++it ){
 
-			// upload habitat data
-			glfwMakeContextCurrent( simWindow );
+				it->second->reason();
+
+				// upload habitat data
+	//			glfwMakeContextCurrent( simWindow );
+
+				// upload fcm data
+	//			glfwMakeContextCurrent( fcmWindow );
+	//			gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
+
+				if ( it->second->getEnergy() <= 0 ) {
+					obituary.push_back( it->second->name );
+					cout << "The animat " << it->second->name << " survived " << time_counter << " steps of the simulation" << endl;
+				}
+
+
+			}
+
+			if ( obituary.size() > 0 ){
+				vector<const char*>::iterator it;
+				for ( it = obituary.begin(); it != obituary.end(); ++it )
+					env.death( *it );
+			}
+
+
+
 			gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
-
-			// upload fcm data
-			glfwMakeContextCurrent( fcmWindow );
-			gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
-
+//			simulationProceed = false;
 			++time_counter;
-//			cout << "simulation step no" << time_counter << "!" << endl;
-//			cout << "current animat direction " << ani.direction << endl;
-			simulationProceed = false;
 
 //		}
-
-
-		glfwMakeContextCurrent( simWindow );
 		gx::drawHabitat( simWindow, &env, shaderProg1 );
 
-		glfwMakeContextCurrent( fcmWindow );
-		gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, linesBufFCM );
+//		glfwMakeContextCurrent( fcmWindow );
+//		gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, linesBufFCM );
 
 //		util::printAnimatLocationsToFile( env.population, fname_pop );
 //		util::printSensationsToFile( ani.sensedObjs, fname_sens );
 
-		if ( ani.getEnergy() <= 0 )
-			break;
+//		if ( ani.getEnergy() <= 0 )
+//			break;
 
 		glfwPollEvents();
 
 		if ( glfwGetKey( simWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
 			glfwSetWindowShouldClose( simWindow, GL_TRUE );
 
-		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
-			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
+//		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+//			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
 
-		usleep( 50000 );
+		cout << "#";
+		cout.flush();
+		if ( time_counter % 100 == 0 )
+			cout << " " << time_counter << endl;
+//		usleep( 50000 );
 
 
 	}
 
-	cout << "The animat survived " << time_counter << " steps of the simulation" << endl;
-	util::printMatrixToFile( env.getFoodReserve(), fname_food1 );
+
+//	util::printMatrixToFile( env.getFoodReserve(), fname_food1 );
 
 
 
 	glDeleteBuffers( 1, &dataBufEnv );
-	glDeleteBuffers( 1, &dataBufFCM );
-	glDeleteBuffers( 1, &linesBufFCM );
+//	glDeleteBuffers( 1, &dataBufFCM );
+//	glDeleteBuffers( 1, &linesBufFCM );
 	glDeleteProgram( shaderProg1 );
-	glDeleteProgram( shaderProg2 );
+//	glDeleteProgram( shaderProg2 );
 	glDeleteVertexArrays( 1, &vaoEnv );
-	glDeleteVertexArrays( 1, &vaoFCM );
+//	glDeleteVertexArrays( 1, &vaoFCM );
 
 	gx::destroyWindow();
 

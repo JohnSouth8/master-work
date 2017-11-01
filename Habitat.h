@@ -38,6 +38,7 @@ public:
 	// member functions
 	void distributeFood( double );
 	void birth( Animat* );
+	void death( const char* );
 	int consumeFood( int, int );
 	int getXSize();
 	int getYSize();

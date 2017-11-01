@@ -70,21 +70,18 @@ namespace gx {
 		glEnableVertexAttribArray( colAttr );
 		glVertexAttribPointer( colAttr, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)) );
 
-		int n_points = env->foodReserve.sum() + env->population.size();
+		int n_food = env->foodReserve.sum();
+		int n_anis = env->population.size();
+//		int n_points = n_food + n_anis;
+
+		glPointSize( 1.0f );
+		glDrawArrays( GL_POINTS, 0, n_food );
 
 		glPointSize( 5.0f );
-
-		glDrawArrays( GL_POINTS, 0, n_points );
+		glDrawArrays( GL_POINTS, n_food, n_anis );
 
 		// swap buffers
 		glfwSwapBuffers( context );
-
-		// here onward does not belong here
-//		while ( !glfwWindowShouldClose( gwindow ) ) {
-//			glfwPollEvents();
-//			if ( glfwGetKey( gwindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
-//				glfwSetWindowShouldClose( gwindow, GL_TRUE );
-//		}
 
 
 	}
@@ -116,7 +113,7 @@ namespace gx {
 
 		int n_line_v = util::countNonZeroElements( ani->cognition.L ) * 2;
 
-		glLineWidth( 80.0f );
+//		glLineWidth( 80.0f );
 		glDrawArrays( GL_LINES, 0, n_line_v );
 
 
@@ -212,24 +209,9 @@ namespace gx {
 
 		}
 
-		// mark also closest food
-		for (  it = environment->population.begin(); it != environment->population.end(); ++it ) {
-			if ( it->second->sensedObjs.size() > 0 ) {
-
-				points_buffer_data[counter*5 + 0] = float( 2.0f * it->second->sensedObjs[0].x / float(env_w) - 1 );		// X
-				points_buffer_data[counter*5 + 1] = float( 2.0f * it->second->sensedObjs[0].y / float(env_h) - 1 );		// Y
-				points_buffer_data[counter*5 + 2] = 1.0f;																// R
-				points_buffer_data[counter*5 + 3] = 1.0f;																// G
-				points_buffer_data[counter*5 + 4] = 0.0f;																// B
-
-				++counter;
-
-			}
-		}
-
 		// load the points into buffer
 		glBindBuffer( GL_ARRAY_BUFFER, vbo );
-		glBufferData( GL_ARRAY_BUFFER, counter*5*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
+		glBufferData( GL_ARRAY_BUFFER, n_data*5*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
 
 	}
 

@@ -29,7 +29,6 @@ Habitat::Habitat() {
 	sizeX = 1000;
 	sizeY = 1000;
 	foodEnergyVal = 10;
-//	population = map<const char*, Animat>();
 	foodReserve = MatrixXd::Zero( sizeX, sizeY );
 	distributeFood( 0.01 );
 
@@ -40,7 +39,6 @@ Habitat::Habitat( int sx, int sy, int fe, double density ) {
 	sizeX = sx;
 	sizeY = sy;
 	foodEnergyVal = fe;
-//	population = map<const char*, Animat>();
 	foodReserve = MatrixXd::Zero( sizeX, sizeY );
 	distributeFood( density );
 
@@ -60,6 +58,14 @@ void Habitat::birth( Animat* ani ) {
 
 	const char* name = ani->getName();
 	population[name] = ani;
+
+}
+
+
+
+void Habitat::death( const char* name ) {
+
+	population.erase( name );
 
 }
 
