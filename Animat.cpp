@@ -246,7 +246,7 @@ void Animat::sense_analytic() {
 //	// TODO: these things should be in own functions for clarity and documentation
 ////	sensations(0) = 1 - 2*min_dist/senseRadius;
 //	if ( velocity == 0 )
-//		sensations(0) = 0; // TODO should be 1 when on a cell containing food
+//		sensations(0) = 0; //  should be 1 when on a cell containing food
 //	else {
 //		double dv = min_dist / velocity;
 //		if ( dv > 2*maxVelocity )

@@ -93,6 +93,89 @@ int test_graphics() {
 
 int test() {
 
+	int sx = 1000;
+	int sy = 1000;
+	int foodEnergy = 8;
+	double density = 0.001;
+	int n_animats = 20;
+
+	Habitat env ( sx, sy, foodEnergy, density );
+
+	// init animats
+	for ( int i = 0; i < n_animats; ++i )
+	{
+		double randx = util::randFromUnitInterval() * sx;
+		double randy = util::randFromUnitInterval() * sy;
+		double randdir = util::randFromUnitInterval() * M_PI;
+		if ( util::randFromUnitInterval() > 0.5 )
+			randdir *= -1;
+
+		Animat* ani = new Animat (
+				randx,		// x
+				randy, 		// y
+				0, 			// velocity
+				10,			// max velocity
+				randdir, 	// direction
+				150, 		// energy
+				40, 		// vision range
+				2*M_PI, 	// vision angle  TODO: implement it's usage
+				4.0,		// reach
+				&env		// world pointer
+		);
+
+		int nConcepts = 10;
+		ani->initFCM( nConcepts, fname_fcm_cs, fname_fcm );
+
+		env.birth( ani );
+		env.population[ani->name]->toString();
+	}
+
+
+	int time_counter = 0;
+	int n_deaths;
+	// while at least one animat is alive
+	while ( n_deaths < n_animats )
+	{
+
+		// cannot remove dead animats in their execution loop, hence they are added to obituary and buried later
+		vector<const char*> obituary;
+		for ( auto &nm_ani : env.population )
+		{
+			Animat* ani = nm_ani.second;
+			ani->reason();
+
+			if ( ani->energy <= 0 )
+			{
+				obituary.push_back( ani->name );
+				++n_deaths;
+				cout << "The animat " << ani->name << " survived " << time_counter << " steps of the simulation" << endl;
+			}
+		}
+
+		// remove (bury) dead animats
+		if ( obituary.size() > 0 )
+			for ( auto &name : obituary )
+				env.death( name );
+
+		++time_counter;
+
+		// print development
+		cout << "#";
+		cout.flush();
+		if ( time_counter % 100 == 0 )
+			cout << " " << time_counter << endl;
+
+	}
+
+
+	return 0;
+
+}
+
+
+
+int test_with_visuals() {
+
 	// TODO: sort out smooth operation and visual debugging with switches and stuff --!! maybe with config files??
 
 	int sx = 1000;
@@ -103,6 +186,8 @@ int test() {
 	Habitat env ( sx, sy, foodEnergy, density );
 
 	int n_animats = 20;
+
+//	const char* trName;
 
 	for ( int i = 0; i < n_animats; ++i ) {
 
@@ -118,7 +203,7 @@ int test() {
 				0, 			// velocity
 				10,			// max velocity
 				randdir, 	// direction
-				250, 		// energy
+				150, 		// energy
 				40, 		// vision range
 				2*M_PI, 	// vision angle  TODO: implement it's usage
 				4.0,		// reach
@@ -130,6 +215,7 @@ int test() {
 
 		env.birth( ani );
 		env.population[ani->name]->toString();
+//		trName = ani->name;
 
 	}
 
@@ -162,16 +248,18 @@ int test() {
 	// create new window for fcm
 //	fcmWindow = gx::createWindow( 400, 400, "fcm visualisation" );
 //	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
-	// load stuff
+//	// load stuff
 //	GLuint vaoFCM = gx::createAndBindVAO();
 //	GLuint dataBufFCM = gx::createVBO();
 //	GLuint linesBufFCM = gx::createVBO();
 //	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
-//	gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
-//	gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, linesBufFCM );
+//
+//	Animat* tracked = env.population[trName];
+//	gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
+//	gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
 
 
-//	glfwMakeContextCurrent( simWindow );
+	glfwMakeContextCurrent( simWindow );
 
 	int time_counter = 0;
 
@@ -209,8 +297,12 @@ int test() {
 			}
 
 
-
+			glfwMakeContextCurrent( simWindow );
 			gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
+
+//			glfwMakeContextCurrent( fcmWindow );
+//			gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
+
 //			simulationProceed = false;
 			++time_counter;
 

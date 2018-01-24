@@ -20,7 +20,6 @@ namespace ecosystem {
 class Habitat;
 
 class Animat {
-	// TODO: think about public and private vars - are they required? (for clean code purposes they should be, for efficiency maybe rather not)
 	// TODO: write inits based on config files rather than passing of a myriad of parameters
 public:
 
