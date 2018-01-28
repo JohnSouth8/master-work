@@ -36,7 +36,7 @@ Animat::Animat() {
 }
 
 // TODO: think about initializer lists
-Animat::Animat( double px, double py, double v, double maxV, double dir, int e, double senseR, double senseA, double rch, Habitat* hab ) {
+Animat::Animat( double px, double py, double v, double maxV, double dir, float e, double senseR, double senseA, double rch, Habitat* hab ) {
 
 	name = generateName();
 	posX = px;
@@ -72,17 +72,6 @@ char* Animat::generateName() {
 
 	return cname;
 
-}
-
-
-const char* Animat::getName() {
-	return name;
-}
-
-
-
-int Animat::getEnergy() {		// TODO maxEnergy attribute
-	return energy;
 }
 
 
@@ -139,7 +128,7 @@ int Animat::eat() {
 	int indexY = floor( posY );
 
 	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
-		int deltaE = environment->consumeFood( indexX, indexY );
+		float deltaE = environment->consumeFood( indexX, indexY );
 		energy += deltaE;
 		return deltaE;
 	}
@@ -152,7 +141,7 @@ int Animat::eat() {
 int Animat::eat( int indexX, int indexY ) {
 
 	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
-		int deltaE = environment->consumeFood( indexX, indexY );
+		float deltaE = environment->consumeFood( indexX, indexY );
 		energy += deltaE;
 		return deltaE;
 	}
@@ -179,7 +168,7 @@ void Animat::turn( double rads ) {
 void Animat::sense_analytic() {
 
 
-	MatrixXd foods = environment->getFoodReserve();
+	MatrixXf foods = environment->getFoodReserve();
 	int env_x = environment->getXSize();
 	int env_y = environment->getYSize();
 

@@ -29,7 +29,7 @@ Habitat::Habitat() {
 	sizeX = 1000;
 	sizeY = 1000;
 	foodEnergyVal = 10;
-	foodReserve = MatrixXd::Zero( sizeX, sizeY );
+	foodReserve = MatrixXf::Zero( sizeX, sizeY );
 	distributeFood( 0.01 );
 
 }
@@ -39,7 +39,7 @@ Habitat::Habitat( int sx, int sy, int fe, double density ) {
 	sizeX = sx;
 	sizeY = sy;
 	foodEnergyVal = fe;
-	foodReserve = MatrixXd::Zero( sizeX, sizeY );
+	foodReserve = MatrixXf::Zero( sizeX, sizeY );
 	distributeFood( density );
 
 }
@@ -56,8 +56,7 @@ Habitat::~Habitat() {
 
 void Habitat::birth( Animat* ani ) {
 
-	const char* name = ani->getName();
-	population[name] = ani;
+	population[ani->name] = ani;
 
 }
 
@@ -90,8 +89,54 @@ void Habitat::distributeFood( double density ) {
 }
 
 
+// optimize the shit out of this!!!
+void Habitat::growFood() {
 
-int Habitat::consumeFood( int x, int y ) {
+	// TODO: get all these numbers into parameters!
+
+	MatrixXf newFood = MatrixXf::Zero( sizeX, sizeY );
+//	MatrixXf highProbMask = MatrixXf::Constant( 5, 5, 0.005 );
+//	MatrixXf lowProbMask = MatrixXf::Constant( 5, 5, 0.001 );
+
+	for ( int i = 0; i < sizeX; ++i ) {
+		for ( int j = 0; j < sizeY; ++j ) {
+
+			// generate food in 5-square surroundings, but not where there is food already
+			for ( int offx = -2; offx < 3; ++offx ){
+				for ( int offy = -2; offy < 3; ++offy ){
+
+					int i_x = i+offx;
+					int i_y = j+offy;
+					if ( i < 2 || i > sizeX-3 )
+						i_x = util::getWrappedIndex( i_x, sizeX );
+					if ( j < 2 || j > sizeY-3 )
+						i_y = util::getWrappedIndex( i_y, sizeY );
+
+					float prob = 0.000001;
+					if ( foodReserve(i,j) > 0 )
+						prob = 0.0001;
+
+					// suspiciously high number of activations... check out. Preferably by visual inspection - heatmap of randoms
+					float randf = util::randFromUnitInterval();
+					if ( foodReserve(i_x, i_y) == 0 && newFood(i_x, i_y) == 0 && randf < prob ){
+						newFood(i_x, i_y) = 1.0;
+					}
+
+				}
+			}
+
+		}
+	}
+
+	foodReserve = foodReserve + newFood;
+
+	std::cout << "Amount of new food: " << newFood.sum() << std::endl;
+
+}
+
+
+
+float Habitat::consumeFood( int x, int y ) {
 
 	if ( foodReserve( x, y ) == 0 ) {
 		return 0;
@@ -117,7 +162,7 @@ int Habitat::getYSize() {
 
 
 
-Eigen::MatrixXd Habitat::getFoodReserve() {
+Eigen::MatrixXf Habitat::getFoodReserve() {
 	return foodReserve;
 }
 

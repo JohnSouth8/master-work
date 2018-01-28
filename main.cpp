@@ -45,6 +45,7 @@ bool simulationProceed = false;
 
 
 int test();
+int test_foodGrowth_visual();
 int fcm_test( Animat* );
 int animat_test( Animat*, Habitat* );
 int test_algebra();
@@ -58,14 +59,14 @@ int main( void ) {
 	srand( time(0) );
 
 	// empty files
-	util::cleanFile( fname_pop );
-	util::cleanFile( fname_sens );
+//	util::cleanFile( fname_pop );
+//	util::cleanFile( fname_sens );
 
 //	string fcontent = util::readFileContent( fname_fcm );
 
 
 //	return test_algebra();
-	return test();
+	return test_foodGrowth_visual();
 
 	// TODO: nicely put stuff together - happening and rendering
 
@@ -91,6 +92,69 @@ int test_graphics() {
 
 
 
+int test_foodGrowth_visual() {
+
+	int sx = 1000;
+	int sy = 1000;
+	int foodEnergy = 1;
+	double foodDensity = 0.0001;
+
+	Habitat env( sx, sy, foodEnergy, foodDensity );
+
+
+
+	if ( !glfwInit() ) {
+		std::cout << "Failed to initialise GLFW" << std::endl;
+		return -1;
+	}
+	simWindow = gx::createWindow( 1000, 1000, "simulation" );
+	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
+	gx::setupKeyboard( simWindow );
+
+	// load stuff
+	GLuint vaoEnv = gx::createAndBindVAO();
+	GLuint dataBufEnv = gx::createVBO();
+	GLuint shaderProg1 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
+	gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
+	gx::drawHabitat( simWindow, &env, shaderProg1 );
+
+
+	while ( !glfwWindowShouldClose( simWindow ) ) {
+
+//		if ( simulationProceed )
+		{
+
+			env.growFood();
+
+			gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
+
+//			simulationProceed = false;
+
+		}
+
+		gx::drawHabitat( simWindow, &env, shaderProg1 );
+
+		glfwPollEvents();
+
+		if ( glfwGetKey( simWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+			glfwSetWindowShouldClose( simWindow, GL_TRUE );
+
+	}
+
+
+	glDeleteBuffers( 1, &dataBufEnv );
+	glDeleteProgram( shaderProg1 );
+	glDeleteVertexArrays( 1, &vaoEnv );
+
+	gx::destroyWindow();
+
+
+	return 0;
+
+}
+
+
+
 int test() {
 
 	int sx = 1000;
@@ -99,7 +163,7 @@ int test() {
 	double density = 0.001;
 	int n_animats = 20;
 
-	Habitat env ( sx, sy, foodEnergy, density );
+	Habitat env( sx, sy, foodEnergy, density );
 
 	// init animats
 	for ( int i = 0; i < n_animats; ++i )
@@ -112,11 +176,11 @@ int test() {
 
 		Animat* ani = new Animat (
 				randx,		// x
-				randy, 		// y
+				randy, 		// yGrassland();
 				0, 			// velocity
 				10,			// max velocity
 				randdir, 	// direction
-				150, 		// energy
+				150.0, 		// energy
 				40, 		// vision range
 				2*M_PI, 	// vision angle  TODO: implement it's usage
 				4.0,		// reach
@@ -225,7 +289,7 @@ int test_with_visuals() {
 
 	// TODO: sort out smooth operation and visual debugging with switches and stuff
 
-
+	// TODO: place the buffers stuff into gx module, here we only need initEnvironment() etc...
 	// initialize graphics output for simulation
 	// initialize glfw first
 	if ( !glfwInit() ) {
@@ -282,7 +346,7 @@ int test_with_visuals() {
 	//			glfwMakeContextCurrent( fcmWindow );
 	//			gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
 
-				if ( it->second->getEnergy() <= 0 ) {
+				if ( it->second->energy <= 0 ) {
 					obituary.push_back( it->second->name );
 					cout << "The animat " << it->second->name << " survived " << time_counter << " steps of the simulation" << endl;
 				}

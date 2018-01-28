@@ -172,7 +172,7 @@ namespace gx {
 			env_h = environment->sizeY,
 			counter = 0;
 
-		static GLfloat points_buffer_data[50000]; //= new GLfloat[n_data*5];		// << each point has 5 datums: X Y R G B
+		static GLfloat points_buffer_data[500000]; //= new GLfloat[n_data*5];		// << each point has 5 datums: X Y R G B
 
 		// add green food points
 		for ( int i = 0; i < env_w; ++i ) {

@@ -47,6 +47,7 @@ namespace util {
 
 	}
 
+	// TODO: do not use rand() function! Use random_device and mersenne twister or something such
 	int randIntFrom( int min, int max ) {
 		int range = max - min + 1;
 		return rand() % range + min;
@@ -79,12 +80,8 @@ namespace util {
 
 		double retval = coordinate;
 
-//		if ( coordinate >= 0 && coordinate < domainSize ) {
-//			retval = coordinate;
-//		}
-//		else
 		if ( retval < 0 ) {
-			retval = domainSize + coordinate;
+			retval = domainSize + coordinate; // note: because it's negative, this is actually subtraction
 		}
 		while ( retval >= domainSize ) {
 			retval -= domainSize;

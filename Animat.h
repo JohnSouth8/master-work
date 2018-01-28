@@ -25,7 +25,7 @@ public:
 
 	// constructors
 	Animat();
-	Animat( double, double, double, double, double, int, double, double, double, Habitat* );
+	Animat( double, double, double, double, double, float, double, double, double, Habitat* );
 	virtual ~Animat();
 
 	// member vars
@@ -35,8 +35,8 @@ public:
 	double velocity;
 	double maxVelocity;
 	double direction;
-	int energy;
-	int maxEnergy;
+	float energy;
+	float maxEnergy;
 	double senseAngle;
 	double senseRadius;
 	double reach;
@@ -72,8 +72,7 @@ public:
 	void initFCM( int, std::string, std::string );
 //	void setFCM( Eigen::MatrixXd );
 	char* generateName();
-	const char* getName();
-	int getEnergy();
+
 	void toString();
 	void forgetSensations();
 	void addSensedObject( f_sens );

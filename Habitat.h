@@ -32,17 +32,18 @@ public:
 	int sizeY;
 	int foodEnergyVal;
 	map<const char*, Animat*> population;
-	Eigen::MatrixXd foodReserve;			// possibly swap this with Eigen::Array
+	Eigen::MatrixXf foodReserve;			// possibly swap this with Eigen::Array
 
 
 	// member functions
 	void distributeFood( double );
+	void growFood();
 	void birth( Animat* );
 	void death( const char* );
-	int consumeFood( int, int );
+	float consumeFood( int, int );
 	int getXSize();
 	int getYSize();
-	Eigen::MatrixXd getFoodReserve();
+	Eigen::MatrixXf getFoodReserve();
 
 };
 
