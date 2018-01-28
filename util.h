@@ -26,7 +26,8 @@ namespace util {
 	Eigen::VectorXd tanh( Eigen::VectorXd );
 
 	int randIntFrom( int, int );
-	double randFromUnitInterval();
+//	double randFromUnitInterval();
+	float randFromUnitInterval();
 
 	int getWrappedIndex( int, int );
 	double getWrappedCoordinate( double, int );

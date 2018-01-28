@@ -10,13 +10,16 @@
 #include <fstream>
 #include <cstdlib>
 #include <map>
+#include <random>
 #include <ctime>
 #include <cmath>
+#include <array>
 #include <Eigen/Dense>
 #include <unistd.h>
 
 #include "Animat.h"
 #include "Habitat.h"
+#include "Chance.h"
 #include "util.h"
 #include "graphx.h"
 
@@ -51,6 +54,7 @@ int animat_test( Animat*, Habitat* );
 int test_algebra();
 int test_graphics();
 void keyActions( GLFWwindow*, int, int, int, int );
+int test_random();
 
 
 
@@ -66,7 +70,9 @@ int main( void ) {
 
 
 //	return test_algebra();
-	return test_foodGrowth_visual();
+//	return test_foodGrowth_visual();
+
+	return test_random();
 
 	// TODO: nicely put stuff together - happening and rendering
 
@@ -97,9 +103,10 @@ int test_foodGrowth_visual() {
 	int sx = 1000;
 	int sy = 1000;
 	int foodEnergy = 1;
-	double foodDensity = 0.0001;
+//	double foodDensity = 0.0001;
 
-	Habitat env( sx, sy, foodEnergy, foodDensity );
+//	Habitat env( sx, sy, foodEnergy, foodDensity );
+	Habitat env( sx, sy, foodEnergy, 50, 75, 0.3);
 
 
 
@@ -124,7 +131,8 @@ int test_foodGrowth_visual() {
 //		if ( simulationProceed )
 		{
 
-			env.growFood();
+//			env.growFood_stable();
+			env.growMeadows();
 
 			gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
 
@@ -168,9 +176,9 @@ int test() {
 	// init animats
 	for ( int i = 0; i < n_animats; ++i )
 	{
-		double randx = util::randFromUnitInterval() * sx;
-		double randy = util::randFromUnitInterval() * sy;
-		double randdir = util::randFromUnitInterval() * M_PI;
+		float randx = util::randFromUnitInterval() * sx;
+		float randy = util::randFromUnitInterval() * sy;
+		float randdir = util::randFromUnitInterval() * M_PI;
 		if ( util::randFromUnitInterval() > 0.5 )
 			randdir *= -1;
 
@@ -255,9 +263,9 @@ int test_with_visuals() {
 
 	for ( int i = 0; i < n_animats; ++i ) {
 
-		double randx = util::randFromUnitInterval() * sx;
-		double randy = util::randFromUnitInterval() * sy;
-		double randdir = util::randFromUnitInterval() * M_PI;
+		float randx = util::randFromUnitInterval() * sx;
+		float randy = util::randFromUnitInterval() * sy;
+		float randdir = util::randFromUnitInterval() * M_PI;
 		if ( util::randFromUnitInterval() > 0.5 )
 			randdir *= -1;
 
@@ -445,6 +453,72 @@ int animat_test( Animat* ani, Habitat* env ) {
 	ani->calculateDecision();
 	ani->move();
 
+
+	return 0;
+
+}
+
+
+
+int test_random() {
+
+	int n_stars = 100;
+	int n_rolls = 10000;
+
+	std::random_device rd;
+//	std::mt19937 twister( rd() );
+//
+//	std::uniform_int_distribution<int> intdist( 0, 100 );
+//	std::uniform_real_distribution<float> floatdist( 0.0, 1.0 );
+//
+//	std::array<float,3> intervals {0.0, 5.0, 10.0};
+//	std::array<float,3> weights {5.0, 8.0, 2.0};
+//	std::piecewise_linear_distribution<float> lindist( intervals.begin(), intervals.end(), weights.begin() );
+
+	util::Chance* fate = new util::Chance( rd() );
+
+
+	int testInt[10] = {0};
+	int testFloat[10] = {0};
+	int testLinear[10] = {0};
+	int index = 0;
+
+	for ( int i = 0; i < n_rolls; i++ ) {
+
+//		int randint = intdist( twister );
+		int randint = fate->uniformRandomInt( 0, 100 );
+		index = (int) floor( randint / 10 );
+		++testInt[index];
+
+//		float randf = floatdist( twister );
+		float randf = fate->uniformRandomFloat( 0.0, 1.0 );
+		index = (int) floor( randf * 10 );
+		++testFloat[index];
+
+//		float randlin = lindist( twister );
+		float randlin = fate->linearDescRandomFloat( 0.0, 10.0 );
+		index = (int) floor( randlin );
+		++testLinear[index];
+
+	}
+
+	cout << "Uniform integer distribution from 0 to 100 results:" << endl;
+	for ( int i = 0; i < 10; ++i ) {
+		cout << i*10 << "-" << (i+1)*10 << ":\t";
+		cout << string( testInt[i]*n_stars/n_rolls, '*' ) << endl;
+	}
+
+	cout << "Uniform real distribution from 0.0 to 1.0 results:" << endl;
+	for ( int i = 0; i < 10; ++i ) {
+		cout << i*0.1 << "-" << (i+1)*0.1 << ":\t";
+		cout << string( testFloat[i]*n_stars/n_rolls, '*' ) << endl;
+	}
+
+	cout << "Descending linear distribution from 0 to 10 results:" << endl;
+	for ( int i = 0; i < 10; ++i ) {
+		cout << i << "-" << (i+1) << ":\t";
+		cout << string( testLinear[i]*n_stars/n_rolls, '*' ) << endl;
+	}
 
 	return 0;
 

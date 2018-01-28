@@ -300,16 +300,16 @@ void Animat::sense() {
 //		min_dist = senseRadius;
 
 	bool isFood = false;
-	double min_dist = senseRadius;
-	double dAngle = util::randFromUnitInterval() - 0.5;		// if no food, angle is random somewhere ahead
+	float min_dist = senseRadius;
+	float dAngle = util::randFromUnitInterval() - 0.5;		// if no food, angle is random somewhere ahead
 	if ( sensedObjs.size() > 0 ) {
 
 		min_dist = sensedObjs[0].d;
 		int foodX = sensedObjs[0].x;
 		int foodY = sensedObjs[0].y;
 
-		double dX = foodX - posX;
-		double dY = foodY - posY;
+		float dX = foodX - posX;
+		float dY = foodY - posY;
 
 		// if food is over the edge
 		if ( dX > senseRadius ) {
@@ -504,8 +504,8 @@ void Animat::calculateDecision() {
 
 	if ( index == -1 ) {
 
-		double randturn = util::randFromUnitInterval() * M_PI;
-		double randvel = util::randFromUnitInterval() * 5;
+		float randturn = util::randFromUnitInterval() * M_PI;
+		float randvel = util::randFromUnitInterval() * 5;
 
 		if ( velocity == 0 ) {
 			// turn in random direction and with random speed

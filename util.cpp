@@ -53,8 +53,12 @@ namespace util {
 		return rand() % range + min;
 	}
 
-	double randFromUnitInterval() {
-		return double( rand() ) / double( RAND_MAX );
+//	double randFromUnitInterval() {
+//		return double( rand() ) / double( RAND_MAX );
+//	}
+
+	float randFromUnitInterval() {
+		return float( rand() ) / float( RAND_MAX );
 	}
 
 	int getWrappedIndex( int index, int domainSize ) {

@@ -16,6 +16,7 @@
 #include "util.h"
 
 #include "Animat.h"
+#include "Meadow.h"
 
 using namespace std;
 using namespace Eigen;
@@ -41,6 +42,25 @@ Habitat::Habitat( int sx, int sy, int fe, double density ) {
 	foodEnergyVal = fe;
 	foodReserve = MatrixXf::Zero( sizeX, sizeY );
 	distributeFood( density );
+
+}
+
+Habitat::Habitat( int sx, int sy, int fe, int nMeadows, int rMeadows, float grMeadows ) {
+
+	sizeX = sx;
+	sizeY = sy;
+	foodEnergyVal = fe;
+	foodReserve = MatrixXf::Zero( sizeX, sizeY );
+
+	for ( int i = 0; i < nMeadows; ++i ) {
+
+		int randX = util::randIntFrom( 0, sizeX );
+		int randY = util::randIntFrom( 0, sizeY );
+
+		Meadow* m = new Meadow( randX, randY, rMeadows, grMeadows, this );
+		meadows.push_back( m );
+
+	}
 
 }
 
@@ -70,9 +90,36 @@ void Habitat::death( const char* name ) {
 
 
 
+void Habitat::growMeadows() {
+
+	int grown = 0;
+	for ( auto meadow : meadows ){
+
+		grown += meadow->grow();
+
+	}
+
+	// fractional chance of a new meadow appearing
+	if ( util::randFromUnitInterval() < 0.01 ) {
+
+		int randX = util::randIntFrom( 0, sizeX );
+		int randY = util::randIntFrom( 0, sizeY );
+
+		Meadow* m = new Meadow( randX, randY, 100, 0.5, this );
+		meadows.push_back( m );
+
+	}
+
+
+	std::cout << "Amount of new food: " << grown << std::endl;
+
+}
+
+
+
 void Habitat::distributeFood( double density ) {
 
-	double fraction;
+	float fraction;
 
 	for ( int x = 0; x < sizeX; ++x ) {
 		for ( int y = 0; y < sizeY; ++y ) {
@@ -89,8 +136,46 @@ void Habitat::distributeFood( double density ) {
 }
 
 
+void Habitat::growFood_stable() {
+
+	MatrixXf newFood = MatrixXf::Zero( sizeX, sizeY );
+
+	float highDensity = 0.001;
+	float lowDensity = 0.000001;
+//	int num_food = foodReserve.sum();
+//
+//	int num_newFood = (int) round( num_food * someDensity );
+
+	for ( int x = 0; x < sizeX; ++x ) {
+		for ( int y = 0; y < sizeY; ++y ) {
+
+			float randf = util::randFromUnitInterval();
+			if ( foodReserve(x, y) > 0 && randf < highDensity ) {
+				int randOffX = util::randIntFrom( -10, 10 );
+				int randOffY = util::randIntFrom( -10, 10 );
+				int nx = util::getWrappedIndex( x + randOffX, sizeX );
+				int ny = util::getWrappedIndex( y + randOffY, sizeY );
+				if ( newFood( nx, ny ) == 0 )
+					newFood( nx, ny ) = 1;
+			}
+
+			if ( foodReserve(x, y) == 0 && randf < lowDensity ) {
+				newFood(x, y) = 1;
+			}
+
+		}
+	}
+
+	foodReserve = foodReserve + newFood;
+
+	std::cout << "Amount of new food: " << newFood.sum() << std::endl;
+
+
+}
+
+
 // optimize the shit out of this!!!
-void Habitat::growFood() {
+void Habitat::growFoodSlow() {
 
 	// TODO: get all these numbers into parameters!
 

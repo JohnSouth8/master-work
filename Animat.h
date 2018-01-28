@@ -17,6 +17,7 @@
 
 namespace ecosystem {
 
+// forward declaration
 class Habitat;
 
 class Animat {
