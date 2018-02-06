@@ -13,6 +13,7 @@
 #include "FCM.h"
 
 #include <vector>
+#include <string>
 #include <Eigen/Dense>
 
 namespace ecosystem {
@@ -30,7 +31,7 @@ public:
 	virtual ~Animat();
 
 	// member vars
-	const char* name;
+	std::string name;
 	double posX;
 	double posY;
 	double velocity;
@@ -72,7 +73,7 @@ public:
 //	void initFCM( int, std::vector<std::string>, Eigen::MatrixXd );
 	void initFCM( int, std::string, std::string );
 //	void setFCM( Eigen::MatrixXd );
-	char* generateName();
+	std::string generateName();
 
 	void toString();
 	void forgetSensations();

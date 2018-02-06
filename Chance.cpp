@@ -11,7 +11,10 @@
 
 namespace util {
 
-Chance::Chance( int seed ) : twister( seed )
+Chance::Chance( int seed ) :
+		twister( seed ),
+		booleanIntDistribution( 0, 1 ),
+		uniformUnitDistribution( 0, 1 )
 {}
 
 Chance::~Chance() {
@@ -19,7 +22,22 @@ Chance::~Chance() {
 }
 
 
-int Chance::uniformRandomInt( int min, int max ) {
+
+bool Chance::randomBoolean() {
+
+	return booleanIntDistribution( twister );
+
+}
+
+
+float Chance::uniformRandomUnitFloat() {
+
+	return uniformUnitDistribution( twister );
+
+}
+
+
+int Chance::uniformRandomIntFrom( int min, int max ) {
 
 	std::uniform_int_distribution<int> dist( min, max );
 	return dist( twister );
@@ -27,17 +45,17 @@ int Chance::uniformRandomInt( int min, int max ) {
 }
 
 
-float Chance::uniformRandomFloat( float min, float max ) {
+float Chance::uniformRandomFloatFrom( float min, float max ) {
 
 	std::uniform_real_distribution<float> dist( min, max );
 	return dist( twister );
 
 }
 
-float Chance::linearDescRandomFloat( float start, float end ) {
+float Chance::linearDescRandomFloatFrom( float start, float end ) {
 
 	std::array<float,2> intervals {start, end};
-	std::array<float,2> weights {10.0, 0.0};
+	std::array<float,2> weights {5.0, 0.0};
 	std::piecewise_linear_distribution<float> dist( intervals.begin(), intervals.end(), weights.begin() );
 
 	return dist( twister );

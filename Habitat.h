@@ -8,11 +8,16 @@
 #ifndef HABITAT_H_
 #define HABITAT_H_
 
+
+#include "Chance.h"
+
 #include <map>
 #include <vector>
+#include <string>
 #include <Eigen/Dense>
 
-using namespace std;
+
+
 
 namespace ecosystem {
 
@@ -25,18 +30,19 @@ class Habitat {
 public:
 
 	// constructors
-	Habitat();
-	Habitat( int, int, int, double );
-	Habitat( int, int, int, int, int, float );
+	Habitat( int, int, int, double, util::Chance* );
+	Habitat( int, int, int, int, int, float, util::Chance* );
 	virtual ~Habitat();
 
 	// member variables
 	int sizeX;
 	int sizeY;
 	int foodEnergyVal;
-	map<const char*, Animat*> population;
+	std::map<std::string, Animat*> population;
 	Eigen::MatrixXf foodReserve;			// possibly swap this with Eigen::Array
-	vector<Meadow*> meadows;
+	std::vector<Meadow*> meadows;
+	util::Chance* fate;
+
 
 
 	// member functions
@@ -47,7 +53,7 @@ public:
 	float consumeFood( int, int );
 
 	void birth( Animat* );
-	void death( const char* );
+	void death( std::string );
 
 	int getXSize();
 	int getYSize();

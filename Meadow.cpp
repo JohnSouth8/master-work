@@ -20,6 +20,7 @@ Meadow::Meadow( int cx, int cy, int r, float gr, Habitat* env ) {
 	radius = r;
 	growRate = gr;
 	environment = env;
+	// TODO: implement over-grazing - death of a meadow when no food is left
 
 }
 
@@ -31,24 +32,29 @@ Meadow::~Meadow() {
 int Meadow::grow() {
 
 	int grownFood = 0;
-	float randf = util::randFromUnitInterval();
+	float randf = environment->fate->uniformRandomUnitFloat();
 	int envSizeX = environment->sizeX;
 	int envSizeY = environment->sizeY;
 
-	while ( randf > growRate ) {
+	while ( randf < growRate ) {
 
-		int randOffX = util::randIntFrom( 0, radius );
-		int randOffY = util::randIntFrom( 0, radius );
+//		int randOffX = environment->fate->uniformRandomIntFrom( 0, radius );
+//		int randOffY = environment->fate->uniformRandomIntFrom( 0, radius );
+		float offset = environment->fate->linearDescRandomFloatFrom( 0, radius );
+		float angle = environment->fate->uniformRandomFloatFrom( -3.1416, 3.1416 );
 
-		int x = util::getWrappedIndex( centerX + randOffX, envSizeX );
-		int y = util::getWrappedIndex( centerY + randOffY, envSizeY );
+		int offsetX = offset * cos( angle );
+		int offsetY = offset * sin( angle );
+
+		int x = util::getWrappedIndex( centerX + offsetX, envSizeX );
+		int y = util::getWrappedIndex( centerY + offsetY, envSizeY );
 
 		if ( environment->foodReserve(x, y) == 0 ) {
 			environment->foodReserve(x, y) = 1;
 			grownFood += 1;
 		}
 
-		randf = util::randFromUnitInterval();
+		randf = environment->fate->uniformRandomUnitFloat();
 	}
 
 	return grownFood;

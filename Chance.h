@@ -20,16 +20,23 @@ public:
 
 	// member variables
 	std::mt19937 twister;
+	std::uniform_int_distribution<int> booleanIntDistribution;
+	std::uniform_real_distribution<float> uniformUnitDistribution;
 
 
 	// member functions
-	int uniformRandomInt( int, int );
-	int linearDescRandomInt( int, int );
-	int linearAscRandomInt( int, int );
+	// default distributions
+	bool randomBoolean();
+	float uniformRandomUnitFloat();
 
-	float uniformRandomFloat( float, float );
-	float linearDescRandomFloat( float, float );
-	float linearAscRandomFloat( float, float );
+	// custom distributions
+	int uniformRandomIntFrom( int, int );
+	int linearDescRandomIntFrom( int, int );
+	int linearAscRandomIntFrom( int, int );
+
+	float uniformRandomFloatFrom( float, float );
+	float linearDescRandomFloatFrom( float, float );
+	float linearAscRandomFloatFrom( float, float );
 
 
 };

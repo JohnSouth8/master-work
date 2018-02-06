@@ -6,6 +6,7 @@
  */
 
 #include <cstdlib>
+#include <string>
 #include <cmath>
 #include <iostream>
 #include <Eigen/Dense>
@@ -59,18 +60,17 @@ Animat::~Animat() {
 
 
 
-char* Animat::generateName() {
+std::string Animat::generateName() {
 
 	int charmin = 65, charmax = 90, randint;
-	char* cname = new char[11];
+	std::string sname;
 
 	for ( int i = 0; i < 10; ++i ) {
 		randint = util::randIntFrom( charmin, charmax );
-		cname[i] = randint;
+		sname.push_back( randint );
 	}
-	cname[10] = '\0';
 
-	return cname;
+	return sname;
 
 }
 

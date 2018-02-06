@@ -10,10 +10,12 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <string>
 #include <map>
 #include <Eigen/Dense>
 
 #include "util.h"
+#include "Chance.h"
 
 #include "Animat.h"
 #include "Meadow.h"
@@ -25,32 +27,25 @@ namespace ecosystem {
 
 /* constructors */
 
-Habitat::Habitat() {
 
-	sizeX = 1000;
-	sizeY = 1000;
-	foodEnergyVal = 10;
-	foodReserve = MatrixXf::Zero( sizeX, sizeY );
-	distributeFood( 0.01 );
-
-}
-
-Habitat::Habitat( int sx, int sy, int fe, double density ) {
+Habitat::Habitat( int sx, int sy, int fe, double density, util::Chance* ch ) {
 
 	sizeX = sx;
 	sizeY = sy;
 	foodEnergyVal = fe;
 	foodReserve = MatrixXf::Zero( sizeX, sizeY );
 	distributeFood( density );
+	fate = ch;
 
 }
 
-Habitat::Habitat( int sx, int sy, int fe, int nMeadows, int rMeadows, float grMeadows ) {
+Habitat::Habitat( int sx, int sy, int fe, int nMeadows, int rMeadows, float grMeadows, util::Chance* ch ) {
 
 	sizeX = sx;
 	sizeY = sy;
 	foodEnergyVal = fe;
 	foodReserve = MatrixXf::Zero( sizeX, sizeY );
+	fate = ch;
 
 	for ( int i = 0; i < nMeadows; ++i ) {
 
@@ -82,7 +77,7 @@ void Habitat::birth( Animat* ani ) {
 
 
 
-void Habitat::death( const char* name ) {
+void Habitat::death( std::string name ) {
 
 	population.erase( name );
 
@@ -100,12 +95,12 @@ void Habitat::growMeadows() {
 	}
 
 	// fractional chance of a new meadow appearing
-	if ( util::randFromUnitInterval() < 0.01 ) {
+	if ( fate->uniformRandomUnitFloat() < 0.01 ) {
 
-		int randX = util::randIntFrom( 0, sizeX );
-		int randY = util::randIntFrom( 0, sizeY );
+		int randX = fate->uniformRandomIntFrom( 0, sizeX );
+		int randY = fate->uniformRandomIntFrom( 0, sizeY );
 
-		Meadow* m = new Meadow( randX, randY, 100, 0.5, this );
+		Meadow* m = new Meadow( randX, randY, 100, 0.5, this );	// TODO: parameterize this!
 		meadows.push_back( m );
 
 	}

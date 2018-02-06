@@ -46,6 +46,9 @@ GLFWwindow* fcmWindow;
 bool simulationProceed = false;
 
 
+// random number generator
+util::Chance* fate;
+
 
 int test();
 int test_foodGrowth_visual();
@@ -60,7 +63,16 @@ int test_random();
 
 int main( void ) {
 
-	srand( time(0) );
+
+	// init timer
+	time_t t_start = time( NULL );
+
+
+//	srand( time(0) );	deprecated
+
+	// initiate randomness
+	std::random_device rd;
+	fate = new util::Chance( rd() );
 
 	// empty files
 //	util::cleanFile( fname_pop );
@@ -70,12 +82,18 @@ int main( void ) {
 
 
 //	return test_algebra();
-//	return test_foodGrowth_visual();
+	return test_foodGrowth_visual();
 
-	return test_random();
+//	test_random();
 
 	// TODO: nicely put stuff together - happening and rendering
 
+
+	// stop timer and print exec tieme
+	time_t t_end = time( NULL );
+	cout << endl << endl << "Runtime: " << difftime( t_end, t_start ) << " seconds" << endl;
+
+	return 0;
 
 }
 
@@ -106,7 +124,7 @@ int test_foodGrowth_visual() {
 //	double foodDensity = 0.0001;
 
 //	Habitat env( sx, sy, foodEnergy, foodDensity );
-	Habitat env( sx, sy, foodEnergy, 50, 75, 0.3);
+	Habitat env( sx, sy, foodEnergy, 20, 120, 0.1, fate );
 
 
 
@@ -171,7 +189,7 @@ int test() {
 	double density = 0.001;
 	int n_animats = 20;
 
-	Habitat env( sx, sy, foodEnergy, density );
+	Habitat env( sx, sy, foodEnergy, density, fate );
 
 	// init animats
 	for ( int i = 0; i < n_animats; ++i )
@@ -210,7 +228,7 @@ int test() {
 	{
 
 		// cannot remove dead animats in their execution loop, hence they are added to obituary and buried later
-		vector<const char*> obituary;
+		vector<std::string> obituary;
 		for ( auto &nm_ani : env.population )
 		{
 			Animat* ani = nm_ani.second;
@@ -255,7 +273,7 @@ int test_with_visuals() {
 	int foodEnergy = 8;
 	double density = 0.001;
 
-	Habitat env ( sx, sy, foodEnergy, density );
+	Habitat env ( sx, sy, foodEnergy, density, fate );
 
 	int n_animats = 20;
 
@@ -341,8 +359,8 @@ int test_with_visuals() {
 
 //		if ( simulationProceed ) {
 
-			vector<const char*> obituary;
-			map<const char*, Animat*>::iterator it;
+			vector<std::string> obituary;
+			map<std::string, Animat*>::iterator it;
 			for ( it = env.population.begin(); it != env.population.end(); ++it ){
 
 				it->second->reason();
@@ -363,7 +381,7 @@ int test_with_visuals() {
 			}
 
 			if ( obituary.size() > 0 ){
-				vector<const char*>::iterator it;
+				vector<std::string>::iterator it;
 				for ( it = obituary.begin(); it != obituary.end(); ++it )
 					env.death( *it );
 			}
@@ -463,9 +481,8 @@ int animat_test( Animat* ani, Habitat* env ) {
 int test_random() {
 
 	int n_stars = 100;
-	int n_rolls = 10000;
+	int n_rolls = 100000;
 
-	std::random_device rd;
 //	std::mt19937 twister( rd() );
 //
 //	std::uniform_int_distribution<int> intdist( 0, 100 );
@@ -475,9 +492,8 @@ int test_random() {
 //	std::array<float,3> weights {5.0, 8.0, 2.0};
 //	std::piecewise_linear_distribution<float> lindist( intervals.begin(), intervals.end(), weights.begin() );
 
-	util::Chance* fate = new util::Chance( rd() );
 
-
+	int testBool[2] = {0};
 	int testInt[10] = {0};
 	int testFloat[10] = {0};
 	int testLinear[10] = {0};
@@ -485,21 +501,30 @@ int test_random() {
 
 	for ( int i = 0; i < n_rolls; i++ ) {
 
+		bool randbool = fate->randomBoolean();
+		++testBool[randbool];
+
 //		int randint = intdist( twister );
-		int randint = fate->uniformRandomInt( 0, 100 );
+		int randint = fate->uniformRandomIntFrom( 0, 100 );
 		index = (int) floor( randint / 10 );
 		++testInt[index];
 
 //		float randf = floatdist( twister );
-		float randf = fate->uniformRandomFloat( 0.0, 1.0 );
+		float randf = fate->uniformRandomUnitFloat();
 		index = (int) floor( randf * 10 );
 		++testFloat[index];
 
 //		float randlin = lindist( twister );
-		float randlin = fate->linearDescRandomFloat( 0.0, 10.0 );
+		float randlin = fate->linearDescRandomFloatFrom( 0.0, 10.0 );
 		index = (int) floor( randlin );
 		++testLinear[index];
 
+	}
+
+	cout << "Uniform boolean distribution results:" << endl;
+	for ( int i = 0; i < 2; ++i ) {
+		cout << i << ":\t";
+		cout << string( testInt[i]*n_stars/n_rolls, '*' ) << endl;
 	}
 
 	cout << "Uniform integer distribution from 0 to 100 results:" << endl;

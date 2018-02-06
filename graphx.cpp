@@ -11,6 +11,7 @@
 #include <iostream>
 #include <iterator>
 #include <stdio.h>
+#include <string>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -196,8 +197,8 @@ namespace gx {
 		}
 
 		// add red animat points
-		std::map<const char*, Animat*>::iterator it;
-		for (  it = environment->population.begin(); it != environment->population.end(); ++it ) {
+		std::map<std::string, Animat*>::iterator it;
+		for ( it = environment->population.begin(); it != environment->population.end(); ++it ) {
 
 			points_buffer_data[counter*5 + 0] = float( 2.0f * it->second->posX / float(env_w) - 1 );	// X
 			points_buffer_data[counter*5 + 1] = float( 2.0f * it->second->posY / float(env_h) - 1 );	// Y

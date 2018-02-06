@@ -25,8 +25,8 @@ namespace util {
 	Eigen::VectorXd sigmoid( Eigen::VectorXd );
 	Eigen::VectorXd tanh( Eigen::VectorXd );
 
+	// following functions are deprecated since implementation of util::Chance
 	int randIntFrom( int, int );
-//	double randFromUnitInterval();
 	float randFromUnitInterval();
 
 	int getWrappedIndex( int, int );

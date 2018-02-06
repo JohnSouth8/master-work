@@ -47,16 +47,13 @@ namespace util {
 
 	}
 
-	// TODO: do not use rand() function! Use random_device and mersenne twister or something such
+	// deprecated, use util::Chance
 	int randIntFrom( int min, int max ) {
 		int range = max - min + 1;
 		return rand() % range + min;
 	}
 
-//	double randFromUnitInterval() {
-//		return double( rand() ) / double( RAND_MAX );
-//	}
-
+	// deprecated, use util::Chance
 	float randFromUnitInterval() {
 		return float( rand() ) / float( RAND_MAX );
 	}
