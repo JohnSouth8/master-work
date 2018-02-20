@@ -14,6 +14,7 @@
 #include <ctime>
 #include <cmath>
 #include <array>
+#include <algorithm>
 #include <Eigen/Dense>
 #include <unistd.h>
 
@@ -40,6 +41,7 @@ string fname_fcm_cs = "fcm_0.2.concepts.txt";
 string fname_fcm = "fcm_0.2.txt";
 string fname_test = "test.txt";
 
+string fname_environment_ini = "environment.ini";
 
 GLFWwindow* simWindow;
 GLFWwindow* fcmWindow;
@@ -52,6 +54,7 @@ util::Chance* fate;
 
 int test();
 int test_foodGrowth_visual();
+int test_with_visuals();
 int fcm_test( Animat* );
 int animat_test( Animat*, Habitat* );
 int test_algebra();
@@ -80,14 +83,16 @@ int main( void ) {
 
 //	string fcontent = util::readFileContent( fname_fcm );
 
-
 //	return test_algebra();
-	return test_foodGrowth_visual();
-
+	test_foodGrowth_visual();
+//	test_with_visuals();
 //	test_random();
 
 	// TODO: nicely put stuff together - happening and rendering
 
+
+
+	delete fate;	// TODO: organize destructors everywhere!!
 
 	// stop timer and print exec tieme
 	time_t t_end = time( NULL );
@@ -118,13 +123,14 @@ int test_graphics() {
 
 int test_foodGrowth_visual() {
 
-	int sx = 1000;
-	int sy = 1000;
-	int foodEnergy = 1;
+//	int sx = 1000;
+//	int sy = 1000;
+//	int foodEnergy = 1;
 //	double foodDensity = 0.0001;
 
 //	Habitat env( sx, sy, foodEnergy, foodDensity );
-	Habitat env( sx, sy, foodEnergy, 20, 120, 0.1, fate );
+//	Habitat env( sx, sy, foodEnergy, 15, 100, 0.05, fate );
+	Habitat env( fname_environment_ini, fate );
 
 
 
@@ -270,10 +276,11 @@ int test_with_visuals() {
 
 	int sx = 1000;
 	int sy = 1000;
-	int foodEnergy = 8;
-	double density = 0.001;
+	int foodEnergy = 5;
+//	double density = 0.001;
 
-	Habitat env ( sx, sy, foodEnergy, density, fate );
+//	Habitat env ( sx, sy, foodEnergy, density, fate );
+	Habitat env( sx, sy, foodEnergy, 15, 150, 0.05, fate );
 
 	int n_animats = 20;
 
@@ -293,7 +300,7 @@ int test_with_visuals() {
 				0, 			// velocity
 				10,			// max velocity
 				randdir, 	// direction
-				150, 		// energy
+				400, 		// energy
 				40, 		// vision range
 				2*M_PI, 	// vision angle  TODO: implement it's usage
 				4.0,		// reach
@@ -351,13 +358,23 @@ int test_with_visuals() {
 
 	glfwMakeContextCurrent( simWindow );
 
+
+	// preinit the food a bit
+	for ( int i = 0; i < 150; ++i ) {
+		env.growMeadows();
+	}
+
+
 	int time_counter = 0;
+	int n_deaths;
 
 	// drawing loop
-	while ( !glfwWindowShouldClose( simWindow ) /*&& !glfwWindowShouldClose( fcmWindow )*/ ) {
+	while ( n_deaths < n_animats && !glfwWindowShouldClose( simWindow ) /*&& !glfwWindowShouldClose( fcmWindow )*/ ) {
 
 
 //		if ( simulationProceed ) {
+
+			env.growMeadows();
 
 			vector<std::string> obituary;
 			map<std::string, Animat*>::iterator it;
@@ -374,6 +391,7 @@ int test_with_visuals() {
 
 				if ( it->second->energy <= 0 ) {
 					obituary.push_back( it->second->name );
+					++n_deaths;
 					cout << "The animat " << it->second->name << " survived " << time_counter << " steps of the simulation" << endl;
 				}
 
@@ -481,7 +499,7 @@ int animat_test( Animat* ani, Habitat* env ) {
 int test_random() {
 
 	int n_stars = 100;
-	int n_rolls = 100000;
+	int n_rolls = 10000;
 
 //	std::mt19937 twister( rd() );
 //
@@ -497,6 +515,8 @@ int test_random() {
 	int testInt[10] = {0};
 	int testFloat[10] = {0};
 	int testLinear[10] = {0};
+	int testNormal[10] = {0};
+	int testNormal2[10] = {0};
 	int index = 0;
 
 	for ( int i = 0; i < n_rolls; i++ ) {
@@ -519,6 +539,19 @@ int test_random() {
 		index = (int) floor( randlin );
 		++testLinear[index];
 
+		float randGauss = fate->normalFloat( 0.05, 0.01 );
+		if ( randGauss > 0.0 && randGauss < 0.1 ) {
+			index = (int) floor( randGauss * 100 );
+			++testNormal[index];
+		}
+	}
+
+	vector<float> rands = fate->normalFloatsString( n_rolls, 5.0, 3.0 );
+	for ( auto rnd : rands ) {
+		if ( rnd > 0.0 && rnd < 10.0 ) {
+			index = (int) floor( rnd );
+			++testNormal2[index];
+		}
 	}
 
 	cout << "Uniform boolean distribution results:" << endl;
@@ -543,6 +576,18 @@ int test_random() {
 	for ( int i = 0; i < 10; ++i ) {
 		cout << i << "-" << (i+1) << ":\t";
 		cout << string( testLinear[i]*n_stars/n_rolls, '*' ) << endl;
+	}
+
+	cout << "Normal distribution with m=0.05 and std=0.005 results: " << endl;
+	for ( int i = 0; i < 10; ++i ) {
+		cout << (float)i/100 << "-" << (float)(i+1)/100 << ":\t";
+		cout << string( testNormal[i]*n_stars/n_rolls, '*' ) << endl;
+	}
+
+	cout << "Normal distribution with m=5.0 and std=2.2 results: " << endl;
+	for ( int i = 0; i < 10; ++i ) {
+		cout << i << "-" << (i+1) << ":\t";
+		cout << string( testNormal2[i]*n_stars/n_rolls, '*' ) << endl;
 	}
 
 	return 0;

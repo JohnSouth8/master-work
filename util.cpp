@@ -148,13 +148,39 @@ namespace util {
 
 		std::string fileContent = "";
 		std::string line;
-		while( std::getline( inputFile, line ) ) {
+		while ( std::getline( inputFile, line ) ) {
 			fileContent += line;
 			fileContent += '\n';
 		}
 
 		inputFile.close();
 		return fileContent;
+
+	}
+
+
+
+	std::map<std::string, float> readSimpleIni( std::string fname ) {
+
+		std::ifstream inputFile;
+		inputFile.open( fname.c_str(), std::ifstream::in );
+
+		std::map<std::string, float> retmap;
+
+		std::string line;
+		while ( std::getline( inputFile, line ) ) {
+
+			int eqPos = line.find( "=" );
+			std::string keyword = line.substr( 0, eqPos );
+			std::string value = line.substr( eqPos + 1 );
+			float fval = atof( value.c_str() );
+
+			retmap[keyword] = fval;
+
+		}
+
+		inputFile.close();
+		return retmap;
 
 	}
 

@@ -39,7 +39,7 @@ Habitat::Habitat( int sx, int sy, int fe, double density, util::Chance* ch ) {
 
 }
 
-Habitat::Habitat( int sx, int sy, int fe, int nMeadows, int rMeadows, float grMeadows, util::Chance* ch ) {
+Habitat::Habitat( int sx, int sy, int fe, int n_meadows, int rAvg_meadows, float grAvg_meadows, util::Chance* ch ) {
 
 	sizeX = sx;
 	sizeY = sy;
@@ -47,22 +47,64 @@ Habitat::Habitat( int sx, int sy, int fe, int nMeadows, int rMeadows, float grMe
 	foodReserve = MatrixXf::Zero( sizeX, sizeY );
 	fate = ch;
 
-	for ( int i = 0; i < nMeadows; ++i ) {
+	std::vector<int> rs_m = fate->normalIntsString( n_meadows, rAvg_meadows, rAvg_meadows/5 );
+	std::vector<float> grs_m = fate->normalFloatsString( n_meadows, grAvg_meadows, grAvg_meadows/10 );
+
+	for ( int i = 0; i < n_meadows; ++i ) {
 
 		int randX = util::randIntFrom( 0, sizeX );
 		int randY = util::randIntFrom( 0, sizeY );
 
-		Meadow* m = new Meadow( randX, randY, rMeadows, grMeadows, this );
+		Meadow* m = new Meadow( randX, randY, rs_m[i], grs_m[i], this );
 		meadows.push_back( m );
 
 	}
 
 }
 
+Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
+
+	std::map<std::string, float> ini = util::readSimpleIni( iniFileName );
+
+	// basic params
+	sizeX = static_cast<int>( ini["size_x"] );
+	sizeY = static_cast<int>( ini["size_y"] );
+	foodEnergyVal = static_cast<int>( ini["food_energy"] );
+
+	// member structures
+	fate = ch;
+	foodReserve = MatrixXf::Zero( sizeX, sizeY );
+
+	// food emanators - meadows
+	int n_mdw = static_cast<int>( ini["n_meadows"] );
+	float r_mean_mdw = ini["radius_mean_meadows"];
+	float r_std_mdw = ini["radius_std_meadows"];
+	float gr_mean_mdw = ini["growrate_mean_meadows"];
+	float gr_std_mdw = ini["growrate_std_meadows"];
+
+	std::vector<int> xs = fate->nUniformRandomIntsFrom( n_mdw, 0, sizeX );
+	std::vector<int> ys = fate->nUniformRandomIntsFrom( n_mdw, 0, sizeY );
+	std::vector<int> rs = fate->normalIntsString( n_mdw, r_mean_mdw, r_std_mdw );
+	std::vector<float> grs = fate->normalFloatsString( n_mdw, gr_mean_mdw, gr_std_mdw );
+
+	for ( int i = 0; i < n_mdw; ++i ) {
+		Meadow* m = new Meadow( xs[i], ys[i], rs[i], grs[i], this );
+		meadows.push_back( m );
+	}
+
+
+}
+
+
 /* destructor */
 
 Habitat::~Habitat() {
+	// destroy objects that pointers in data structures are pointing at: animats, meadows,...
+	for ( auto m : meadows )
+		delete m;
 
+	for ( auto a : population )
+		delete a.second;
 }
 
 
@@ -79,6 +121,7 @@ void Habitat::birth( Animat* ani ) {
 
 void Habitat::death( std::string name ) {
 
+	delete population[name];
 	population.erase( name );
 
 }
@@ -100,13 +143,13 @@ void Habitat::growMeadows() {
 		int randX = fate->uniformRandomIntFrom( 0, sizeX );
 		int randY = fate->uniformRandomIntFrom( 0, sizeY );
 
-		Meadow* m = new Meadow( randX, randY, 100, 0.5, this );	// TODO: parameterize this!
+		Meadow* m = new Meadow( randX, randY, 100, 0.05, this );	// TODO: parameterize this!
 		meadows.push_back( m );
 
 	}
 
 
-	std::cout << "Amount of new food: " << grown << std::endl;
+//	std::cout << "Amount of new food: " << grown << std::endl;
 
 }
 
@@ -245,8 +288,6 @@ int Habitat::getYSize() {
 Eigen::MatrixXf Habitat::getFoodReserve() {
 	return foodReserve;
 }
-
-
 
 
 

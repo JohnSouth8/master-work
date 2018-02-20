@@ -9,6 +9,7 @@
 #define CHANCE_H_
 
 #include <random>
+#include <vector>
 
 namespace util {
 
@@ -31,12 +32,20 @@ public:
 
 	// custom distributions
 	int uniformRandomIntFrom( int, int );
+	std::vector<int> nUniformRandomIntsFrom( int, int, int );
 	int linearDescRandomIntFrom( int, int );
 	int linearAscRandomIntFrom( int, int );
 
 	float uniformRandomFloatFrom( float, float );
+	std::vector<float> nUniformRandomFloatsFrom( int, float, float );
 	float linearDescRandomFloatFrom( float, float );
 	float linearAscRandomFloatFrom( float, float );
+
+	float normalFloat( float, float );
+	std::vector<float> normalFloatsString( int, float, float );
+
+	int normalInt( float, float );
+	std::vector<int> normalIntsString( int, float, float );
 
 
 };

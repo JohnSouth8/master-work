@@ -17,8 +17,8 @@ Meadow::Meadow( int cx, int cy, int r, float gr, Habitat* env ) {
 
 	centerX = cx;
 	centerY = cy;
-	radius = r;
-	growRate = gr;
+	radius = abs( r );		// in case of some random negative outlier
+	growRate = fabs( gr );	// in case of some random negative outlier
 	environment = env;
 	// TODO: implement over-grazing - death of a meadow when no food is left
 
@@ -40,7 +40,8 @@ int Meadow::grow() {
 
 //		int randOffX = environment->fate->uniformRandomIntFrom( 0, radius );
 //		int randOffY = environment->fate->uniformRandomIntFrom( 0, radius );
-		float offset = environment->fate->linearDescRandomFloatFrom( 0, radius );
+//		float offset = environment->fate->linearDescRandomFloatFrom( 0, radius );
+		float offset = environment->fate->uniformRandomFloatFrom( 0, radius );
 		float angle = environment->fate->uniformRandomFloatFrom( -3.1416, 3.1416 );
 
 		int offsetX = offset * cos( angle );

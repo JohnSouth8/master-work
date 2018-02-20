@@ -42,6 +42,7 @@ namespace util {
 	bool compareFoodSensations( ecosystem::f_sens, ecosystem::f_sens );
 
 	std::string readFileContent( std::string );
+	std::map<std::string, float> readSimpleIni( std::string );
 	void cleanFile ( std::string );
 	void printMatrixToFile( Eigen::MatrixXd, std::string, bool = true );
 	void printSensationsToFile( std::vector<ecosystem::f_sens>, std::string );

@@ -32,6 +32,7 @@ public:
 	// constructors
 	Habitat( int, int, int, double, util::Chance* );
 	Habitat( int, int, int, int, int, float, util::Chance* );
+	Habitat( std::string, util::Chance* );
 	virtual ~Habitat();
 
 	// member variables
