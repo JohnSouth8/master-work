@@ -77,15 +77,16 @@ Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
 
 	// food emanators - meadows
 	int n_mdw = static_cast<int>( ini["n_meadows"] );
-	float r_mean_mdw = ini["radius_mean_meadows"];
-	float r_std_mdw = ini["radius_std_meadows"];
-	float gr_mean_mdw = ini["growrate_mean_meadows"];
-	float gr_std_mdw = ini["growrate_std_meadows"];
+	p_newMeadow = ini["probability_new_meadow"];
+	mean_rMeadows = ini["radius_mean_meadows"];
+	std_rMeadows = ini["radius_std_meadows"];
+	mean_grMeadows = ini["growrate_mean_meadows"];
+	std_grMeadows = ini["growrate_std_meadows"];
 
 	std::vector<int> xs = fate->nUniformRandomIntsFrom( n_mdw, 0, sizeX );
 	std::vector<int> ys = fate->nUniformRandomIntsFrom( n_mdw, 0, sizeY );
-	std::vector<int> rs = fate->normalIntsString( n_mdw, r_mean_mdw, r_std_mdw );
-	std::vector<float> grs = fate->normalFloatsString( n_mdw, gr_mean_mdw, gr_std_mdw );
+	std::vector<int> rs = fate->normalIntsString( n_mdw, mean_rMeadows, std_rMeadows );
+	std::vector<float> grs = fate->normalFloatsString( n_mdw, mean_grMeadows, std_grMeadows );
 
 	for ( int i = 0; i < n_mdw; ++i ) {
 		Meadow* m = new Meadow( xs[i], ys[i], rs[i], grs[i], this );
@@ -138,12 +139,14 @@ void Habitat::growMeadows() {
 	}
 
 	// fractional chance of a new meadow appearing
-	if ( fate->uniformRandomUnitFloat() < 0.01 ) {
+	if ( fate->uniformRandomUnitFloat() < p_newMeadow ) {
 
-		int randX = fate->uniformRandomIntFrom( 0, sizeX );
-		int randY = fate->uniformRandomIntFrom( 0, sizeY );
+		int cx = fate->uniformRandomIntFrom( 0, sizeX );
+		int cy = fate->uniformRandomIntFrom( 0, sizeY );
+		int r = fate->normalInt( mean_rMeadows, std_rMeadows );
+		float gr = fate->normalFloat( mean_grMeadows, std_grMeadows );
 
-		Meadow* m = new Meadow( randX, randY, 100, 0.05, this );	// TODO: parameterize this!
+		Meadow* m = new Meadow( cx, cy, r, gr, this );	// TODO: parameterize this!
 		meadows.push_back( m );
 
 	}
@@ -154,7 +157,7 @@ void Habitat::growMeadows() {
 }
 
 
-
+// deprecated
 void Habitat::distributeFood( double density ) {
 
 	float fraction;
@@ -214,8 +217,6 @@ void Habitat::growFood_stable() {
 
 // optimize the shit out of this!!!
 void Habitat::growFoodSlow() {
-
-	// TODO: get all these numbers into parameters!
 
 	MatrixXf newFood = MatrixXf::Zero( sizeX, sizeY );
 //	MatrixXf highProbMask = MatrixXf::Constant( 5, 5, 0.005 );

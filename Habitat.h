@@ -38,12 +38,17 @@ public:
 	// member variables
 	int sizeX;
 	int sizeY;
-	int foodEnergyVal;
 	std::map<std::string, Animat*> population;
 	Eigen::MatrixXf foodReserve;			// possibly swap this with Eigen::Array
-	std::vector<Meadow*> meadows;
 	util::Chance* fate;
 
+	int foodEnergyVal;
+	std::vector<Meadow*> meadows;
+	float mean_rMeadows;
+	float std_rMeadows;
+	float mean_grMeadows;
+	float std_grMeadows;
+	float p_newMeadow;
 
 
 	// member functions
