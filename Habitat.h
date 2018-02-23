@@ -18,6 +18,7 @@
 
 
 
+extern const float PI;
 
 namespace ecosystem {
 
@@ -30,8 +31,8 @@ class Habitat {
 public:
 
 	// constructors
-	Habitat( int, int, int, double, util::Chance* );
-	Habitat( int, int, int, int, int, float, util::Chance* );
+//	Habitat( int, int, int, double, util::Chance* );
+//	Habitat( int, int, int, int, int, float, util::Chance* );
 	Habitat( std::string, util::Chance* );
 	virtual ~Habitat();
 
@@ -50,16 +51,24 @@ public:
 	float std_grMeadows;
 	float p_newMeadow;
 
+	// helper variables for distance computation
+	Eigen::MatrixXf animatDistances;
+	std::vector<std::string> animatOrder;		// order of animats in the population map
+
 
 	// member functions
 	void distributeFood( double );
 	void growMeadows();
 	void growFood_stable();
 	void growFoodSlow();
-	float consumeFood( int, int );
+	int consumeFood( int, int );
 
+	void populateWorld( std::string, std::string, std::string );
 	void birth( Animat* );
 	void death( std::string );
+	std::string generateAnimatName();
+
+	void measureDistances();
 
 	int getXSize();
 	int getYSize();

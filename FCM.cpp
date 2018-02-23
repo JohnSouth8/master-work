@@ -29,8 +29,8 @@ FCM::FCM( int nc ) {
 	nInternal = 0;
 	nOutput = 0;
 //	concepts = std::vector<string>( nConcepts );
-	state = VectorXd::Zero( nConcepts );		// TODO: rename
-	L = MatrixXd::Zero( nConcepts, nConcepts );
+	state = VectorXf::Zero( nConcepts );		// TODO: rename. Edit: why?
+	L = MatrixXf::Zero( nConcepts, nConcepts );
 
 }
 
@@ -79,7 +79,7 @@ void FCM::loadConceptsFromFile( string filename ) {
 
 
 
-void FCM::setState( VectorXd fcm ) {
+void FCM::setState( VectorXf fcm ) {
 	state = fcm;
 }
 
@@ -105,7 +105,7 @@ void FCM::loadLinkMatrixFromFile( string filename ) {
 
 
 
-void FCM::applySensations( VectorXd sensations ) {
+void FCM::applySensations( VectorXf sensations ) {
 
 	// if sensations is not the input vector
 	if ( sensations.size() != nInput )
@@ -118,7 +118,7 @@ void FCM::applySensations( VectorXd sensations ) {
 
 	// delta = state^T * L
 	// newstate = transform(state + delta)
-	VectorXd dS = state.transpose() * L;
+	VectorXf dS = state.transpose() * L;
 	state = util::tanh( state + dS );		// << modified Kosko rule: A(t+1) = f(A(t) + dA); f:= tanh
 
 	// TODO: maybe more than iteration with the same sensations will be needed to reach a decision
@@ -127,14 +127,14 @@ void FCM::applySensations( VectorXd sensations ) {
 
 
 
-VectorXd FCM::getOutput() {
+VectorXf FCM::getOutput() {
 	return state.tail( nOutput );
 }
 
 
 
 
-VectorXd FCM::getState() {
+VectorXf FCM::getState() {
 	return state;
 }
 

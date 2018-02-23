@@ -22,37 +22,56 @@ using namespace Eigen;
 namespace ecosystem {
 
 
-Animat::Animat() {
+//Animat::Animat() {
+//
+//	name = generateName();
+//	posX = 0.0;
+//	posY = 0.0;
+//	velocity = 0.0;
+//	direction = 0.0;
+//	energy = 0;
+//	maxEnergy = 100;
+//	senseRadius = 1;
+//	senseAngle = 2*M_PI;
+//
+//}
 
-	name = generateName();
-	posX = 0.0;
-	posY = 0.0;
-	velocity = 0.0;
-	direction = 0.0;
-	energy = 0;
-	maxEnergy = 100;
-	senseRadius = 1;
-	senseAngle = 2*M_PI;
 
-}
+//Animat::Animat( float px, float py, float v, float maxV, float dir, float e, float senseR, float senseA, float rch, Habitat* hab ) {
+//
+////	name = generateName();
+//	posX = px;
+//	posY = py;
+//	velocity = v;
+//	maxVelocity = maxV;
+//	direction = dir;
+//	energy = e;
+//	maxEnergy = e;	// TODO: sort out
+//	senseRadius = senseR;
+//	senseAngle = senseA;
+//	reach = rch;
+//	environment = hab;
+//
+//}
 
-// TODO: think about initializer lists
-Animat::Animat( double px, double py, double v, double maxV, double dir, float e, double senseR, double senseA, double rch, Habitat* hab ) {
-
-	name = generateName();
-	posX = px;
-	posY = py;
-	velocity = v;
-	maxVelocity = maxV;
-	direction = dir;
-	energy = e;
-	maxEnergy = e;	// TODO: sort out
-	senseRadius = senseR;
-	senseAngle = senseA;
-	reach = rch;
-	environment = hab;
-
-}
+Animat::Animat( std::string nm, float sz, float r_v, float a_v, float r_o, float max_v, float max_e, float px, float py, float dir, float v, float e, Habitat* env ) :
+	name( nm ),
+	size( sz ),
+	reach( 2*sz ),
+	visionRange( r_v ),
+	visionAngle( a_v ),
+	olfactoryRange( r_o ),
+	maxVelocity( max_v ),
+	maxEnergy( max_e ),
+	posX( px ),
+	posY( py ),
+	direction( dir ),
+	velocity( v ),
+	energy( e ),
+	comfort( 50 ),
+	fatigue( 0 ),
+	environment( env )
+{}
 
 Animat::~Animat() {
 
@@ -60,23 +79,7 @@ Animat::~Animat() {
 
 
 
-std::string Animat::generateName() {
-
-	int charmin = 65, charmax = 90, randint;
-	std::string sname;
-
-	for ( int i = 0; i < 10; ++i ) {
-		randint = util::randIntFrom( charmin, charmax );
-		sname.push_back( randint );
-	}
-
-	return sname;
-
-}
-
-
-
-void Animat::adjustVelocity( double factor ) {
+void Animat::adjustVelocity( float factor ) {
 
 	if ( velocity == 0)
 		velocity += factor*maxVelocity;
@@ -92,13 +95,13 @@ void Animat::adjustVelocity( double factor ) {
 
 
 
-void Animat::changeVelocityAbsolute( double delta ) {
+void Animat::changeVelocityAbsolute( float delta ) {
 	velocity += delta;
 }
 
 
 
-void Animat::setVelocity( double v_new ) {
+void Animat::setVelocity( float v_new ) {
 	velocity = v_new;
 }
 
@@ -108,7 +111,7 @@ void Animat::move() {
 
 	int env_x = environment->getXSize();
 	int env_y = environment->getYSize();
-	double newX, newY, deltaX, deltaY;
+	float newX, newY, deltaX, deltaY;
 
 	deltaX = velocity * cos( direction );
 	deltaY = velocity * sin( direction );
@@ -151,15 +154,15 @@ int Animat::eat( int indexX, int indexY ) {
 }
 
 
-void Animat::turn( double rads ) {
+void Animat::turn( float rads ) {
 
 	direction += rads;
-	direction = fmod( direction, 2*M_PI );
+	direction = fmod( direction, 2*PI );
 	// when angles exceed +- PI, they should be mirrored across the x-axis
-	if ( direction > M_PI )
-		direction = -2*M_PI - direction;
-	if ( direction < -M_PI )
-		direction = 2*M_PI + direction;
+	if ( direction > PI )
+		direction = -2*PI - direction;
+	if ( direction < -PI )
+		direction = 2*PI + direction;
 
 }
 
@@ -173,12 +176,12 @@ void Animat::sense_analytic() {
 	int env_y = environment->getYSize();
 
 	// check all points in local (+- r squarely) neighbourhood if they are inside the circle
-	int x_max = std::ceil( posX + senseRadius );
-	int y_max = std::ceil( posY + senseRadius );
-	int x_min = std::floor( posX - senseRadius );
-	int y_min = std::floor( posY - senseRadius );
+	int x_max = std::ceil( posX + visionRange );
+	int y_max = std::ceil( posY + visionRange );
+	int x_min = std::floor( posX - visionRange );
+	int y_min = std::floor( posY - visionRange );
 
-	double reach = pow( senseRadius, 2 );
+	float sense_sq = pow( visionRange, 2 );
 	// TODO: do this with an Eigen block, not looping
 	for ( int x = x_min; x <= x_max; ++x ) {
 		for ( int y = y_min; y <= y_max; ++y ) {
@@ -188,8 +191,8 @@ void Animat::sense_analytic() {
 			int iy = util::getWrappedIndex( y, env_y );
 
 			if ( foods(ix, iy) != 0 ) {
-				double dist = pow( (x - posX), 2 ) + pow( (y - posY), 2 );
-				if ( dist <= reach ) {
+				float dist = pow( (x - posX), 2 ) + pow( (y - posY), 2 );
+				if ( dist <= sense_sq ) {
 					addSensedObject( {
 							ix,
 							iy,
@@ -270,7 +273,7 @@ void Animat::reason() {
 
 //	cout << cognition.getState().transpose() << endl;
 
-	VectorXd motor = cognition.getOutput();
+	VectorXf motor = cognition.getOutput();
 
 	react( motor );
 
@@ -300,7 +303,7 @@ void Animat::sense() {
 //		min_dist = senseRadius;
 
 	bool isFood = false;
-	float min_dist = senseRadius;
+	float min_dist = visionRange;
 	float dAngle = util::randFromUnitInterval() - 0.5;		// if no food, angle is random somewhere ahead
 	if ( sensedObjs.size() > 0 ) {
 
@@ -312,13 +315,13 @@ void Animat::sense() {
 		float dY = foodY - posY;
 
 		// if food is over the edge
-		if ( dX > senseRadius ) {
+		if ( dX > visionRange ) {
 			if ( foodX > posX )
 				dX = foodX - (posX + environment->getXSize());
 			else
 				dX = (foodX + environment->getXSize()) - posX;
 		}
-		if ( dY > senseRadius ) {
+		if ( dY > visionRange ) {
 			if ( foodY > posY )
 				dY = foodY - (posY + environment->getYSize());
 			else
@@ -326,18 +329,18 @@ void Animat::sense() {
 		}
 
 		// unit vector in animat's direction
-		Eigen::Vector2d v( cos( direction ), sin( direction ) );
+		Eigen::Vector2f v( cos( direction ), sin( direction ) );
 		// vector from animat to food
-		Eigen::Vector2d g( dX, dY );
+		Eigen::Vector2f g( dX, dY );
 
 		dAngle = util::getAngleBetween( v, g );
 		// when angles are more or less to the left of the vertical, atan2 returns large values which
 		//  lead to turning in the wrong direction (over the x-axis at 0rad) rather than shorter turns
 		//  (over the x-axis at PIrad), thus those values are added to the opposite-signed full circle
-		if ( dAngle > M_PI )
-			dAngle = -2*M_PI + dAngle;
-		if ( dAngle < -M_PI )
-			dAngle = 2*M_PI + dAngle;
+		if ( dAngle > PI )
+			dAngle = -2*PI + dAngle;
+		if ( dAngle < -PI )
+			dAngle = 2*PI + dAngle;
 
 		isFood = true;
 
@@ -372,12 +375,12 @@ void Animat::sense() {
 
 
 	if ( dAngle > 0 )
-		sensations(2) = dAngle / M_PI;
+		sensations(2) = dAngle / PI;
 	else
 		sensations(2) = 0;
 
 	if ( dAngle < 0 )
-		sensations(3) = -dAngle / M_PI;
+		sensations(3) = -dAngle / PI;
 	else
 		sensations(3) = 0;
 
@@ -389,7 +392,7 @@ void Animat::sense() {
 		sensations(4) = 0;
 
 	// speed
-	double speed = -1 + 2 * ( velocity / maxVelocity );
+	float speed = -1 + 2 * ( velocity / maxVelocity );
 	sensations(5) = speed;
 
 }
@@ -397,7 +400,7 @@ void Animat::sense() {
 
 
 // for FCM v0.2
-void Animat::react( VectorXd motor ) {
+void Animat::react( VectorXf motor ) {
 
 	// defuzzify motor concepts' commands and apply them to the world
 
@@ -413,11 +416,11 @@ void Animat::react( VectorXd motor ) {
 
 	// only one turn action at a time: 		<< TODO: maybe both? opposing forces, ya'know....
 	if ( motor(1) > motor(2) && motor(1) > 0.15 ) {
-		double ta = (motor(1) - 0.15) / 0.75;
+		float ta = (motor(1) - 0.15) / 0.75;
 		turn( ta );
 	}
 	else if ( motor(2) > motor(1) && motor(2) > 0.15 ) {
-		double ta = (motor(2) - 0.15) / 0.75;
+		float ta = (motor(2) - 0.15) / 0.75;
 		turn( -ta );
 	}
 
@@ -504,7 +507,7 @@ void Animat::calculateDecision() {
 
 	if ( index == -1 ) {
 
-		float randturn = util::randFromUnitInterval() * M_PI;
+		float randturn = util::randFromUnitInterval() * PI;
 		float randvel = util::randFromUnitInterval() * 5;
 
 		if ( velocity == 0 ) {
@@ -526,8 +529,8 @@ void Animat::calculateDecision() {
 	}
 
 
-	Vector2d v( cos( direction ), sin( direction ) );
-	Vector2d g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
+	Vector2f v( cos( direction ), sin( direction ) );
+	Vector2f g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
 
 	// get absolute angles
 	turn( util::getAngleBetween( v, g ) );
@@ -543,7 +546,7 @@ void Animat::calculateDecision() {
 
 
 void Animat::forgetSensations() {
-	sensations = Eigen::VectorXd::Zero( cognition.getNInput() );
+	sensations = Eigen::VectorXf::Zero( cognition.getNInput() );
 }
 
 
@@ -583,7 +586,7 @@ void Animat::initFCM( int nConcepts, string filename_cs, string filename_fcm ) {
 	cognition = FCM( nConcepts );
 	cognition.loadConceptsFromFile( filename_cs );
 	cognition.loadLinkMatrixFromFile( filename_fcm );
-	sensations = Eigen::VectorXd::Zero( cognition.getNInput() );
+	sensations = Eigen::VectorXf::Zero( cognition.getNInput() );
 }
 
 

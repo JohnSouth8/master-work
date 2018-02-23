@@ -8,6 +8,8 @@
 #ifndef MEADOW_H_
 #define MEADOW_H_
 
+extern const float PI;
+
 namespace ecosystem {
 
 // forward declaration

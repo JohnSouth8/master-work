@@ -22,8 +22,8 @@ namespace ecosystem {
 
 namespace util {
 
-	Eigen::VectorXd sigmoid( Eigen::VectorXd );
-	Eigen::VectorXd tanh( Eigen::VectorXd );
+	Eigen::VectorXf sigmoid( Eigen::VectorXf );
+	Eigen::VectorXf tanh( Eigen::VectorXf );
 
 	// following functions are deprecated since implementation of util::Chance
 	int randIntFrom( int, int );
@@ -33,9 +33,9 @@ namespace util {
 	double getWrappedCoordinate( double, int );
 
 
-	double getAngleBetween( Eigen::Vector2d, Eigen::Vector2d );
+	double getAngleBetween( Eigen::Vector2f, Eigen::Vector2f );
 
-	int countNonZeroElements( Eigen::MatrixXd );
+	int countNonZeroElements( Eigen::MatrixXf );
 
 	std::vector<float> getColourFromGradient( std::vector<float>, std::vector<float>, float );
 
@@ -44,7 +44,7 @@ namespace util {
 	std::string readFileContent( std::string );
 	std::map<std::string, float> readSimpleIni( std::string );
 	void cleanFile ( std::string );
-	void printMatrixToFile( Eigen::MatrixXd, std::string, bool = true );
+	void printMatrixToFile( Eigen::MatrixXf, std::string, bool = true );
 	void printSensationsToFile( std::vector<ecosystem::f_sens>, std::string );
 	void printAnimatLocationsToFile( std::map<const char*, ecosystem::Animat*>, std::string );
 

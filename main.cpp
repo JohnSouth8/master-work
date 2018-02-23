@@ -29,6 +29,8 @@ using namespace Eigen;
 using namespace ecosystem;
 
 
+const float PI = 3.14159;
+
 
 string fname_food0 = "foodReserve0.txt";
 string fname_food1 = "foodReserve1.txt";
@@ -57,10 +59,11 @@ int test_foodGrowth_visual();
 int test_with_visuals();
 int fcm_test( Animat* );
 int animat_test( Animat*, Habitat* );
-int test_algebra();
+//int test_algebra();
 int test_graphics();
 void keyActions( GLFWwindow*, int, int, int, int );
 int test_random();
+int test_bigNumbers();
 
 
 
@@ -84,9 +87,10 @@ int main( void ) {
 //	string fcontent = util::readFileContent( fname_fcm );
 
 //	return test_algebra();
-	test_foodGrowth_visual();
+//	test_foodGrowth_visual();
 //	test_with_visuals();
-//	test_random();
+	test_random();
+//	test_bigNumbers();
 
 	// TODO: nicely put stuff together - happening and rendering
 
@@ -123,13 +127,7 @@ int test_graphics() {
 
 int test_foodGrowth_visual() {
 
-//	int sx = 1000;
-//	int sy = 1000;
-//	int foodEnergy = 1;
-//	double foodDensity = 0.0001;
 
-//	Habitat env( sx, sy, foodEnergy, foodDensity );
-//	Habitat env( sx, sy, foodEnergy, 15, 100, 0.05, fate );
 	Habitat env( fname_environment_ini, fate );
 
 
@@ -189,42 +187,43 @@ int test_foodGrowth_visual() {
 
 int test() {
 
-	int sx = 1000;
-	int sy = 1000;
-	int foodEnergy = 8;
-	double density = 0.001;
+//	int sx = 1000;
+//	int sy = 1000;
+//	int foodEnergy = 8;
+//	double density = 0.001;
 	int n_animats = 20;
 
-	Habitat env( sx, sy, foodEnergy, density, fate );
+//	Habitat env( sx, sy, foodEnergy, density, fate );
+	Habitat env( fname_environment_ini, fate );
 
-	// init animats
-	for ( int i = 0; i < n_animats; ++i )
-	{
-		float randx = util::randFromUnitInterval() * sx;
-		float randy = util::randFromUnitInterval() * sy;
-		float randdir = util::randFromUnitInterval() * M_PI;
-		if ( util::randFromUnitInterval() > 0.5 )
-			randdir *= -1;
-
-		Animat* ani = new Animat (
-				randx,		// x
-				randy, 		// yGrassland();
-				0, 			// velocity
-				10,			// max velocity
-				randdir, 	// direction
-				150.0, 		// energy
-				40, 		// vision range
-				2*M_PI, 	// vision angle  TODO: implement it's usage
-				4.0,		// reach
-				&env		// world pointer
-		);
-
-		int nConcepts = 10;
-		ani->initFCM( nConcepts, fname_fcm_cs, fname_fcm );
-
-		env.birth( ani );
-		env.population[ani->name]->toString();
-	}
+	// init animats  TODO: move to Habitat
+//	for ( int i = 0; i < n_animats; ++i )
+//	{
+//		float randx = util::randFromUnitInterval() * sx;
+//		float randy = util::randFromUnitInterval() * sy;
+//		float randdir = util::randFromUnitInterval() * M_PI;
+//		if ( util::randFromUnitInterval() > 0.5 )
+//			randdir *= -1;
+//
+//		Animat* ani = new Animat (
+//				randx,		// x
+//				randy, 		// y;
+//				0, 			// velocity
+//				10,			// max velocity
+//				randdir, 	// direction
+//				150.0, 		// energy
+//				40, 		// vision range
+//				2*M_PI, 	// vision angle  TODO: implement it's usage
+//				4.0,		// reach
+//				&env		// world pointer
+//		);
+//
+//		int nConcepts = 10;
+//		ani->initFCM( nConcepts, fname_fcm_cs, fname_fcm );
+//
+//		env.birth( ani );
+//		env.population[ani->name]->toString();
+//	}
 
 
 	int time_counter = 0;
@@ -274,47 +273,48 @@ int test_with_visuals() {
 
 	// TODO: sort out smooth operation and visual debugging with switches and stuff --!! maybe with config files??
 
-	int sx = 1000;
-	int sy = 1000;
-	int foodEnergy = 5;
+//	int sx = 1000;
+//	int sy = 1000;
+//	int foodEnergy = 5;
 //	double density = 0.001;
 
 //	Habitat env ( sx, sy, foodEnergy, density, fate );
-	Habitat env( sx, sy, foodEnergy, 15, 150, 0.05, fate );
+//	Habitat env( sx, sy, foodEnergy, 15, 150, 0.05, fate );
+	Habitat env( fname_environment_ini, fate );
 
 	int n_animats = 20;
 
 //	const char* trName;
 
-	for ( int i = 0; i < n_animats; ++i ) {
-
-		float randx = util::randFromUnitInterval() * sx;
-		float randy = util::randFromUnitInterval() * sy;
-		float randdir = util::randFromUnitInterval() * M_PI;
-		if ( util::randFromUnitInterval() > 0.5 )
-			randdir *= -1;
-
-		Animat* ani = new Animat (
-				randx,		// x
-				randy, 		// y
-				0, 			// velocity
-				10,			// max velocity
-				randdir, 	// direction
-				400, 		// energy
-				40, 		// vision range
-				2*M_PI, 	// vision angle  TODO: implement it's usage
-				4.0,		// reach
-				&env		// world pointer
-		);
-
-		int nConcepts = 10;
-		ani->initFCM( nConcepts, fname_fcm_cs, fname_fcm );
-
-		env.birth( ani );
-		env.population[ani->name]->toString();
-//		trName = ani->name;
-
-	}
+//	for ( int i = 0; i < n_animats; ++i ) {
+//
+//		float randx = util::randFromUnitInterval() * sx;
+//		float randy = util::randFromUnitInterval() * sy;
+//		float randdir = util::randFromUnitInterval() * M_PI;
+//		if ( util::randFromUnitInterval() > 0.5 )
+//			randdir *= -1;
+//
+//		Animat* ani = new Animat (
+//				randx,		// x
+//				randy, 		// y
+//				0, 			// velocity
+//				10,			// max velocity
+//				randdir, 	// direction
+//				400, 		// energy
+//				40, 		// vision range
+//				2*M_PI, 	// vision angle  TODO: implement it's usage
+//				4.0,		// reach
+//				&env		// world pointer
+//		);
+//
+//		int nConcepts = 10;
+//		ani->initFCM( nConcepts, fname_fcm_cs, fname_fcm );
+//
+//		env.birth( ani );
+//		env.population[ani->name]->toString();
+////		trName = ani->name;
+//
+//	}
 
 
 
@@ -539,9 +539,9 @@ int test_random() {
 		index = (int) floor( randlin );
 		++testLinear[index];
 
-		float randGauss = fate->normalFloat( 0.05, 0.01 );
-		if ( randGauss > 0.0 && randGauss < 0.1 ) {
-			index = (int) floor( randGauss * 100 );
+		float randGauss = fate->normalFloat( 10, 0.1 );
+		if ( randGauss > 0.0 && randGauss < 20.0 ) {
+			index = (int) floor( randGauss / 2 );
 			++testNormal[index];
 		}
 	}
@@ -578,9 +578,9 @@ int test_random() {
 		cout << string( testLinear[i]*n_stars/n_rolls, '*' ) << endl;
 	}
 
-	cout << "Normal distribution with m=0.05 and std=0.005 results: " << endl;
+	cout << "Normal distribution with m=10 and std=0.1 results: " << endl;
 	for ( int i = 0; i < 10; ++i ) {
-		cout << (float)i/100 << "-" << (float)(i+1)/100 << ":\t";
+		cout << (float)i*2 << "-" << (float)(i+1)*2 << ":\t";
 		cout << string( testNormal[i]*n_stars/n_rolls, '*' ) << endl;
 	}
 
@@ -596,51 +596,98 @@ int test_random() {
 
 
 
-int test_algebra() {
+//int test_algebra() {
+//
+//	MatrixXd L( 5, 5 );
+//
+//	L << 	0, 0, -0.5, 0.75, 0,
+//			0, 0, 0, 1, -0.5,
+//			0, 0, 0.5, 0.66, 0,
+//			0, 0, 0.33, 0, 1,
+//			0, 0, -1, 0.25, 0.25;
+//
+//	cout << "Link matrix:" << endl;
+//	cout << L << endl;
+//
+//	VectorXd vec(5);
+//
+//	vec << 0.5, 0.7, 0, 0, 0;
+//
+//	cout << "input vector:" << endl;
+//	cout << vec << endl;
+//
+//	VectorXd state = VectorXd::Zero( 5 );
+//
+//	cout << "state:" << endl;
+//	cout << state << endl;
+//
+////	MatrixXd Lt = L.transpose();
+//	VectorXd dS = vec.transpose() * L;
+//
+//	cout << "activation propagation ~ input^t * L ~:" << endl;
+//	cout << dS << endl;
+//
+//	for ( int i = 0; i < 3; ++i ){
+//
+//		dS = vec.transpose() * L;
+//		state = util::tanh( state + dS );
+//
+//		cout << "activation propagation" << endl;
+//		cout << dS << endl;
+//		cout << "delta state:" << endl;
+//		cout << dS << endl;
+//		cout << "new state:" << endl;
+//		cout << state << endl;
+//
+//	}
+//
+//
+//
+//	return 0;
+//
+//}
 
-	MatrixXd L( 5, 5 );
 
-	L << 	0, 0, -0.5, 0.75, 0,
-			0, 0, 0, 1, -0.5,
-			0, 0, 0.5, 0.66, 0,
-			0, 0, 0.33, 0, 1,
-			0, 0, -1, 0.25, 0.25;
 
-	cout << "Link matrix:" << endl;
-	cout << L << endl;
+int test_bigNumbers() {
 
-	VectorXd vec(5);
+	time_t t_null = time( NULL );
 
-	vec << 0.5, 0.7, 0, 0, 0;
+	int n_tests = 500;
+	int e_size = 1000;
 
-	cout << "input vector:" << endl;
-	cout << vec << endl;
+	MatrixXf ds = MatrixXf::Zero( n_tests, n_tests );
 
-	VectorXd state = VectorXd::Zero( 5 );
+	vector<float> xps = fate->nUniformRandomFloatsFrom( n_tests, 0.0, e_size );
+	vector<float> yps = fate->nUniformRandomFloatsFrom( n_tests, 0.0, e_size );
 
-	cout << "state:" << endl;
-	cout << state << endl;
+	time_t t_start = time( NULL );
+	cout << "Vector preparation: " << difftime( t_start, t_null ) << " s" << endl;
 
-//	MatrixXd Lt = L.transpose();
-	VectorXd dS = vec.transpose() * L;
-
-	cout << "activation propagation ~ input^t * L ~:" << endl;
-	cout << dS << endl;
-
-	for ( int i = 0; i < 3; ++i ){
-
-		dS = vec.transpose() * L;
-		state = util::tanh( state + dS );
-
-		cout << "activation propagation" << endl;
-		cout << dS << endl;
-		cout << "delta state:" << endl;
-		cout << dS << endl;
-		cout << "new state:" << endl;
-		cout << state << endl;
-
+	for ( int i = 0; i < n_tests; ++i ) {
+		for ( int j = i; j < n_tests; ++j ) {
+			float d = sqrt( pow( xps[i]-xps[j], 2 ) + pow( yps[i]-yps[j], 2 ) );
+			ds( i, j ) = d;
+			ds( j, i ) = d;
+		}
 	}
 
+	time_t t_end = time( NULL );
+	cout << "Distances computation: " << difftime( t_end, t_start ) << " s" << endl << endl;
+
+	int rnd = fate->uniformRandomIntFrom( 0, n_tests-1 );
+	cout << "random dot " << rnd << ", at x=" << xps[rnd] << ", y=" << yps[rnd] << endl;
+	cout << ds.row( rnd ) << endl << endl;
+
+	vector<int> idxs;
+	for ( int i = 0; i < n_tests; ++i )
+		if ( ds(rnd, i) < 50 && ds(rnd, i) > 0 )
+			idxs.push_back( i );
+
+	if ( idxs.size() > 0 )
+		cout << "locations less than 50m from random dot:" << endl;
+	for ( int i = 0; i < idxs.size(); ++i )
+		cout << xps[idxs[i]] << ", "<< yps[idxs[i]] << ", d=" << ds(rnd, idxs[i]) << endl;
 
 
 	return 0;

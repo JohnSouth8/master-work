@@ -21,10 +21,10 @@
 namespace util {
 
 
-	Eigen::VectorXd sigmoid( const Eigen::VectorXd in ) {
+	Eigen::VectorXf sigmoid( const Eigen::VectorXf in ) {
 
 		const unsigned int size = in.size();
-		Eigen::VectorXd out(size);
+		Eigen::VectorXf out(size);
 
 		for ( unsigned int i = 0; i < size; ++i ) {
 			out(i) = 1.0 / (1 + exp( -in(i) ));
@@ -34,10 +34,10 @@ namespace util {
 
 	}
 
-	Eigen::VectorXd tanh( const Eigen::VectorXd in ) {
+	Eigen::VectorXf tanh( const Eigen::VectorXf in ) {
 
 		const unsigned int size = in.size();
-		Eigen::VectorXd out( size );
+		Eigen::VectorXf out( size );
 
 		for ( unsigned int i = 0; i < size; ++i ){
 			out(i) = std::tanh( in(i) );
@@ -92,7 +92,7 @@ namespace util {
 
 	}
 
-	double getAngleBetween( Eigen::Vector2d v1, Eigen::Vector2d v2 ) {
+	double getAngleBetween( Eigen::Vector2f v1, Eigen::Vector2f v2 ) {
 
 		double v_angle = atan2( v1(1), v1(0) );
 		double g_angle = atan2( v2(1), v2(0) );
@@ -103,7 +103,7 @@ namespace util {
 
 
 
-	int countNonZeroElements( Eigen::MatrixXd mat ) {
+	int countNonZeroElements( Eigen::MatrixXf mat ) {
 
 		int rows = mat.rows();
 		int cols = mat.cols();
@@ -171,6 +171,9 @@ namespace util {
 		while ( std::getline( inputFile, line ) ) {
 
 			int eqPos = line.find( "=" );
+			if ( eqPos == -1 )
+				continue;		// ignore lines without '='˘
+
 			std::string keyword = line.substr( 0, eqPos );
 			std::string value = line.substr( eqPos + 1 );
 			float fval = atof( value.c_str() );
@@ -192,9 +195,9 @@ namespace util {
 		outputFile.close();
 	}
 
-	void printMatrixToFile( Eigen::MatrixXd data, std::string fname, bool transpose ) {
+	void printMatrixToFile( Eigen::MatrixXf data, std::string fname, bool transpose ) {
 
-		Eigen::MatrixXd outputData = data;
+		Eigen::MatrixXf outputData = data;
 		if ( transpose )
 			// print transposed version of the matrix because matrix with origin in upper-left is mirrored in coordinate system with origin in lower-left
 			// 		i.e. row-major order is not compatible with x-axis first order in coordinate system

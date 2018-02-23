@@ -16,6 +16,11 @@
 #include <string>
 #include <Eigen/Dense>
 
+
+
+extern const float PI;
+
+
 namespace ecosystem {
 
 // forward declaration
@@ -26,27 +31,42 @@ class Animat {
 public:
 
 	// constructors
-	Animat();
-	Animat( double, double, double, double, double, float, double, double, double, Habitat* );
+	Animat( std::string, float, float, float, float, float, float, float, float, float, float, float, Habitat* );
 	virtual ~Animat();
 
-	// member vars
-	std::string name;
-	double posX;
-	double posY;
-	double velocity;
-	double maxVelocity;
-	double direction;
-	float energy;
-	float maxEnergy;
-	double senseAngle;
-	double senseRadius;
-	double reach;
-	std::vector<f_sens> sensedObjs;
-	Eigen::VectorXd sensations;
-	FCM cognition;
-	Habitat* environment;
 
+	//// -- member vars --
+
+	// characteristics
+	std::string name;
+	float size;
+	float reach;
+	float visionRange;
+	float visionAngle;
+	float olfactoryRange;
+	float maxVelocity;
+	float maxEnergy;
+
+	// physical parameters
+	float posX;
+	float posY;
+	float direction;
+	float velocity;
+
+	// homeostasis variables
+	float energy;
+	float comfort;
+	float fatigue;
+
+	// perception model
+	std::vector<f_sens> sensedObjs;
+	Eigen::VectorXf sensations;
+
+	// brain
+	FCM cognition;
+
+	// environment reference
+	Habitat* environment;
 
 	///*****************
 	// member functions
@@ -58,14 +78,14 @@ public:
 	void sense_analytic();
 	void calculateDecision();
 	void reason();
-	void react( Eigen::VectorXd );
+	void react( Eigen::VectorXf );
 
 	// movement functions
-	void changeVelocityAbsolute( double );
-	void adjustVelocity( double );
-	void setVelocity( double );
+	void changeVelocityAbsolute( float );
+	void adjustVelocity( float );
+	void setVelocity( float );
 	void move();
-	void turn( double );
+	void turn( float );
 
 	// utility functions
 //	void initFCM( int );
@@ -73,7 +93,6 @@ public:
 //	void initFCM( int, std::vector<std::string>, Eigen::MatrixXd );
 	void initFCM( int, std::string, std::string );
 //	void setFCM( Eigen::MatrixXd );
-	std::string generateName();
 
 	void toString();
 	void forgetSensations();

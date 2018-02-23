@@ -231,8 +231,8 @@ namespace gx {
 		int i_concept = 0;
 		int i_link = 0;
 
-		Eigen::VectorXd state = ani->cognition.state;
-		Eigen::MatrixXd l_mat = ani->cognition.L;
+		Eigen::VectorXf state = ani->cognition.state;
+		Eigen::MatrixXf l_mat = ani->cognition.L;
 
 		// colours
 		std::vector<float> colour_n1 (3, 0.0f);

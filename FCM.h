@@ -32,20 +32,20 @@ public:
 	std::vector<int> outputConcepts;
 
 	std::vector<std::string> concepts;
-	Eigen::VectorXd state;
-	Eigen::MatrixXd L;
+	Eigen::VectorXf state;
+	Eigen::MatrixXf L;
 //	int initialized;
 
 	// member functions
 //	void setConcepts( std::vector<std::string> );
 	void loadConceptsFromFile( std::string );
 	void loadLinkMatrixFromFile( std::string );
-	void applySensations( Eigen::VectorXd );
-	Eigen::VectorXd getOutput();
+	void applySensations( Eigen::VectorXf );
+	Eigen::VectorXf getOutput();
 
 	// getters & setters
-	void setState( Eigen::VectorXd );
-	Eigen::VectorXd getState();
+	void setState( Eigen::VectorXf );
+	Eigen::VectorXf getState();
 	int getNConcepts();
 	int getNInput();
 	int getNInternal();
