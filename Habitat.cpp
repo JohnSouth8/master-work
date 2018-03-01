@@ -124,7 +124,8 @@ void Habitat::populateWorld( std::string animat_iniFileName, std::string fcm_con
 	float max_energy = ini["max_energy"];
 	float start_energy = ini["start_energy"];
 	float max_velocity = ini["max_velocity"];
-	float start_velocity = ini["start_velocity"];
+//	float start_velocity = ini["start_velocity"];
+	int max_age = static_cast<int>( ini["max_age"] );
 	float vision_range = ini["vision_range"];
 	float vision_angle = ini["vision_angle"];
 	float olfactory_range = ini["olfactory_range"];
@@ -132,6 +133,7 @@ void Habitat::populateWorld( std::string animat_iniFileName, std::string fcm_con
 
 	std::vector<float> sizes = fate->normalFloatsString( n_animats, avg_size, avg_size*std_degree );
 	std::vector<float> max_vels = fate->normalFloatsString( n_animats, max_velocity, max_velocity*std_degree );
+	std::vector<int> max_ages = fate->normalIntsString( n_animats, max_age, max_age*std_degree );
 	std::vector<float> vis_ranges = fate->normalFloatsString( n_animats, vision_range, vision_range*std_degree );
 	std::vector<float> vis_angles = fate->normalFloatsString( n_animats, vision_angle, vision_angle*std_degree );
 	std::vector<float> olf_ranges = fate->normalFloatsString( n_animats, olfactory_range, olfactory_range*std_degree);
@@ -151,6 +153,7 @@ void Habitat::populateWorld( std::string animat_iniFileName, std::string fcm_con
 			olf_ranges[i],
 			max_vels[i],
 			max_energy,
+			max_ages[i],
 			pxs[i],
 			pys[i],
 			dirs[i],
@@ -159,7 +162,7 @@ void Habitat::populateWorld( std::string animat_iniFileName, std::string fcm_con
 			this
 		);
 
-		int nConcepts = 10;
+		int nConcepts = 10;	// TODO: make this number automatic
 		ani->initFCM( nConcepts, fcm_concepts_fileName, fcm_fileName );
 
 		population[name] = ani;
@@ -349,7 +352,7 @@ int Habitat::consumeFood( int x, int y )
 
 
 void Habitat::measureDistances() {
-
+	// TODO: to be debugged...
 	if ( population.empty() )
 		return;
 

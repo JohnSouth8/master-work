@@ -32,18 +32,11 @@ using namespace ecosystem;
 const float PI = 3.14159;
 
 
-string fname_food0 = "foodReserve0.txt";
-string fname_food1 = "foodReserve1.txt";
-
-
-string fname_pop = "population.txt";
-string fname_sens = "sensations.txt";
-
+string fname_environment_ini = "environment.ini";
+string fname_animat_ini = "animat.ini";
 string fname_fcm_cs = "fcm_0.2.concepts.txt";
 string fname_fcm = "fcm_0.2.txt";
-string fname_test = "test.txt";
 
-string fname_environment_ini = "environment.ini";
 
 GLFWwindow* simWindow;
 GLFWwindow* fcmWindow;
@@ -55,14 +48,12 @@ util::Chance* fate;
 
 
 int test();
-int test_foodGrowth_visual();
 int test_with_visuals();
-int fcm_test( Animat* );
-int animat_test( Animat*, Habitat* );
-//int test_algebra();
-int test_graphics();
 void keyActions( GLFWwindow*, int, int, int, int );
-int test_random();
+
+// debug
+int test_foodGrowth_visual();
+int test_randomness();
 int test_bigNumbers();
 
 
@@ -73,28 +64,13 @@ int main( void ) {
 	// init timer
 	time_t t_start = time( NULL );
 
-
-//	srand( time(0) );	deprecated
-
 	// initiate randomness
 	std::random_device rd;
 	fate = new util::Chance( rd() );
 
-	// empty files
-//	util::cleanFile( fname_pop );
-//	util::cleanFile( fname_sens );
-
-//	string fcontent = util::readFileContent( fname_fcm );
-
-//	return test_algebra();
-//	test_foodGrowth_visual();
-//	test_with_visuals();
-	test_random();
-//	test_bigNumbers();
-
 	// TODO: nicely put stuff together - happening and rendering
 
-
+	test_with_visuals();
 
 	delete fate;	// TODO: organize destructors everywhere!!
 
@@ -104,23 +80,6 @@ int main( void ) {
 
 	return 0;
 
-}
-
-
-
-int test_graphics() {
-
-	simWindow = gx::createWindow( 800, 600, "testtest" );
-
-	gx::loadShaders( "shader.vert", "shader.frag" );
-	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
-	gx::setupKeyboard( simWindow, keyActions );
-
-//	gx::drawingLoop();
-
-	gx::destroyWindow();
-
-	return 0;
 }
 
 
@@ -148,21 +107,21 @@ int test_foodGrowth_visual() {
 	gx::drawHabitat( simWindow, &env, shaderProg1 );
 
 
+	int time_counter = 0;
 	while ( !glfwWindowShouldClose( simWindow ) ) {
 
 //		if ( simulationProceed )
 		{
 
-//			env.growFood_stable();
 			env.growMeadows();
 
 			gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
 
 //			simulationProceed = false;
-
 		}
 
 		gx::drawHabitat( simWindow, &env, shaderProg1 );
+		time_counter++;
 
 		glfwPollEvents();
 
@@ -178,6 +137,7 @@ int test_foodGrowth_visual() {
 
 	gx::destroyWindow();
 
+	cout << "Number of steps: " << time_counter << endl;
 
 	return 0;
 
@@ -187,46 +147,15 @@ int test_foodGrowth_visual() {
 
 int test() {
 
-//	int sx = 1000;
-//	int sy = 1000;
-//	int foodEnergy = 8;
-//	double density = 0.001;
-	int n_animats = 20;
 
-//	Habitat env( sx, sy, foodEnergy, density, fate );
 	Habitat env( fname_environment_ini, fate );
 
-	// init animats  TODO: move to Habitat
-//	for ( int i = 0; i < n_animats; ++i )
-//	{
-//		float randx = util::randFromUnitInterval() * sx;
-//		float randy = util::randFromUnitInterval() * sy;
-//		float randdir = util::randFromUnitInterval() * M_PI;
-//		if ( util::randFromUnitInterval() > 0.5 )
-//			randdir *= -1;
-//
-//		Animat* ani = new Animat (
-//				randx,		// x
-//				randy, 		// y;
-//				0, 			// velocity
-//				10,			// max velocity
-//				randdir, 	// direction
-//				150.0, 		// energy
-//				40, 		// vision range
-//				2*M_PI, 	// vision angle  TODO: implement it's usage
-//				4.0,		// reach
-//				&env		// world pointer
-//		);
-//
-//		int nConcepts = 10;
-//		ani->initFCM( nConcepts, fname_fcm_cs, fname_fcm );
-//
-//		env.birth( ani );
-//		env.population[ani->name]->toString();
-//	}
+	// init animats
+	env.populateWorld( fname_animat_ini, fname_fcm_cs, fname_fcm );
 
 
 	int time_counter = 0;
+	int n_animats = env.population.size();
 	int n_deaths;
 	// while at least one animat is alive
 	while ( n_deaths < n_animats )
@@ -234,12 +163,14 @@ int test() {
 
 		// cannot remove dead animats in their execution loop, hence they are added to obituary and buried later
 		vector<std::string> obituary;
+
 		for ( auto &nm_ani : env.population )
 		{
 			Animat* ani = nm_ani.second;
 			ani->reason();
+			ani->age++;
 
-			if ( ani->energy <= 0 )
+			if ( ani->energy <= 0 || ani->age >= ani->maxAge )
 			{
 				obituary.push_back( ani->name );
 				++n_deaths;
@@ -271,56 +202,18 @@ int test() {
 
 int test_with_visuals() {
 
-	// TODO: sort out smooth operation and visual debugging with switches and stuff --!! maybe with config files??
-
-//	int sx = 1000;
-//	int sy = 1000;
-//	int foodEnergy = 5;
-//	double density = 0.001;
-
-//	Habitat env ( sx, sy, foodEnergy, density, fate );
-//	Habitat env( sx, sy, foodEnergy, 15, 150, 0.05, fate );
 	Habitat env( fname_environment_ini, fate );
 
-	int n_animats = 20;
+	// init animats
+	env.populateWorld( fname_animat_ini, fname_fcm_cs, fname_fcm );
+	int n_animats = env.population.size();
 
-//	const char* trName;
+	// preinit the food
+	for ( int i = 0; i < 500; ++i ) {
+		env.growMeadows();
+	}
 
-//	for ( int i = 0; i < n_animats; ++i ) {
-//
-//		float randx = util::randFromUnitInterval() * sx;
-//		float randy = util::randFromUnitInterval() * sy;
-//		float randdir = util::randFromUnitInterval() * M_PI;
-//		if ( util::randFromUnitInterval() > 0.5 )
-//			randdir *= -1;
-//
-//		Animat* ani = new Animat (
-//				randx,		// x
-//				randy, 		// y
-//				0, 			// velocity
-//				10,			// max velocity
-//				randdir, 	// direction
-//				400, 		// energy
-//				40, 		// vision range
-//				2*M_PI, 	// vision angle  TODO: implement it's usage
-//				4.0,		// reach
-//				&env		// world pointer
-//		);
-//
-//		int nConcepts = 10;
-//		ani->initFCM( nConcepts, fname_fcm_cs, fname_fcm );
-//
-//		env.birth( ani );
-//		env.population[ani->name]->toString();
-////		trName = ani->name;
-//
-//	}
-
-
-
-
-
-	// TODO: sort out smooth operation and visual debugging with switches and stuff
+	string tracked_name = env.population.begin()->first;	// track 0-th animat for FCM display
 
 	// TODO: place the buffers stuff into gx module, here we only need initEnvironment() etc...
 	// initialize graphics output for simulation
@@ -331,8 +224,8 @@ int test_with_visuals() {
 	}
 	simWindow = gx::createWindow( 1000, 1000, "simulation" );
 	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
-//	gx::setupKeyboard( simWindow, keyActions );
-	gx::setupKeyboard( simWindow );
+	gx::setupKeyboard( simWindow, keyActions );
+//	gx::setupKeyboard( simWindow );
 
 	// load stuff
 	GLuint vaoEnv = gx::createAndBindVAO();
@@ -343,118 +236,104 @@ int test_with_visuals() {
 
 
 	// create new window for fcm
-//	fcmWindow = gx::createWindow( 400, 400, "fcm visualisation" );
-//	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
-//	// load stuff
-//	GLuint vaoFCM = gx::createAndBindVAO();
-//	GLuint dataBufFCM = gx::createVBO();
-//	GLuint linesBufFCM = gx::createVBO();
-//	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
-//
-//	Animat* tracked = env.population[trName];
-//	gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
-//	gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
+	fcmWindow = gx::createWindow( 500, 500, "fcm visualisation" );
+	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
+	// load stuff
+	GLuint vaoFCM = gx::createAndBindVAO();
+	GLuint dataBufFCM = gx::createVBO();
+	GLuint linesBufFCM = gx::createVBO();
+	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
 
+	Animat* tracked = env.population[tracked_name];
+	gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
+	gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
 
-	glfwMakeContextCurrent( simWindow );
-
-
-	// preinit the food a bit
-	for ( int i = 0; i < 150; ++i ) {
-		env.growMeadows();
-	}
 
 
 	int time_counter = 0;
-	int n_deaths;
+	int n_deaths = 0;
 
 	// drawing loop
-	while ( n_deaths < n_animats && !glfwWindowShouldClose( simWindow ) /*&& !glfwWindowShouldClose( fcmWindow )*/ ) {
+	while ( n_deaths < n_animats && !glfwWindowShouldClose( simWindow ) && !glfwWindowShouldClose( fcmWindow ) ) {
 
 
-//		if ( simulationProceed ) {
+		if ( simulationProceed )
+		{
 
 			env.growMeadows();
 
+			// cannot remove dead animats in their execution loop, hence they are added to obituary and buried later
 			vector<std::string> obituary;
-			map<std::string, Animat*>::iterator it;
-			for ( it = env.population.begin(); it != env.population.end(); ++it ){
 
-				it->second->reason();
+			for ( auto &nm_ani : env.population )
+			{
 
-				// upload habitat data
-	//			glfwMakeContextCurrent( simWindow );
+				Animat* ani = nm_ani.second;
+				ani->reason();
+				ani->age++;
 
-				// upload fcm data
-	//			glfwMakeContextCurrent( fcmWindow );
-	//			gx::loadFCMIntoBuffer( &ani, vaoFCM, dataBufFCM, linesBufFCM );
-
-				if ( it->second->energy <= 0 ) {
-					obituary.push_back( it->second->name );
+				if ( ani->energy <= 0 || ani->age >= ani->maxAge ) {
+					obituary.push_back( ani->name );
 					++n_deaths;
-					cout << "The animat " << it->second->name << " survived " << time_counter << " steps of the simulation" << endl;
+					cout << endl << "Animat " << ani->name << " died after " << time_counter << " steps of the simulation" << endl;
 				}
-
 
 			}
 
-			if ( obituary.size() > 0 ){
-				vector<std::string>::iterator it;
-				for ( it = obituary.begin(); it != obituary.end(); ++it )
-					env.death( *it );
+			if ( obituary.size() > 0 )
+				for ( auto obt : obituary ) // for ( it = obituary.begin(); it != obituary.end(); ++it )
+					env.death( obt );
+
+			// if tracked animat died, transfer tracking to the next animat if any
+			if ( env.population.find( tracked_name ) == env.population.end() && env.population.size() > 0 ) {
+				tracked_name = env.population.begin()->first;
+				tracked = env.population[tracked_name];
 			}
 
 
 			glfwMakeContextCurrent( simWindow );
 			gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
+			gx::drawHabitat( simWindow, &env, shaderProg1 );
 
-//			glfwMakeContextCurrent( fcmWindow );
-//			gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
+			if ( env.population.size() > 0 ) {
+				glfwMakeContextCurrent( fcmWindow );
+				gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
+				gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
+			}
 
-//			simulationProceed = false;
+			simulationProceed = false;
 			++time_counter;
 
-//		}
-		gx::drawHabitat( simWindow, &env, shaderProg1 );
+			cout << "#";
+			cout.flush();
+			if ( time_counter % 100 == 0 )
+				cout << " " << time_counter << endl;
 
-//		glfwMakeContextCurrent( fcmWindow );
-//		gx::drawFCM( fcmWindow, &ani, shaderProg2, dataBufFCM, linesBufFCM );
+		}
 
-//		util::printAnimatLocationsToFile( env.population, fname_pop );
-//		util::printSensationsToFile( ani.sensedObjs, fname_sens );
-
-//		if ( ani.getEnergy() <= 0 )
-//			break;
 
 		glfwPollEvents();
 
 		if ( glfwGetKey( simWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
 			glfwSetWindowShouldClose( simWindow, GL_TRUE );
 
-//		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
-//			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
+		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
 
-		cout << "#";
-		cout.flush();
-		if ( time_counter % 100 == 0 )
-			cout << " " << time_counter << endl;
-//		usleep( 50000 );
+
 
 
 	}
 
 
-//	util::printMatrixToFile( env.getFoodReserve(), fname_food1 );
-
-
-
+	// cleanup buffers	TODO: move to gx
 	glDeleteBuffers( 1, &dataBufEnv );
-//	glDeleteBuffers( 1, &dataBufFCM );
-//	glDeleteBuffers( 1, &linesBufFCM );
+	glDeleteBuffers( 1, &dataBufFCM );
+	glDeleteBuffers( 1, &linesBufFCM );
 	glDeleteProgram( shaderProg1 );
-//	glDeleteProgram( shaderProg2 );
+	glDeleteProgram( shaderProg2 );
 	glDeleteVertexArrays( 1, &vaoEnv );
-//	glDeleteVertexArrays( 1, &vaoFCM );
+	glDeleteVertexArrays( 1, &vaoFCM );
 
 	gx::destroyWindow();
 
@@ -471,44 +350,26 @@ void keyActions( GLFWwindow* window, int key, int scancode, int action, int mods
 
 
 
-int fcm_test( Animat* ani ) {
 
 
 
-	return 0;
-
-}
 
 
 
-int animat_test( Animat* ani, Habitat* env ) {
-
-	ani->forgetSensedObjects();
-
-	ani->sense();
-	ani->calculateDecision();
-	ani->move();
-
-
-	return 0;
-
-}
 
 
 
-int test_random() {
+
+
+///////////////////////////////////////////
+////// 		DEBUG PURPOSES ONLY		///////
+
+
+
+int test_randomness() {
 
 	int n_stars = 100;
 	int n_rolls = 10000;
-
-//	std::mt19937 twister( rd() );
-//
-//	std::uniform_int_distribution<int> intdist( 0, 100 );
-//	std::uniform_real_distribution<float> floatdist( 0.0, 1.0 );
-//
-//	std::array<float,3> intervals {0.0, 5.0, 10.0};
-//	std::array<float,3> weights {5.0, 8.0, 2.0};
-//	std::piecewise_linear_distribution<float> lindist( intervals.begin(), intervals.end(), weights.begin() );
 
 
 	int testBool[2] = {0};
@@ -524,17 +385,14 @@ int test_random() {
 		bool randbool = fate->randomBoolean();
 		++testBool[randbool];
 
-//		int randint = intdist( twister );
 		int randint = fate->uniformRandomIntFrom( 0, 100 );
 		index = (int) floor( randint / 10 );
 		++testInt[index];
 
-//		float randf = floatdist( twister );
 		float randf = fate->uniformRandomUnitFloat();
 		index = (int) floor( randf * 10 );
 		++testFloat[index];
 
-//		float randlin = lindist( twister );
 		float randlin = fate->linearDescRandomFloatFrom( 0.0, 10.0 );
 		index = (int) floor( randlin );
 		++testLinear[index];
@@ -596,59 +454,6 @@ int test_random() {
 
 
 
-//int test_algebra() {
-//
-//	MatrixXd L( 5, 5 );
-//
-//	L << 	0, 0, -0.5, 0.75, 0,
-//			0, 0, 0, 1, -0.5,
-//			0, 0, 0.5, 0.66, 0,
-//			0, 0, 0.33, 0, 1,
-//			0, 0, -1, 0.25, 0.25;
-//
-//	cout << "Link matrix:" << endl;
-//	cout << L << endl;
-//
-//	VectorXd vec(5);
-//
-//	vec << 0.5, 0.7, 0, 0, 0;
-//
-//	cout << "input vector:" << endl;
-//	cout << vec << endl;
-//
-//	VectorXd state = VectorXd::Zero( 5 );
-//
-//	cout << "state:" << endl;
-//	cout << state << endl;
-//
-////	MatrixXd Lt = L.transpose();
-//	VectorXd dS = vec.transpose() * L;
-//
-//	cout << "activation propagation ~ input^t * L ~:" << endl;
-//	cout << dS << endl;
-//
-//	for ( int i = 0; i < 3; ++i ){
-//
-//		dS = vec.transpose() * L;
-//		state = util::tanh( state + dS );
-//
-//		cout << "activation propagation" << endl;
-//		cout << dS << endl;
-//		cout << "delta state:" << endl;
-//		cout << dS << endl;
-//		cout << "new state:" << endl;
-//		cout << state << endl;
-//
-//	}
-//
-//
-//
-//	return 0;
-//
-//}
-
-
-
 int test_bigNumbers() {
 
 	time_t t_null = time( NULL );
@@ -686,7 +491,7 @@ int test_bigNumbers() {
 
 	if ( idxs.size() > 0 )
 		cout << "locations less than 50m from random dot:" << endl;
-	for ( int i = 0; i < idxs.size(); ++i )
+	for ( int i = 0; i < (int) idxs.size(); ++i )
 		cout << xps[idxs[i]] << ", "<< yps[idxs[i]] << ", d=" << ds(rnd, idxs[i]) << endl;
 
 

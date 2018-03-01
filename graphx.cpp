@@ -173,7 +173,7 @@ namespace gx {
 			env_h = environment->sizeY,
 			counter = 0;
 
-		static GLfloat points_buffer_data[500000]; //= new GLfloat[n_data*5];		// << each point has 5 datums: X Y R G B
+		static GLfloat points_buffer_data[5000000]; //= new GLfloat[n_data*5];		// << each point has 5 datums: X Y R G B
 
 		// add green food points
 		for ( int i = 0; i < env_w; ++i ) {
@@ -196,14 +196,17 @@ namespace gx {
 				break;
 		}
 
-		// add red animat points
+		// add yellow/red animat points
 		std::map<std::string, Animat*>::iterator it;
 		for ( it = environment->population.begin(); it != environment->population.end(); ++it ) {
 
 			points_buffer_data[counter*5 + 0] = float( 2.0f * it->second->posX / float(env_w) - 1 );	// X
 			points_buffer_data[counter*5 + 1] = float( 2.0f * it->second->posY / float(env_h) - 1 );	// Y
 			points_buffer_data[counter*5 + 2] = 0.95f;													// R
-			points_buffer_data[counter*5 + 3] = 0.0f;													// G
+			if ( it == environment->population.begin() )
+				points_buffer_data[counter*5 + 3] = 0.95f;													// G
+			else
+				points_buffer_data[counter*5 + 3] = 0.0f;													// G
 			points_buffer_data[counter*5 + 4] = 0.0f;													// B
 
 			++counter;

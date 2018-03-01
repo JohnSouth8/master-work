@@ -31,7 +31,7 @@ class Animat {
 public:
 
 	// constructors
-	Animat( std::string, float, float, float, float, float, float, float, float, float, float, float, Habitat* );
+	Animat( std::string, float, float, float, float, float, float, int, float, float, float, float, float, Habitat* );
 	virtual ~Animat();
 
 
@@ -46,12 +46,14 @@ public:
 	float olfactoryRange;
 	float maxVelocity;
 	float maxEnergy;
+	int maxAge;
 
 	// physical parameters
 	float posX;
 	float posY;
 	float direction;
 	float velocity;
+	int age;
 
 	// homeostasis variables
 	float energy;

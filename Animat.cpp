@@ -54,7 +54,7 @@ namespace ecosystem {
 //
 //}
 
-Animat::Animat( std::string nm, float sz, float r_v, float a_v, float r_o, float max_v, float max_e, float px, float py, float dir, float v, float e, Habitat* env ) :
+Animat::Animat( std::string nm, float sz, float r_v, float a_v, float r_o, float max_v, float max_e, int max_a, float px, float py, float dir, float v, float e, Habitat* env ) :
 	name( nm ),
 	size( sz ),
 	reach( 2*sz ),
@@ -63,10 +63,12 @@ Animat::Animat( std::string nm, float sz, float r_v, float a_v, float r_o, float
 	olfactoryRange( r_o ),
 	maxVelocity( max_v ),
 	maxEnergy( max_e ),
+	maxAge( max_a ),
 	posX( px ),
 	posY( py ),
 	direction( dir ),
 	velocity( v ),
+	age( 0 ),
 	energy( e ),
 	comfort( 50 ),
 	fatigue( 0 ),
