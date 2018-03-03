@@ -52,6 +52,7 @@ int test_with_visuals();
 void keyActions( GLFWwindow*, int, int, int, int );
 
 // debug
+int quadtree( Habitat* );
 int test_foodGrowth_visual();
 int test_randomness();
 int test_bigNumbers();
@@ -257,7 +258,7 @@ int test_with_visuals() {
 	while ( n_deaths < n_animats && !glfwWindowShouldClose( simWindow ) && !glfwWindowShouldClose( fcmWindow ) ) {
 
 
-		if ( simulationProceed )
+//		if ( simulationProceed )
 		{
 
 			env.growMeadows();
@@ -498,6 +499,48 @@ int test_bigNumbers() {
 	return 0;
 
 }
+
+
+struct quadrant {
+
+	int x_start;
+	int x_end;
+	int y_start;
+	int y_end;
+
+};
+
+struct quadleaf {
+
+	string ani_name;
+
+};
+
+struct quadnode {
+
+	quadrant limits;
+	quadnode* child;
+	quadleaf leaf;
+
+};
+
+
+int quadtree( Habitat* env ) {
+
+
+	int sx = env->sizeX;
+	int sy = env->sizeY;
+
+	// first split into 4 quadrants
+	// we need a quadrant struct
+	int sx_2 = sx / 2;
+	int sy_2 = sy / 2;
+
+
+	return 0;
+
+}
+
 
 
 
