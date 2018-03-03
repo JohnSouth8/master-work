@@ -10,10 +10,16 @@
 
 namespace ecosystem {
 
-struct coord {
+struct coordinate {
 	int x;
 	int y;
-};
+} typedef coord;
+
+struct foodSensation {
+	int x;		// x coordinate
+	int y;		// y coordinate
+	double d;	// distance to sensation
+} typedef f_sens;
 
 }
 
