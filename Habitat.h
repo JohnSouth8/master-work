@@ -63,7 +63,7 @@ public:
 	void growFoodSlow();
 	int consumeFood( int, int );
 
-	void populateWorld( std::string, std::string, std::string );
+	void populateWorld( int, std::string, std::string, std::string );
 	void birth( Animat* );
 	void death( std::string );
 	std::string generateAnimatName();

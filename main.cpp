@@ -12,6 +12,7 @@
 #include <map>
 #include <random>
 #include <ctime>
+#include <chrono>
 #include <cmath>
 #include <array>
 #include <algorithm>
@@ -21,6 +22,7 @@
 #include "Animat.h"
 #include "Habitat.h"
 #include "Chance.h"
+#include "QuadTree.h"
 #include "util.h"
 #include "graphx.h"
 
@@ -52,7 +54,6 @@ int test_with_visuals();
 void keyActions( GLFWwindow*, int, int, int, int );
 
 // debug
-int quadtree( Habitat* );
 int test_foodGrowth_visual();
 int test_randomness();
 int test_bigNumbers();
@@ -63,7 +64,7 @@ int main( void ) {
 
 
 	// init timer
-	time_t t_start = time( NULL );
+	auto t_start = chrono::steady_clock::now();
 
 	// initiate randomness
 	std::random_device rd;
@@ -71,13 +72,14 @@ int main( void ) {
 
 	// TODO: nicely put stuff together - happening and rendering
 
-	test_with_visuals();
+	test_bigNumbers();
 
 	delete fate;	// TODO: organize destructors everywhere!!
 
 	// stop timer and print exec tieme
-	time_t t_end = time( NULL );
-	cout << endl << endl << "Runtime: " << difftime( t_end, t_start ) << " seconds" << endl;
+	auto t_end = chrono::steady_clock::now();
+	auto elapsed = chrono::duration_cast<chrono::milliseconds>( t_end - t_start );
+	cout << endl << endl << "Runtime: " << elapsed.count() << " milliseconds" << endl;
 
 	return 0;
 
@@ -152,15 +154,22 @@ int test() {
 	Habitat env( fname_environment_ini, fate );
 
 	// init animats
-	env.populateWorld( fname_animat_ini, fname_fcm_cs, fname_fcm );
+	env.populateWorld( 0, fname_animat_ini, fname_fcm_cs, fname_fcm );
 
+	// preinit the food
+	for ( int i = 0; i < 500; ++i ) {
+		env.growMeadows();
+	}
 
 	int time_counter = 0;
 	int n_animats = env.population.size();
-	int n_deaths;
+	int n_deaths = 0;
 	// while at least one animat is alive
 	while ( n_deaths < n_animats )
 	{
+
+
+		env.growMeadows();
 
 		// cannot remove dead animats in their execution loop, hence they are added to obituary and buried later
 		vector<std::string> obituary;
@@ -206,7 +215,7 @@ int test_with_visuals() {
 	Habitat env( fname_environment_ini, fate );
 
 	// init animats
-	env.populateWorld( fname_animat_ini, fname_fcm_cs, fname_fcm );
+	env.populateWorld( 0, fname_animat_ini, fname_fcm_cs, fname_fcm );
 	int n_animats = env.population.size();
 
 	// preinit the food
@@ -457,84 +466,70 @@ int test_randomness() {
 
 int test_bigNumbers() {
 
-	time_t t_null = time( NULL );
+	auto start = chrono::steady_clock::now();
 
 	int n_tests = 500;
-	int e_size = 1000;
+//	int e_size = 1000;
 
-	MatrixXf ds = MatrixXf::Zero( n_tests, n_tests );
+	Habitat env( fname_environment_ini, fate );
 
-	vector<float> xps = fate->nUniformRandomFloatsFrom( n_tests, 0.0, e_size );
-	vector<float> yps = fate->nUniformRandomFloatsFrom( n_tests, 0.0, e_size );
+	// init animats
+	env.populateWorld( n_tests, fname_animat_ini, fname_fcm_cs, fname_fcm );
 
-	time_t t_start = time( NULL );
-	cout << "Vector preparation: " << difftime( t_start, t_null ) << " s" << endl;
 
-	for ( int i = 0; i < n_tests; ++i ) {
-		for ( int j = i; j < n_tests; ++j ) {
-			float d = sqrt( pow( xps[i]-xps[j], 2 ) + pow( yps[i]-yps[j], 2 ) );
-			ds( i, j ) = d;
-			ds( j, i ) = d;
-		}
+	util::QuadTree qt( 4, util::coordinate( 0.0, 0.0 ), util::coordinate( static_cast<float>( env.sizeX ), static_cast<float>( env.sizeY ) ) );
+	unsigned int count = 0;
+	for ( auto &nm_ani : env.population ) {
+		bool ins = qt.insert( nm_ani.second );
+		if ( ins )
+			++count;
 	}
+	if ( count == env.population.size() )
+		cout << "all animats succesfully added to the tree" << endl;
 
-	time_t t_end = time( NULL );
-	cout << "Distances computation: " << difftime( t_end, t_start ) << " s" << endl << endl;
+	auto end = chrono::steady_clock::now();
+	auto elapsed = 	chrono::duration_cast<chrono::milliseconds>( end - start );
+	cout << "Quad tree construction: " << elapsed.count() << " ms" << endl << endl;
 
-	int rnd = fate->uniformRandomIntFrom( 0, n_tests-1 );
-	cout << "random dot " << rnd << ", at x=" << xps[rnd] << ", y=" << yps[rnd] << endl;
-	cout << ds.row( rnd ) << endl << endl;
+//	int rnd = fate->uniformRandomIntFrom( 0, n_tests-1 );
+//	cout << "random dot " << rnd << ", at x=" << xps[rnd] << ", y=" << yps[rnd] << endl;
+//	cout << ds.row( rnd ) << endl << endl;
+//
+//	vector<int> idxs;
+//	for ( int i = 0; i < n_tests; ++i )
+//		if ( ds(rnd, i) < 50 && ds(rnd, i) > 0 )
+//			idxs.push_back( i );
+//
+//	if ( idxs.size() > 0 )
+//		cout << "locations less than 50m from random dot:" << endl;
+//	for ( int i = 0; i < (int) idxs.size(); ++i )
+//		cout << xps[idxs[i]] << ", "<< yps[idxs[i]] << ", d=" << ds(rnd, idxs[i]) << endl;
 
-	vector<int> idxs;
-	for ( int i = 0; i < n_tests; ++i )
-		if ( ds(rnd, i) < 50 && ds(rnd, i) > 0 )
-			idxs.push_back( i );
+//	qt.print( 0 );
 
-	if ( idxs.size() > 0 )
-		cout << "locations less than 50m from random dot:" << endl;
-	for ( int i = 0; i < (int) idxs.size(); ++i )
-		cout << xps[idxs[i]] << ", "<< yps[idxs[i]] << ", d=" << ds(rnd, idxs[i]) << endl;
-
-
-	return 0;
-
-}
-
-
-struct quadrant {
-
-	int x_start;
-	int x_end;
-	int y_start;
-	int y_end;
-
-};
-
-struct quadleaf {
-
-	string ani_name;
-
-};
-
-struct quadnode {
-
-	quadrant limits;
-	quadnode* child;
-	quadleaf leaf;
-
-};
+//	time_t t_end = time( NULL );
+//	cout << "Distances computation: " << difftime( t_end, t_start ) << " s" << endl << endl;
 
 
-int quadtree( Habitat* env ) {
+	Animat* ani = env.population.begin()->second;
+	util::coordinate rng_start ( ani->posX - ani->visionRange, ani->posY - ani->visionRange );
+	util::coordinate rng_end ( ani->posX + ani->visionRange, ani->posY + ani->visionRange );
+
+	auto start2 = chrono::steady_clock::now();
+
+	// TODO! sometimes not even self is found...
+	vector<Animat*> closest = qt.rangeQuery( rng_start, rng_end );
+
+	auto end2 = chrono::steady_clock::now();
+	elapsed = chrono::duration_cast<chrono::milliseconds>( end2 - start2 );
+	cout << "Range query: " << elapsed.count() << " ms" << endl << endl;
 
 
-	int sx = env->sizeX;
-	int sy = env->sizeY;
-
-	// first split into 4 quadrants
-	// we need a quadrant struct
-	int sx_2 = sx / 2;
-	int sy_2 = sy / 2;
+	cout << endl << endl << "Animat at " << ani->posX << "," << ani->posY << " sees (r=" << ani->visionRange << ") animats:" << endl;
+	for ( auto cani : closest ) {
+		float dist = sqrt( pow( ani->posX-cani->posX, 2 ) + pow( ani->posY-cani->posY, 2 ) );
+		cout << " - animat at " << cani->posX << "," << cani->posY << ", distance = " << dist << endl;
+	}
 
 
 	return 0;

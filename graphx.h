@@ -19,9 +19,9 @@
 #include <GLFW/glfw3.h>
 
 
-// Include GLM
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+// Include GLM		don't need it, don't have it
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
 
 #include "Habitat.h"
 #include "Animat.h"

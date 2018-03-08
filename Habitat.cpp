@@ -114,11 +114,12 @@ Habitat::~Habitat() {
 /* member functions */
 
 
-void Habitat::populateWorld( std::string animat_iniFileName, std::string fcm_concepts_fileName, std::string fcm_fileName ) {
+void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std::string fcm_concepts_fileName, std::string fcm_fileName ) {
 
 	std::map<std::string, float> ini = util::readSimpleIni( animat_iniFileName );
 
-	int n_animats = static_cast<int>( ini["n_animats"] );
+	if ( n_animats == 0 )
+		n_animats = static_cast<int>( ini["n_animats"] );
 
 	float avg_size = ini["size"];
 	float max_energy = ini["max_energy"];
@@ -138,8 +139,8 @@ void Habitat::populateWorld( std::string animat_iniFileName, std::string fcm_con
 	std::vector<float> vis_angles = fate->normalFloatsString( n_animats, vision_angle, vision_angle*std_degree );
 	std::vector<float> olf_ranges = fate->normalFloatsString( n_animats, olfactory_range, olfactory_range*std_degree);
 
-	std::vector<int> pxs = fate->nUniformRandomIntsFrom( n_animats, 0, sizeX );
-	std::vector<int> pys = fate->nUniformRandomIntsFrom( n_animats, 0, sizeY );
+	std::vector<float> pxs = fate->nUniformRandomFloatsFrom( n_animats, 0, sizeX );
+	std::vector<float> pys = fate->nUniformRandomFloatsFrom( n_animats, 0, sizeY );
 	std::vector<float> dirs = fate->nUniformRandomFloatsFrom( n_animats, -PI, PI );
 
 	for ( int i = 0; i < n_animats; ++i ) {

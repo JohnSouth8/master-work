@@ -29,7 +29,7 @@ FCM::FCM( int nc ) {
 	nInternal = 0;
 	nOutput = 0;
 //	concepts = std::vector<string>( nConcepts );
-	state = VectorXf::Zero( nConcepts );		// TODO: rename. Edit: why?
+	state = VectorXf::Zero( nConcepts );		// TODO: rename. Edit: why? Edit2: don't know anymore..
 	L = MatrixXf::Zero( nConcepts, nConcepts );
 
 }
