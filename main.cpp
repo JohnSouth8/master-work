@@ -505,7 +505,7 @@ int test_bigNumbers() {
 //	for ( int i = 0; i < (int) idxs.size(); ++i )
 //		cout << xps[idxs[i]] << ", "<< yps[idxs[i]] << ", d=" << ds(rnd, idxs[i]) << endl;
 
-//	qt.print( 0 );
+	qt.print( 0 );
 
 //	time_t t_end = time( NULL );
 //	cout << "Distances computation: " << difftime( t_end, t_start ) << " s" << endl << endl;

@@ -124,9 +124,11 @@ bool QuadTree::insert( ecosystem::Animat* ani ) {
 
 std::vector<ecosystem::Animat*> QuadTree::rangeQuery( coordinate range_start, coordinate range_stop ) {
 
+	// TODO also bear in mind wrapped coordinates!
+
 	std::vector<ecosystem::Animat*> results;
 
-	if ( !containsCoordinate( range_start ) && !containsCoordinate( range_stop ) )
+	if ( !containsCoordinate( range_start ) && !containsCoordinate( range_stop ) )	// TODO: improper test!
 		return results;
 
 	// if we are in a leaf
