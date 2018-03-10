@@ -488,27 +488,10 @@ int test_bigNumbers() {
 		cout << "all animats succesfully added to the tree" << endl;
 
 	auto end = chrono::steady_clock::now();
-	auto elapsed = 	chrono::duration_cast<chrono::milliseconds>( end - start );
+	auto elapsed = 	chrono::duration_cast<chrono::microseconds>( end - start );
 	cout << "Quad tree construction: " << elapsed.count() << " ms" << endl << endl;
 
-//	int rnd = fate->uniformRandomIntFrom( 0, n_tests-1 );
-//	cout << "random dot " << rnd << ", at x=" << xps[rnd] << ", y=" << yps[rnd] << endl;
-//	cout << ds.row( rnd ) << endl << endl;
-//
-//	vector<int> idxs;
-//	for ( int i = 0; i < n_tests; ++i )
-//		if ( ds(rnd, i) < 50 && ds(rnd, i) > 0 )
-//			idxs.push_back( i );
-//
-//	if ( idxs.size() > 0 )
-//		cout << "locations less than 50m from random dot:" << endl;
-//	for ( int i = 0; i < (int) idxs.size(); ++i )
-//		cout << xps[idxs[i]] << ", "<< yps[idxs[i]] << ", d=" << ds(rnd, idxs[i]) << endl;
 
-	qt.print( 0 );
-
-//	time_t t_end = time( NULL );
-//	cout << "Distances computation: " << difftime( t_end, t_start ) << " s" << endl << endl;
 
 
 	Animat* ani = env.population.begin()->second;
@@ -517,19 +500,67 @@ int test_bigNumbers() {
 
 	auto start2 = chrono::steady_clock::now();
 
-	// TODO! sometimes not even self is found...
 	vector<Animat*> closest = qt.rangeQuery( rng_start, rng_end );
 
 	auto end2 = chrono::steady_clock::now();
-	elapsed = chrono::duration_cast<chrono::milliseconds>( end2 - start2 );
+	elapsed = chrono::duration_cast<chrono::microseconds>( end2 - start2 );
 	cout << "Range query: " << elapsed.count() << " ms" << endl << endl;
 
 
-	cout << endl << endl << "Animat at " << ani->posX << "," << ani->posY << " sees (r=" << ani->visionRange << ") animats:" << endl;
+	cout << "Animat at " << ani->posX << "," << ani->posY << " sees (r=" << ani->visionRange << ") animats:" << endl;
 	for ( auto cani : closest ) {
 		float dist = sqrt( pow( ani->posX-cani->posX, 2 ) + pow( ani->posY-cani->posY, 2 ) );
 		cout << " - animat at " << cani->posX << "," << cani->posY << ", distance = " << dist << endl;
 	}
+
+	cout << endl << endl << endl;
+
+
+	vector<float> xps;
+	vector<float> yps;
+
+	for ( auto &nm_ani : env.population ) {
+		xps.push_back( nm_ani.second->posX );
+		yps.push_back( nm_ani.second->posY );
+	}
+
+	MatrixXf ds = MatrixXf::Zero( n_tests, n_tests );
+
+	auto start3 = chrono::steady_clock::now();
+
+	for ( int i = 0; i < n_tests; ++i ) {
+		for ( int j = 0; j < n_tests; ++j ) {
+
+			if ( i == j )
+				continue;
+
+			float d = sqrt( pow( xps[i] - xps[j], 2 ) + pow( yps[i] - yps[j], 2 ) );
+			ds( i, j ) = d;
+			ds( j, i ) = d;
+
+		}
+	}
+
+	auto end3 = chrono::steady_clock::now();
+	elapsed = chrono::duration_cast<chrono::microseconds>( end3 - start3 );
+	cout << "Distances computation: " << elapsed.count() << " ms" << endl << endl;
+
+
+	auto start4 = chrono::steady_clock::now();
+	vector<int> idxs;
+	for ( int i = 0; i < n_tests; ++i )
+		if ( ds(0, i) < ani->visionRange && ds(0, i) > 0 )
+			idxs.push_back( i );
+
+	if ( idxs.size() > 0 )
+		cout << "Animats less than " << ani->visionRange << "m from this animat:" << endl;
+	for ( int i = 0; i < (int) idxs.size(); ++i )
+		cout << "\t - " << xps[idxs[i]] << ", "<< yps[idxs[i]] << ", d=" << ds(0, idxs[i]) << endl;
+
+	cout << endl;
+	auto end4 = chrono::steady_clock::now();
+	elapsed = chrono::duration_cast<chrono::microseconds>( end4 - start4 );
+	cout << "Closest search: " << elapsed.count() << " ms" << endl << endl;
 
 
 	return 0;

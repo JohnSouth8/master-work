@@ -122,21 +122,23 @@ bool QuadTree::insert( ecosystem::Animat* ani ) {
 
 
 
-std::vector<ecosystem::Animat*> QuadTree::rangeQuery( coordinate range_start, coordinate range_stop ) {
+std::vector<ecosystem::Animat*> QuadTree::rangeQuery( coordinate r_start, coordinate r_stop ) {
 
 	// TODO also bear in mind wrapped coordinates!
 
 	std::vector<ecosystem::Animat*> results;
 
-	if ( !containsCoordinate( range_start ) && !containsCoordinate( range_stop ) )	// TODO: improper test!
+	// SAT check
+	if ( start.x > r_stop.x || end.x < r_start.x || start.y > r_stop.y || end.y < r_start.y )
 		return results;
+
 
 	// if we are in a leaf
 	if ( northWest == nullptr ) {
 
 		for ( auto ani : bucket )
 			// if animat is in the queried range
-			if ( ani->posX >= range_start.x && ani->posX < range_stop.x && ani->posY >= range_start.y && ani->posY < range_stop.y )
+			if ( ani->posX >= r_start.x && ani->posX < r_stop.x && ani->posY >= r_start.y && ani->posY < r_stop.y )
 				results.push_back( ani );
 
 		return results;
@@ -144,10 +146,10 @@ std::vector<ecosystem::Animat*> QuadTree::rangeQuery( coordinate range_start, co
 	}
 
 	// otherwise, get results from subtrees
-	std::vector<ecosystem::Animat*> nw_results = northWest->rangeQuery( range_start, range_stop );
-	std::vector<ecosystem::Animat*> ne_results = northEast->rangeQuery( range_start, range_stop );
-	std::vector<ecosystem::Animat*> sw_results = southWest->rangeQuery( range_start, range_stop );
-	std::vector<ecosystem::Animat*> se_results = southEast->rangeQuery( range_start, range_stop );
+	std::vector<ecosystem::Animat*> nw_results = northWest->rangeQuery( r_start, r_stop );
+	std::vector<ecosystem::Animat*> ne_results = northEast->rangeQuery( r_start, r_stop );
+	std::vector<ecosystem::Animat*> sw_results = southWest->rangeQuery( r_start, r_stop );
+	std::vector<ecosystem::Animat*> se_results = southEast->rangeQuery( r_start, r_stop );
 
 	// and append them to results (if they have > 0 elements)
 	if ( nw_results.size() > 0 )
