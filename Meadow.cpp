@@ -7,11 +7,13 @@
 
 #include "Meadow.h"
 #include "Habitat.h"
+#include "QuadTree.h"
 
 #include "util.h"
 
 namespace ecosystem {
 
+// TODO: merge this into environment! No need for this to be on its own
 
 Meadow::Meadow( int cx, int cy, int r, float gr, Habitat* env ) {
 
@@ -32,11 +34,10 @@ Meadow::~Meadow() {
 int Meadow::grow() {
 
 	int grownFood = 0;
-	float randf = environment->fate->uniformRandomUnitFloat();
 	int envSizeX = environment->sizeX;
 	int envSizeY = environment->sizeY;
 
-	while ( randf < growRate ) {
+	while ( environment->fate->uniformRandomUnitFloat() < growRate ) {
 
 //		float offset = environment->fate->linearDescRandomFloatFrom( 0, radius );
 		float offset = environment->fate->uniformRandomFloatFrom( 0, radius );
@@ -53,7 +54,6 @@ int Meadow::grow() {
 			grownFood += 1;
 		}
 
-		randf = environment->fate->uniformRandomUnitFloat();
 	}
 
 	return grownFood;

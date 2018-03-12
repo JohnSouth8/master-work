@@ -9,6 +9,7 @@
 #define ANIMAT_H_
 
 
+#include "Organism.h"
 #include "structs.h"
 #include "FCM.h"
 
@@ -26,7 +27,7 @@ namespace ecosystem {
 // forward declaration
 class Habitat;
 
-class Animat {
+class Animat : public Organism {
 	// TODO: write inits based on config files rather than passing of a myriad of parameters
 public:
 
@@ -49,8 +50,8 @@ public:
 	int maxAge;
 
 	// physical parameters
-	float posX;
-	float posY;
+//	float posX;		already members of base class organism
+//	float posY;
 	float direction;
 	float velocity;
 	int age;

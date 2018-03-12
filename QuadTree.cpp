@@ -12,23 +12,33 @@
 
 
 #include "QuadTree.h"
-#include "Animat.h"
+#include "Organism.h"
 
+
+using ecosystem::Organism;
 
 namespace util {
 
-QuadTree::QuadTree( unsigned int capacity, coordinate upright, coordinate downleft ) {
 
-	bucketSize = capacity;
-	start = upright;
-	end = downleft;
+QuadTree::QuadTree() :
+	bucketSize( 0 ),
+	start( coordinate( 0, 0 ) ),
+	end( coordinate( 1, 1 ) ),
+	northWest( nullptr ),
+	northEast( nullptr ),
+	southWest( nullptr ),
+	southEast( nullptr )
+{}
 
-	northWest = nullptr;
-	northEast = nullptr;
-	southWest = nullptr;
-	southEast = nullptr;
-
-}
+QuadTree::QuadTree( unsigned int capacity, coordinate upright, coordinate downleft ) :
+	bucketSize( capacity ),
+	start( upright ),
+	end( downleft ),
+	northWest( nullptr ),
+	northEast( nullptr ),
+	southWest( nullptr ),
+	southEast( nullptr )
+{}
 
 QuadTree::~QuadTree() {
 	delete northWest;
@@ -71,7 +81,7 @@ void QuadTree::subdivide() {
 	southEast = new QuadTree( bucketSize, se_start, se_end );
 
 
-	// divide contaning animats among subtrees
+	// divide contaning organisms among subtrees
 	for ( unsigned int i = 0; i < bucket.size(); ++i ) {
 
 		if ( northWest->insert( bucket[i] ) )
@@ -84,17 +94,17 @@ void QuadTree::subdivide() {
 
 	}
 
-	// this node has subnodes and not animats, therefore empty its bucket
-	std::vector<ecosystem::Animat*>().swap( bucket );
+	// this node has subnodes and not organisms, therefore empty its bucket
+	std::vector<Organism*>().swap( bucket );
 
 }
 
 
-bool QuadTree::insert( ecosystem::Animat* ani ) {
+bool QuadTree::insert( Organism* org ) {
 
-	coordinate pos( ani->posX, ani->posY );
+	coordinate pos( org->posX, org->posY );
 
-	// check if animat belongs in this node
+	// check if organism belongs in this node
 	if ( !containsCoordinate( pos ) )
 		return false;
 
@@ -103,7 +113,7 @@ bool QuadTree::insert( ecosystem::Animat* ani ) {
 
 		// if leaf with space remaining, add this animat and return
 		if ( bucket.size() < bucketSize ) {
-			bucket.push_back( ani );
+			bucket.push_back( org );
 			return true;
 		}
 		else
@@ -111,10 +121,10 @@ bool QuadTree::insert( ecosystem::Animat* ani ) {
 
 	}
 
-	if ( northWest->insert( ani ) ) return true;
-	if ( northEast->insert( ani ) ) return true;
-	if ( southWest->insert( ani ) ) return true;
-	if ( southEast->insert( ani ) ) return true;
+	if ( northWest->insert( org ) ) return true;
+	if ( northEast->insert( org ) ) return true;
+	if ( southWest->insert( org ) ) return true;
+	if ( southEast->insert( org ) ) return true;
 
 	return false;
 
@@ -122,11 +132,89 @@ bool QuadTree::insert( ecosystem::Animat* ani ) {
 
 
 
-std::vector<ecosystem::Animat*> QuadTree::rangeQuery( coordinate r_start, coordinate r_stop ) {
+Organism* QuadTree::find( coordinate pos ) {
 
-	// TODO also bear in mind wrapped coordinates!
+	if ( !containsCoordinate( pos ) )
+		return nullptr;
 
-	std::vector<ecosystem::Animat*> results;
+	// if we are in a leaf
+	if ( northWest == nullptr ) {
+		for ( auto org : bucket )
+			if ( org->posX == pos.x && org->posY == pos.y )
+				return org;
+		return nullptr;	// none were found
+	}
+
+	// systematically search subtrees
+	Organism* org = northWest->find( pos );
+	if ( org != nullptr )
+		return org;
+
+	org = northEast->find( pos );
+	if ( org != nullptr )
+		return org;
+
+	org = southWest->find( pos );
+	if ( org != nullptr )
+		return org;
+
+	org = southEast->find( pos );
+	if ( org != nullptr )
+		return org;
+
+	return nullptr;
+
+}
+
+
+
+std::vector<Organism*> QuadTree::rangeQuery( coordinate r_start, coordinate r_stop, coordinate limit ) {
+
+	// define returning vector
+	std::vector<Organism*> results;
+
+	// first handle possible wrapped coordinates by splitting the range and requerying self
+	if ( r_start.x > r_stop.x ) {
+
+		coordinate r_start_low ( 0.0, r_start.y );
+		coordinate r_stop_low = r_stop;
+
+		coordinate r_start_high = r_start;
+		coordinate r_stop_high ( limit.x, r_stop.y );
+
+		std::vector<Organism*> lower_results = this->rangeQuery( r_start_low, r_stop_low, limit );
+		std::vector<Organism*> higher_results = this->rangeQuery( r_start_high, r_stop_high, limit );
+
+		if ( lower_results.size() > 0 )
+			results.insert( results.end(), lower_results.begin(), lower_results.end() );
+		if ( higher_results.size() > 0 )
+			results.insert( results.end(), higher_results.begin(), higher_results.end() );
+
+		// return only these results, as they are already made on self and there is no need to go through it again
+		return results;
+
+	}
+	if ( r_start.y > r_stop.y ) {
+
+		coordinate r_start_low( r_start.x, 0.0 );
+		coordinate r_stop_low = r_stop;
+
+		coordinate r_start_high = r_start;
+		coordinate r_stop_high( r_stop.x, limit.y );
+
+		std::vector<Organism*> lower_results = this->rangeQuery( r_start_low, r_stop_low, limit );
+		std::vector<Organism*> higher_results = this->rangeQuery( r_start_high, r_stop_high, limit );
+
+		if ( lower_results.size() > 0 )
+			results.insert( results.end(), lower_results.begin(), lower_results.end() );
+		if ( higher_results.size() > 0 )
+			results.insert( results.end(), higher_results.begin(), higher_results.end() );
+
+		// return only these results, as they are already made on self and there is no need to go through it again
+		return results;
+
+	}
+
 
 	// SAT check
 	if ( start.x > r_stop.x || end.x < r_start.x || start.y > r_stop.y || end.y < r_start.y )
@@ -136,20 +224,20 @@ std::vector<ecosystem::Animat*> QuadTree::rangeQuery( coordinate r_start, coordi
 	// if we are in a leaf
 	if ( northWest == nullptr ) {
 
-		for ( auto ani : bucket )
-			// if animat is in the queried range
-			if ( ani->posX >= r_start.x && ani->posX < r_stop.x && ani->posY >= r_start.y && ani->posY < r_stop.y )
-				results.push_back( ani );
+		for ( auto org : bucket )
+			// if organism is in the queried range
+			if ( org->posX >= r_start.x && org->posX < r_stop.x && org->posY >= r_start.y && org->posY < r_stop.y )
+				results.push_back( org );
 
 		return results;
 
 	}
 
 	// otherwise, get results from subtrees
-	std::vector<ecosystem::Animat*> nw_results = northWest->rangeQuery( r_start, r_stop );
-	std::vector<ecosystem::Animat*> ne_results = northEast->rangeQuery( r_start, r_stop );
-	std::vector<ecosystem::Animat*> sw_results = southWest->rangeQuery( r_start, r_stop );
-	std::vector<ecosystem::Animat*> se_results = southEast->rangeQuery( r_start, r_stop );
+	std::vector<Organism*> nw_results = northWest->rangeQuery( r_start, r_stop, limit );
+	std::vector<Organism*> ne_results = northEast->rangeQuery( r_start, r_stop, limit );
+	std::vector<Organism*> sw_results = southWest->rangeQuery( r_start, r_stop, limit );
+	std::vector<Organism*> se_results = southEast->rangeQuery( r_start, r_stop, limit );
 
 	// and append them to results (if they have > 0 elements)
 	if ( nw_results.size() > 0 )

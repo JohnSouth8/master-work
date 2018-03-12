@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "Chance.h"
+#include "QuadTree.h"
 
 #include "Animat.h"
 #include "Meadow.h"
@@ -75,6 +76,13 @@ Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
 	// member structures
 	fate = ch;
 	foodReserve = MatrixXf::Zero( sizeX, sizeY );
+
+	// quad trees
+	unsigned int qt_bucketsize = static_cast<unsigned int>( ini["quadtree_bucketsize"] );
+	util::coordinate env0( 0, 0 );
+	util::coordinate env1( sizeX, sizeY );
+	foodTree = util::QuadTree( qt_bucketsize, env0, env1 );
+	populationTree = util::QuadTree( qt_bucketsize, env0, env1 );
 
 	// food emanators - meadows
 	int n_mdw = static_cast<int>( ini["n_meadows"] );
@@ -146,7 +154,7 @@ void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std:
 	for ( int i = 0; i < n_animats; ++i ) {
 
 		std::string name = generateAnimatName();
-		Animat* ani = new Animat(
+		Animat* ani = new Animat (
 			name,
 			sizes[i],
 			vis_ranges[i],

@@ -77,7 +77,7 @@ namespace util {
 
 	}
 
-	double getWrappedCoordinate( double coordinate, int domainSize ) {
+	float getWrappedCoordinate( float coordinate, int domainSize ) {
 
 		double retval = coordinate;
 
@@ -92,10 +92,24 @@ namespace util {
 
 	}
 
-	double getAngleBetween( Eigen::Vector2f v1, Eigen::Vector2f v2 ) {
 
-		double v_angle = atan2( v1(1), v1(0) );
-		double g_angle = atan2( v2(1), v2(0) );
+	float distanceInPeriodicBoundary( float x1, float y1, float x2, float y2, int maxX, int maxY ) {
+
+		float dx = x2 - x1;
+		dx = dx - maxX*round( dx / maxX );
+
+		float dy = y2 - y1;
+		dy = dy - maxY*round( dy / maxY );
+
+		return sqrt( pow( dx, 2 ) + pow( dy, 2 ) );
+
+	}
+
+
+	float getAngleBetween( Eigen::Vector2f v1, Eigen::Vector2f v2 ) {
+
+		float v_angle = atan2( v1(1), v1(0) );
+		float g_angle = atan2( v2(1), v2(0) );
 
 		return g_angle - v_angle;
 

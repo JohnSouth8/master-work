@@ -19,6 +19,7 @@
 #include <Eigen/Dense>
 #include <unistd.h>
 
+#include "Organism.h"
 #include "Animat.h"
 #include "Habitat.h"
 #include "Chance.h"
@@ -466,101 +467,171 @@ int test_randomness() {
 
 int test_bigNumbers() {
 
-	auto start = chrono::steady_clock::now();
 
-	int n_tests = 500;
+	int n_animats = 500;
 //	int e_size = 1000;
+	int n_caps = 20;
+	int n_tests = 100;
 
-	Habitat env( fname_environment_ini, fate );
+	long test_results[n_caps][n_tests][2];
+
+	Habitat env ( fname_environment_ini, fate );
 
 	// init animats
-	env.populateWorld( n_tests, fname_animat_ini, fname_fcm_cs, fname_fcm );
+	env.populateWorld( n_animats, fname_animat_ini, fname_fcm_cs, fname_fcm );
 
 
-	util::QuadTree qt( 4, util::coordinate( 0.0, 0.0 ), util::coordinate( static_cast<float>( env.sizeX ), static_cast<float>( env.sizeY ) ) );
-	unsigned int count = 0;
-	for ( auto &nm_ani : env.population ) {
-		bool ins = qt.insert( nm_ani.second );
-		if ( ins )
-			++count;
-	}
-	if ( count == env.population.size() )
-		cout << "all animats succesfully added to the tree" << endl;
+	for ( int i = 0; i < n_caps; ++i ) {
 
-	auto end = chrono::steady_clock::now();
-	auto elapsed = 	chrono::duration_cast<chrono::microseconds>( end - start );
-	cout << "Quad tree construction: " << elapsed.count() << " ms" << endl << endl;
-
-
-
-
-	Animat* ani = env.population.begin()->second;
-	util::coordinate rng_start ( ani->posX - ani->visionRange, ani->posY - ani->visionRange );
-	util::coordinate rng_end ( ani->posX + ani->visionRange, ani->posY + ani->visionRange );
-
-	auto start2 = chrono::steady_clock::now();
-
-	vector<Animat*> closest = qt.rangeQuery( rng_start, rng_end );
-
-	auto end2 = chrono::steady_clock::now();
-	elapsed = chrono::duration_cast<chrono::microseconds>( end2 - start2 );
-	cout << "Range query: " << elapsed.count() << " ms" << endl << endl;
-
-
-	cout << "Animat at " << ani->posX << "," << ani->posY << " sees (r=" << ani->visionRange << ") animats:" << endl;
-	for ( auto cani : closest ) {
-		float dist = sqrt( pow( ani->posX-cani->posX, 2 ) + pow( ani->posY-cani->posY, 2 ) );
-		cout << " - animat at " << cani->posX << "," << cani->posY << ", distance = " << dist << endl;
-	}
-
-	cout << endl << endl << endl;
-
-
-	vector<float> xps;
-	vector<float> yps;
-
-	for ( auto &nm_ani : env.population ) {
-		xps.push_back( nm_ani.second->posX );
-		yps.push_back( nm_ani.second->posY );
-	}
-
-	MatrixXf ds = MatrixXf::Zero( n_tests, n_tests );
-
-	auto start3 = chrono::steady_clock::now();
-
-	for ( int i = 0; i < n_tests; ++i ) {
 		for ( int j = 0; j < n_tests; ++j ) {
 
-			if ( i == j )
-				continue;
 
-			float d = sqrt( pow( xps[i] - xps[j], 2 ) + pow( yps[i] - yps[j], 2 ) );
-			ds( i, j ) = d;
-			ds( j, i ) = d;
+			auto start = chrono::steady_clock::now();
+
+			util::QuadTree qt( i+1, util::coordinate( 0.0, 0.0 ), util::coordinate( static_cast<float>( env.sizeX ), static_cast<float>( env.sizeY ) ) );
+//			unsigned int count = 0;
+			for ( auto &nm_ani : env.population ) {
+				qt.insert( nm_ani.second );
+//				bool ins = qt.insert( nm_ani.second );
+//				if ( ins )
+//					++count;
+			}
+//			if ( count == env.population.size() )
+//				cout << "all animats succesfully added to the tree" << endl;
+
+			auto end = chrono::steady_clock::now();
+			auto elapsed = chrono::duration_cast<chrono::microseconds>( end - start );
+//			cout << "Quad tree construction: " << elapsed.count() << " us" << endl << endl;
+
+			test_results[i][j][0] = static_cast<long>( elapsed.count() );
+
+		//	qt.print( 0 );
+
+
+			// select an animat at the edges
+			Animat* ani;
+		////	int ani_no = 0;
+		//	for ( auto &nm_ani : env.population ) {
+		//		ani = nm_ani.second;
+		//		if ( ani->posX - ani->visionRange < 0 || ani->posX + ani->visionRange > env.sizeX
+		//				|| ani->posY - ani->visionRange < 0 || ani->posY + ani->visionRange > env.sizeY )
+		//			break;
+		////		ani_no++;
+		//	}
+
+			//	Animat* ani = env.population.begin()->second;
+
+
+			auto start2 = chrono::steady_clock::now();
+
+			// compute distances from all the animats on the list
+			for ( auto &nm_ani : env.population ) {
+
+				ani = nm_ani.second;
+
+				util::coordinate rng_start ( util::getWrappedCoordinate( ani->posX - ani->visionRange, env.sizeX ),
+											 util::getWrappedCoordinate( ani->posY - ani->visionRange, env.sizeY ) );
+				util::coordinate rng_end ( util::getWrappedCoordinate( ani->posX + ani->visionRange, env.sizeX ),
+										   util::getWrappedCoordinate( ani->posY + ani->visionRange, env.sizeY ) );
+				util::coordinate limits ( env.sizeX, env.sizeY );
+
+				vector<Organism*> closest = qt.rangeQuery( rng_start, rng_end, limits );
+
+//				if ( closest.empty() ) {
+//					cout << "Failed query for animat [" << ani->posX << "," << ani->posY << "] !" << endl;
+//					closest = qt.rangeQuery( rng_start, rng_end, limits );
+//				}
+
+		//		cout << "Animat at " << ani->posX << "," << ani->posY << " sees (r=" << ani->visionRange << ") animats:" << endl;
+		//		for ( auto cani : closest ) {
+		//			// distance computation resistant to wrapped coordinates
+		//			float dx = ani->posX-cani->posX;
+		//			dx = dx - env.sizeX*round( dx / env.sizeX );
+		//			float dy = ani->posY-cani->posY;
+		//			dy = dy - env.sizeY*round( dy / env.sizeY );
+		//			float dist = sqrt( pow( dx, 2 ) + pow( dy, 2 ) );
+		//			cout << " - animat at " << cani->posX << "," << cani->posY << ", distance = " << dist << endl;
+		//		}
+
+			}
+
+			auto end2 = chrono::steady_clock::now();
+			elapsed = chrono::duration_cast<chrono::microseconds>( end2 - start2 );
+//			cout << "Ranges of all animats query: " << elapsed.count() << " us" << endl << endl;
+
+			test_results[i][j][1] = static_cast<long>( elapsed.count() );
 
 		}
+
 	}
 
-	auto end3 = chrono::steady_clock::now();
-	elapsed = chrono::duration_cast<chrono::microseconds>( end3 - start3 );
-	cout << "Distances computation: " << elapsed.count() << " ms" << endl << endl;
+	for ( int i = 0; i < n_caps; ++i ) {
 
+		long sum_constr = 0;
+		long sum_query = 0;
 
-	auto start4 = chrono::steady_clock::now();
-	vector<int> idxs;
-	for ( int i = 0; i < n_tests; ++i )
-		if ( ds(0, i) < ani->visionRange && ds(0, i) > 0 )
-			idxs.push_back( i );
+		for ( int j = 0; j < n_tests; ++j ) {
+			sum_constr += test_results[i][j][0];
+			sum_query += test_results[i][j][1];
+		}
 
-	if ( idxs.size() > 0 )
-		cout << "Animats less than " << ani->visionRange << "m from this animat:" << endl;
-	for ( int i = 0; i < (int) idxs.size(); ++i )
-		cout << "\t - " << xps[idxs[i]] << ", "<< yps[idxs[i]] << ", d=" << ds(0, idxs[i]) << endl;
+		double mean_constr = (double)sum_constr / n_tests;
+		double mean_query = ( (double)sum_query / n_tests ) / (double)n_animats;
 
-	cout << endl;
-	auto end4 = chrono::steady_clock::now();
-	elapsed = chrono::duration_cast<chrono::microseconds>( end4 - start4 );
-	cout << "Closest search: " << elapsed.count() << " ms" << endl << endl;
+		cout << "Bucket capacity " << i+1 << ":" << endl;
+		cout << "\t - mean construction time: " << mean_constr << endl;
+		cout << "\t - mean range query time: " << mean_query << endl;
+
+	}
+
+//	cout << endl << endl << endl;
+//
+//
+//	vector<float> xps;
+//	vector<float> yps;
+//
+//	for ( auto &nm_ani : env.population ) {
+//		xps.push_back( nm_ani.second->posX );
+//		yps.push_back( nm_ani.second->posY );
+//	}
+//
+//	MatrixXf ds = MatrixXf::Zero( n_tests, n_tests );
+//
+//	auto start3 = chrono::steady_clock::now();
+//
+//	for ( int i = 0; i < n_tests; ++i ) {
+//		for ( int j = 0; j < n_tests; ++j ) {
+//
+//			if ( i == j )
+//				continue;
+//
+//			float d = sqrt( pow( xps[i] - xps[j], 2 ) + pow( yps[i] - yps[j], 2 ) );
+//			ds( i, j ) = d;
+//			ds( j, i ) = d;
+//
+//		}
+//	}
+//
+//	auto end3 = chrono::steady_clock::now();
+//	elapsed = chrono::duration_cast<chrono::microseconds>( end3 - start3 );
+//	cout << "Distances computation: " << elapsed.count() << " ms" << endl << endl;
+//
+//
+//	auto start4 = chrono::steady_clock::now();
+//	vector<int> idxs;
+//	for ( int i = 0; i < n_tests; ++i )
+//		if ( ds(ani_no, i) < ani->visionRange && ds(ani_no, i) > 0 )
+//			idxs.push_back( i );
+//
+//	if ( idxs.size() > 0 )
+//		cout << "Animats less than " << ani->visionRange << "m from this animat(" << ani->posX << "," << ani->posY << "):" << endl;
+//	for ( int i = 0; i < (int) idxs.size(); ++i )
+//		cout << "\t - " << xps[idxs[i]] << ", "<< yps[idxs[i]] << ", d=" << ds(ani_no, idxs[i]) << endl;
+//
+//	cout << endl;
+//	auto end4 = chrono::steady_clock::now();
+//	elapsed = chrono::duration_cast<chrono::microseconds>( end4 - start4 );
+//	cout << "Closest search: " << elapsed.count() << " ms" << endl << endl;
 
 
 	return 0;

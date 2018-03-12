@@ -10,6 +10,7 @@
 
 
 #include "Chance.h"
+#include "QuadTree.h"
 
 #include <map>
 #include <vector>
@@ -23,6 +24,7 @@ extern const float PI;
 namespace ecosystem {
 
 // forward declarations
+class Grass;
 class Animat;
 class Meadow;
 
@@ -51,6 +53,11 @@ public:
 	float std_grMeadows;
 	float p_newMeadow;
 
+	// QuadTrees for easy storage and search
+	util::QuadTree foodTree;
+	util::QuadTree populationTree;
+
+	// deprecated as of QuadTree implementation
 	// helper variables for distance computation
 	Eigen::MatrixXf animatDistances;
 	std::vector<std::string> animatOrder;		// order of animats in the population map

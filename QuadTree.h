@@ -15,12 +15,12 @@
 
 // forward declaration
 namespace ecosystem {
-	class Animat;
+	class Organism;
 }
 
 namespace util {
 
-
+// TODO: standardize this and the one in structs..
 struct coordinate {
 
 	float x;
@@ -36,6 +36,7 @@ class QuadTree {
 
 public:
 
+	QuadTree();
 	QuadTree( unsigned int, coordinate, coordinate );
 	virtual ~QuadTree();
 
@@ -45,7 +46,7 @@ public:
 	coordinate end;
 
 	// data
-	std::vector<ecosystem::Animat*> bucket;
+	std::vector<ecosystem::Organism*> bucket;
 
 	// subtrees
 	QuadTree* northWest;
@@ -53,10 +54,16 @@ public:
 	QuadTree* southWest;
 	QuadTree* southEast;
 
+
 	bool containsCoordinate( coordinate );
 	void subdivide();
-	bool insert( ecosystem::Animat* );
-	std::vector<ecosystem::Animat*> rangeQuery( coordinate, coordinate );
+
+	bool insert( ecosystem::Organism* );
+
+	ecosystem::Organism* find( coordinate );
+	std::vector<ecosystem::Organism*> rangeQuery( coordinate, coordinate, coordinate );
+	// TODO: optimize with an additional function of move() (requires parent node to be known)
+
 	void print( int );
 
 };

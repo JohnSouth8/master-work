@@ -30,10 +30,11 @@ namespace util {
 	float randFromUnitInterval();
 
 	int getWrappedIndex( int, int );
-	double getWrappedCoordinate( double, int );
+	float getWrappedCoordinate( float, int );
+	float distanceInPeriodicBoundary( float, float, float, float, int, int );
 
 
-	double getAngleBetween( Eigen::Vector2f, Eigen::Vector2f );
+	float getAngleBetween( Eigen::Vector2f, Eigen::Vector2f );
 
 	int countNonZeroElements( Eigen::MatrixXf );
 
