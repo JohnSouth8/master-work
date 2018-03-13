@@ -19,6 +19,7 @@
 #include "Chance.h"
 #include "QuadTree.h"
 
+#include "Grass.h"
 #include "Animat.h"
 #include "Meadow.h"
 
@@ -110,6 +111,9 @@ Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
 
 Habitat::~Habitat() {
 	// destroy objects that pointers in data structures are pointing at: animats, meadows,...
+	for ( auto g: vegetation )
+		delete g;
+
 	for ( auto m : meadows )
 		delete m;
 
@@ -345,8 +349,17 @@ void Habitat::growFoodSlow() {
 
 
 
-int Habitat::consumeFood( int x, int y )
-{
+void Habitat::growGrass( int x, int y ) {
+
+	Grass* ng = new Grass( x, y );
+	vegetation.push_back( ng );
+	foodTree.insert( ng );
+
+}
+
+
+
+int Habitat::consumeFood( int x, int y ){
 
 	if ( foodReserve( x, y ) == 0 ) {
 		return 0;

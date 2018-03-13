@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 #include "Organism.h"
+#include "Grass.h"
 #include "Animat.h"
 #include "Habitat.h"
 #include "Chance.h"
@@ -57,7 +58,8 @@ void keyActions( GLFWwindow*, int, int, int, int );
 // debug
 int test_foodGrowth_visual();
 int test_randomness();
-int test_bigNumbers();
+int test_quadTreeAnimats();
+int test_quadTreeFood();
 
 
 
@@ -73,7 +75,8 @@ int main( void ) {
 
 	// TODO: nicely put stuff together - happening and rendering
 
-	test_bigNumbers();
+//	test_quadTreeAnimats();
+	test_quadTreeFood();
 
 	delete fate;	// TODO: organize destructors everywhere!!
 
@@ -465,7 +468,7 @@ int test_randomness() {
 
 
 
-int test_bigNumbers() {
+int test_quadTreeAnimats() {
 
 
 	int n_animats = 500;
@@ -637,6 +640,84 @@ int test_bigNumbers() {
 	return 0;
 
 }
+
+
+
+int test_quadTreeFood() {
+
+
+	auto start = chrono::steady_clock::now();
+
+	Habitat env( fname_environment_ini, fate );
+
+	// preinit the food
+	for ( int i = 0; i < 5000; ++i ) {
+		env.growMeadows();
+	}
+
+
+	auto tm1 = chrono::steady_clock::now();
+	auto elapsed = chrono::duration_cast<chrono::microseconds>( tm1 - start );
+
+	cout << "amount of food worldwide: " << env.foodReserve.sum() << endl << endl;
+
+	cout << "Food growth: " << elapsed.count() << " us" << endl << endl;
+
+
+	float r = 30;
+	float r_sq = pow( r, 2 );
+	float rx = fate->uniformRandomFloatFrom( 1+r, env.sizeX-1-r );
+	float ry = fate->uniformRandomFloatFrom( 1+r, env.sizeY-1-r );
+
+
+	auto tm2 = chrono::steady_clock::now();
+
+	int cnt = 0;
+	for ( int x = rx-r; x < rx+r; x++ ) {
+		for ( int y = ry-r; y < ry+r; y++ ) {
+			if ( env.foodReserve( x, y ) == 1 ) {
+				float dist = pow( (x - rx), 2 ) + pow( (y - ry), 2 );
+				if ( dist <= r_sq )
+					cnt++;
+			}
+		}
+	}
+
+	cout << "found " << cnt << " food nearby." << endl << endl;
+
+	auto tm3 = chrono::steady_clock::now();
+	elapsed = chrono::duration_cast<chrono::microseconds>( tm3 - tm2 );
+	cout << "restricted search: " << elapsed.count() << " us" << endl << endl;
+
+
+	util::coordinate rng0 ( rx - r, ry - r );
+	util::coordinate rng1 ( rx + r, ry + r );
+	util::coordinate limits ( env.sizeX, env.sizeY );
+
+	auto tm4 = chrono::steady_clock::now();
+
+	vector<Organism*> results = env.foodTree.rangeQuery( rng0, rng1, limits );
+
+	cnt = 0;
+	for ( auto gr : results ) {
+		float dist =  pow( (gr->posX - rx), 2 ) + pow( (gr->posY - ry), 2 );
+		if ( dist <= r_sq )
+			cnt++;
+	}
+
+	cout << "found " << cnt << " food nearby." << endl << endl;
+
+	auto tm5 = chrono::steady_clock::now();
+	elapsed = chrono::duration_cast<chrono::microseconds>( tm5 - tm4 );
+	cout << "quad tree search: " << elapsed.count() << " us" << endl << endl;
+
+
+
+	return 0;
+
+}
+
+
 
 
 

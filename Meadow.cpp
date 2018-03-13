@@ -7,13 +7,12 @@
 
 #include "Meadow.h"
 #include "Habitat.h"
-#include "QuadTree.h"
 
 #include "util.h"
 
 namespace ecosystem {
 
-// TODO: merge this into environment! No need for this to be on its own
+// merge this into environment! No need for this to be on its own... Or is there? Don't complicate things unnecessarily
 
 Meadow::Meadow( int cx, int cy, int r, float gr, Habitat* env ) {
 
@@ -51,8 +50,14 @@ int Meadow::grow() {
 
 		if ( environment->foodReserve(x, y) == 0 ) {
 			environment->foodReserve(x, y) = 1;
+			environment->growGrass( x, y );
 			grownFood += 1;
 		}
+
+//		if ( environment->foodTree.find( util::coordinate( x, y ) ) != nullptr ) {
+//			environment->growGrass( x, y );
+//			grownFood++;
+//		}
 
 	}
 

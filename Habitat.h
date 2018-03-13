@@ -42,7 +42,8 @@ public:
 	int sizeX;
 	int sizeY;
 	std::map<std::string, Animat*> population;
-	Eigen::MatrixXf foodReserve;			// possibly swap this with Eigen::Array
+	Eigen::MatrixXf foodReserve;			// possibly swap this with Eigen::Array... also think if it is still useful at all...
+	std::vector<Grass*> vegetation;
 	util::Chance* fate;
 
 	int foodEnergyVal;
@@ -68,6 +69,7 @@ public:
 	void growMeadows();
 	void growFood_stable();
 	void growFoodSlow();
+	void growGrass( int, int );
 	int consumeFood( int, int );
 
 	void populateWorld( int, std::string, std::string, std::string );
