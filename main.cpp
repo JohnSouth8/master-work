@@ -659,7 +659,13 @@ int test_quadTreeFood() {
 	auto tm1 = chrono::steady_clock::now();
 	auto elapsed = chrono::duration_cast<chrono::microseconds>( tm1 - start );
 
-	cout << "amount of food worldwide: " << env.foodReserve.sum() << endl << endl;
+	auto tmp1 = chrono::steady_clock::now();
+	cout << "amount of food reserve: " << env.foodReserve.sum() << endl;
+	auto tmp2 = chrono::steady_clock::now();
+	cout << "food quad tree count: " << env.foodTree.count() << endl << endl;
+	auto tmp3 = chrono::steady_clock::now();
+
+
 
 	cout << "Food growth: " << elapsed.count() << " us" << endl << endl;
 

@@ -59,7 +59,9 @@ public:
 	void subdivide();
 
 	bool insert( ecosystem::Organism* );
+	bool remove( ecosystem::Organism* );
 
+	int count();
 	ecosystem::Organism* find( coordinate );
 	std::vector<ecosystem::Organism*> rangeQuery( coordinate, coordinate, coordinate );
 	// TODO: optimize with an additional function of move() (requires parent node to be known)

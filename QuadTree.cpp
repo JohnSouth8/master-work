@@ -132,6 +132,58 @@ bool QuadTree::insert( Organism* org ) {
 
 
 
+bool QuadTree::remove( Organism* org ) {
+
+	if ( !containsCoordinate( coordinate( org->posX, org->posY ) ) )
+		return false;
+
+	if ( northWest == nullptr ) {
+		std::vector<Organism*>::iterator it;
+		for ( it = bucket.begin(); it < bucket.end(); ++it ) {
+			if ( (*it)->posX == org->posX && (*it)->posY == org->posY ) {
+				bucket.erase( it );
+				return true;
+			}
+		}
+		return false;	// item was not found
+	}
+
+	if ( northWest->remove( org ) )
+		return true;
+
+	if ( northEast->remove( org ) )
+		return true;
+
+	if ( southWest->remove( org ) )
+		return true;
+
+	if ( southEast->remove( org ) )
+		return true;
+
+	return false;
+
+}
+
+
+
+int QuadTree::count() {
+
+	int counter = 0;
+
+	if ( northWest == nullptr )
+		return bucket.size();
+
+	counter += northWest->count();
+	counter += northEast->count();
+	counter += southWest->count();
+	counter += southEast->count();
+
+	return counter;
+
+}
+
+
+
 Organism* QuadTree::find( coordinate pos ) {
 
 	if ( !containsCoordinate( pos ) )
