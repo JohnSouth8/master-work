@@ -60,6 +60,7 @@ public:
 	float energy;
 	float comfort;
 	float fatigue;
+//	float integrity;			// possible synergy with pain and fight...
 
 	// perception model
 	std::vector<f_sens> sensedObjs;

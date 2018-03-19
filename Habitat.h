@@ -42,8 +42,7 @@ public:
 	int sizeX;
 	int sizeY;
 	std::map<std::string, Animat*> population;
-	Eigen::MatrixXf foodReserve;			// possibly swap this with Eigen::Array... also think if it is still useful at all...
-	std::vector<Grass*> vegetation;
+	std::vector<Grass*> vegetation;				// Possibly not really required? All food is already in food tree.. But it's faster for graphx
 	util::Chance* fate;
 
 	int foodEnergyVal;
@@ -65,10 +64,7 @@ public:
 
 
 	// member functions
-	void distributeFood( double );
 	void growMeadows();
-	void growFood_stable();
-	void growFoodSlow();
 	void growGrass( int, int );
 	int consumeFood( int, int );
 
@@ -76,12 +72,6 @@ public:
 	void birth( Animat* );
 	void death( std::string );
 	std::string generateAnimatName();
-
-	void measureDistances();
-
-	int getXSize();
-	int getYSize();
-	Eigen::MatrixXf getFoodReserve();
 
 };
 

@@ -110,8 +110,8 @@ void Animat::setVelocity( float v_new ) {
 
 void Animat::move() {
 
-	int env_x = environment->getXSize();
-	int env_y = environment->getYSize();
+	int env_x = environment->sizeX;
+	int env_y = environment->sizeY;
 	float newX, newY, deltaX, deltaY;
 
 	deltaX = velocity * cos( direction );
@@ -173,8 +173,8 @@ void Animat::sense_analytic() {
 
 
 	MatrixXf foods = environment->getFoodReserve();
-	int env_x = environment->getXSize();
-	int env_y = environment->getYSize();
+	int env_x = environment->sizeX;
+	int env_y = environment->sizeY;
 
 	// check all points in local (+- r squarely) neighbourhood if they are inside the circle
 	int x_max = std::ceil( posX + visionRange );
@@ -318,15 +318,15 @@ void Animat::sense() {
 		// if food is over the edge
 		if ( dX > visionRange ) {
 			if ( foodX > posX )
-				dX = foodX - (posX + environment->getXSize());
+				dX = foodX - (posX + environment->sizeX);
 			else
-				dX = (foodX + environment->getXSize()) - posX;
+				dX = (foodX + environment->sizeX) - posX;
 		}
 		if ( dY > visionRange ) {
 			if ( foodY > posY )
-				dY = foodY - (posY + environment->getYSize());
+				dY = foodY - (posY + environment->sizeY);
 			else
-				dY = (foodY + environment->getYSize()) - posY;
+				dY = (foodY + environment->sizeY) - posY;
 		}
 
 		// unit vector in animat's direction

@@ -71,7 +71,7 @@ namespace gx {
 		glEnableVertexAttribArray( colAttr );
 		glVertexAttribPointer( colAttr, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)) );
 
-		int n_food = env->foodReserve.sum();
+		int n_food = env->foodTree.count();
 		int n_anis = env->population.size();
 //		int n_points = n_food + n_anis;
 
@@ -166,7 +166,7 @@ namespace gx {
 
 		glBindVertexArray( vao );
 
-		int n_data_food = environment->foodReserve.sum(),		// foodReserve.sum() works for now, when food is 0 or 1
+		int n_data_food = environment->foodTree.count(),
 			n_data_pop = environment->population.size(),
 			n_data = n_data_food + n_data_pop,
 			env_w = environment->sizeX,
@@ -175,6 +175,7 @@ namespace gx {
 
 		static GLfloat points_buffer_data[5000000]; //= new GLfloat[n_data*5];		// << each point has 5 datums: X Y R G B
 
+		// TODO
 		// add green food points
 		for ( int i = 0; i < env_w; ++i ) {
 			for ( int j = 0; j < env_h; ++j ) {

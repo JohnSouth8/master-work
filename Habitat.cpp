@@ -8,6 +8,7 @@
 
 #include "Habitat.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <iterator>
@@ -76,7 +77,6 @@ Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
 
 	// member structures
 	fate = ch;
-	foodReserve = MatrixXf::Zero( sizeX, sizeY );
 
 	// quad trees
 	unsigned int qt_bucketsize = static_cast<unsigned int>( ini["quadtree_bucketsize"] );
@@ -246,108 +246,6 @@ void Habitat::growMeadows() {
 }
 
 
-// deprecated !!
-void Habitat::distributeFood( double density ) {
-
-	float fraction;
-
-	for ( int x = 0; x < sizeX; ++x ) {
-		for ( int y = 0; y < sizeY; ++y ) {
-
-			fraction = util::randFromUnitInterval();
-			if ( fraction < density ) {
-				foodReserve(x,y) = 1.0;
-//				cout << "x: " << x << ", y: " << y << ", val: " << foodReserve(x,y) << endl;
-			}
-
-		}
-	}
-
-}
-
-
-void Habitat::growFood_stable() {
-
-	MatrixXf newFood = MatrixXf::Zero( sizeX, sizeY );
-
-	float highDensity = 0.001;
-	float lowDensity = 0.000001;
-//	int num_food = foodReserve.sum();
-//
-//	int num_newFood = (int) round( num_food * someDensity );
-
-	for ( int x = 0; x < sizeX; ++x ) {
-		for ( int y = 0; y < sizeY; ++y ) {
-
-			float randf = util::randFromUnitInterval();
-			if ( foodReserve(x, y) > 0 && randf < highDensity ) {
-				int randOffX = util::randIntFrom( -10, 10 );
-				int randOffY = util::randIntFrom( -10, 10 );
-				int nx = util::getWrappedIndex( x + randOffX, sizeX );
-				int ny = util::getWrappedIndex( y + randOffY, sizeY );
-				if ( newFood( nx, ny ) == 0 )
-					newFood( nx, ny ) = 1;
-			}
-
-			if ( foodReserve(x, y) == 0 && randf < lowDensity ) {
-				newFood(x, y) = 1;
-			}
-
-		}
-	}
-
-	foodReserve = foodReserve + newFood;
-
-	std::cout << "Amount of new food: " << newFood.sum() << std::endl;
-
-
-}
-
-
-// optimize the shit out of this!!!
-void Habitat::growFoodSlow() {
-
-	MatrixXf newFood = MatrixXf::Zero( sizeX, sizeY );
-//	MatrixXf highProbMask = MatrixXf::Constant( 5, 5, 0.005 );
-//	MatrixXf lowProbMask = MatrixXf::Constant( 5, 5, 0.001 );
-
-	for ( int i = 0; i < sizeX; ++i ) {
-		for ( int j = 0; j < sizeY; ++j ) {
-
-			// generate food in 5-square surroundings, but not where there is food already
-			for ( int offx = -2; offx < 3; ++offx ){
-				for ( int offy = -2; offy < 3; ++offy ){
-
-					int i_x = i+offx;
-					int i_y = j+offy;
-					if ( i < 2 || i > sizeX-3 )
-						i_x = util::getWrappedIndex( i_x, sizeX );
-					if ( j < 2 || j > sizeY-3 )
-						i_y = util::getWrappedIndex( i_y, sizeY );
-
-					float prob = 0.000001;
-					if ( foodReserve(i,j) > 0 )
-						prob = 0.0001;
-
-					// suspiciously high number of activations... check out. Preferably by visual inspection - heatmap of randoms
-					float randf = util::randFromUnitInterval();
-					if ( foodReserve(i_x, i_y) == 0 && newFood(i_x, i_y) == 0 && randf < prob ){
-						newFood(i_x, i_y) = 1.0;
-					}
-
-				}
-			}
-
-		}
-	}
-
-	foodReserve = foodReserve + newFood;
-
-	std::cout << "Amount of new food: " << newFood.sum() << std::endl;
-
-}
-
-
 
 void Habitat::growGrass( int x, int y ) {
 
@@ -360,70 +258,20 @@ void Habitat::growGrass( int x, int y ) {
 
 
 int Habitat::consumeFood( int x, int y ){
+	// TODO: set up mutual exclusions here
 
-	if ( foodReserve( x, y ) == 0 ) {
+	Organism* gr = foodTree.find( util::coordinate( x, y ) );
+
+	if ( gr == nullptr )
 		return 0;
-	}
 	else {
-		foodReserve( x, y ) = 0.0;
+		foodTree.remove( gr );
+		vegetation.			// TODO: check if std::remove and erase only erase pointer or also delete object;
 		return foodEnergyVal;
 	}
 
 }
 
-
-
-void Habitat::measureDistances() {
-	// TODO: to be debugged...
-	if ( population.empty() )
-		return;
-
-	int n_animats = population.size();
-	animatDistances = Eigen::MatrixXf::Zero( n_animats, n_animats );
-	std::vector<std::string>( n_animats ).swap( animatOrder );	// reset the animat ordering vector
-
-	int cnt1 = 0;
-	map<std::string, Animat*>::iterator it1;
-	for ( it1 = population.begin(); it1 != population.end(); ++it1 ) {
-
-		float x1 = it1->second->posX;
-		float y1 = it1->second->posY;
-
-		int cnt2 = cnt1+1;
-		map<std::string, Animat*>::iterator it2;
-		for ( it2 = std::next( it1 ); it2 != population.end(); ++it2 ) {
-
-			float x2 = it2->second->posX;
-			float y2 = it2->second->posY;
-
-			float d = sqrt( pow( x2-x1, 2 ) + pow( y2-y1, 2 ) );
-			animatDistances( cnt1, cnt2 ) = d;
-			animatDistances( cnt2, cnt1 ) = d;
-		}
-
-		animatOrder.push_back( it1->first );
-		cnt1++;
-	}
-
-}
-
-
-
-int Habitat::getXSize() {
-	return sizeX;
-}
-
-
-
-int Habitat::getYSize() {
-	return sizeY;
-}
-
-
-
-Eigen::MatrixXf Habitat::getFoodReserve() {
-	return foodReserve;
-}
 
 
 
