@@ -42,7 +42,8 @@ public:
 	int sizeX;
 	int sizeY;
 	std::map<std::string, Animat*> population;
-	std::vector<Grass*> vegetation;				// Possibly not really required? All food is already in food tree.. But it's faster for graphx
+//	Eigen::MatrixXf foodReserve;				// deprecated, temporarily here for compatibility reasons
+//	std::vector<Grass*> vegetation;				// Possibly not really required? All food is already in food tree.. But it's faster for graphx. Graphx don't reaaly count here
 	util::Chance* fate;
 
 	int foodEnergyVal;
@@ -54,7 +55,7 @@ public:
 	float p_newMeadow;
 
 	// QuadTrees for easy storage and search
-	util::QuadTree foodTree;
+	util::QuadTree grassTree;
 	util::QuadTree populationTree;
 
 	// deprecated as of QuadTree implementation
@@ -66,7 +67,7 @@ public:
 	// member functions
 	void growMeadows();
 	void growGrass( int, int );
-	int consumeFood( int, int );
+	float consumeFood( int, int );
 
 	void populateWorld( int, std::string, std::string, std::string );
 	void birth( Animat* );

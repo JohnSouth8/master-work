@@ -16,43 +16,15 @@
 #include "Habitat.h"
 
 
-using namespace std;
-using namespace Eigen;
+//using namespace std;
+
+using Eigen::VectorXf;
+using Eigen::MatrixXf;
+
+using util::coordinate;
+using util::sensation;
 
 namespace ecosystem {
-
-
-//Animat::Animat() {
-//
-//	name = generateName();
-//	posX = 0.0;
-//	posY = 0.0;
-//	velocity = 0.0;
-//	direction = 0.0;
-//	energy = 0;
-//	maxEnergy = 100;
-//	senseRadius = 1;
-//	senseAngle = 2*M_PI;
-//
-//}
-
-
-//Animat::Animat( float px, float py, float v, float maxV, float dir, float e, float senseR, float senseA, float rch, Habitat* hab ) {
-//
-////	name = generateName();
-//	posX = px;
-//	posY = py;
-//	velocity = v;
-//	maxVelocity = maxV;
-//	direction = dir;
-//	energy = e;
-//	maxEnergy = e;	// TODO: sort out
-//	senseRadius = senseR;
-//	senseAngle = senseA;
-//	reach = rch;
-//	environment = hab;
-//
-//}
 
 Animat::Animat( std::string nm, float sz, float r_v, float a_v, float r_o, float max_v, float max_e, int max_a, float px, float py, float dir, float v, float e, Habitat* env ) :
 	Organism( px, py ),
@@ -110,8 +82,6 @@ void Animat::setVelocity( float v_new ) {
 
 void Animat::move() {
 
-	int env_x = environment->sizeX;
-	int env_y = environment->sizeY;
 	float newX, newY, deltaX, deltaY;
 
 	deltaX = velocity * cos( direction );
@@ -119,8 +89,8 @@ void Animat::move() {
 	newX = posX + deltaX;
 	newY = posY + deltaY;
 
-	posX = util::getWrappedCoordinate( newX, env_x );
-	posY = util::getWrappedCoordinate( newY, env_y );
+	posX = util::getWrappedCoordinate( newX, environment->sizeX );
+	posY = util::getWrappedCoordinate( newY, environment->sizeY );
 	energy -= 1;	// TODO: energy loss should be proportional to action (so not int? or rather some linguistic classes i.e. 'some', 'a lot of' energy lost)
 
 }
@@ -131,26 +101,18 @@ int Animat::eat() {
 	int indexX = floor( posX );
 	int indexY = floor( posY );
 
-	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
-		float deltaE = environment->consumeFood( indexX, indexY );
-		energy += deltaE;
-		return deltaE;
-	}
-
-	return 0;
+	float deltaE = environment->consumeFood( indexX, indexY );
+	energy += deltaE;
+	return deltaE;
 
 }
 
 
 int Animat::eat( int indexX, int indexY ) {
 
-	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
-		float deltaE = environment->consumeFood( indexX, indexY );
-		energy += deltaE;
-		return deltaE;
-	}
-
-	return 0;
+	float deltaE = environment->consumeFood( indexX, indexY );
+	energy += deltaE;
+	return deltaE;
 
 }
 
@@ -169,43 +131,31 @@ void Animat::turn( float rads ) {
 
 
 
-void Animat::sense_analytic() {
+void Animat::senseFood() {
 
-
-	MatrixXf foods = environment->getFoodReserve();
 	int env_x = environment->sizeX;
 	int env_y = environment->sizeY;
 
-	// check all points in local (+- r squarely) neighbourhood if they are inside the circle
+	// create a range for quad tree query
 	int x_max = std::ceil( posX + visionRange );
 	int y_max = std::ceil( posY + visionRange );
 	int x_min = std::floor( posX - visionRange );
 	int y_min = std::floor( posY - visionRange );
 
-	float sense_sq = pow( visionRange, 2 );
-	// TODO: do this with an Eigen block, not looping
-	for ( int x = x_min; x <= x_max; ++x ) {
-		for ( int y = y_min; y <= y_max; ++y ) {
+	coordinate rng0( x_min, y_min );
+	coordinate rng1( x_max, y_max );
+	coordinate lmts( env_x, env_y );
 
-			// correct indices for env's out of bounds
-			int ix = util::getWrappedIndex( x, env_x );
-			int iy = util::getWrappedIndex( y, env_y );
+	std::vector<Organism*> foods = environment->grassTree.rangeQuery( rng0, rng1, lmts );
 
-			if ( foods(ix, iy) != 0 ) {
-				float dist = pow( (x - posX), 2 ) + pow( (y - posY), 2 );
-				if ( dist <= sense_sq ) {
-					addSensedObject( {
-							ix,
-							iy,
-							sqrt( dist )
-					} );
-				}
-			}
-
-		}
+	for ( auto food : foods ) {
+		float dist = util::distanceBetweenOrganisms( this, food, environment );
+		if ( dist < visionRange )
+			addFoodSensation( { food, dist } );
 	}
 
-	std::sort( sensedObjs.begin(), sensedObjs.end(), util::compareFoodSensations );
+	// TODO: rethink this
+	std::sort( sensedFood.begin(), sensedFood.end(), util::compareFoodSensations );
 
 }
 
@@ -262,6 +212,8 @@ void Animat::sense_analytic() {
 
 void Animat::reason() {
 
+	// TODO: split this function to provide better optimmization for multithreading
+
 //	int nConcepts = cognition.getNConcepts();  // TODO nconcepts should be animat's value too... or should it?
 //	int nSensual = cognition.getNInput();
 //	int nPadding = nConcepts - nSensual;
@@ -284,8 +236,8 @@ void Animat::reason() {
 
 void Animat::sense() {
 
-	forgetSensedObjects();
-	sense_analytic();
+	forgetFoodSensations();
+	senseFood();
 
 	// plan to reach the closest food target
 //	std::vector<f_sens>::iterator it;
@@ -306,11 +258,11 @@ void Animat::sense() {
 	bool isFood = false;
 	float min_dist = visionRange;
 	float dAngle = util::randFromUnitInterval() - 0.5;		// if no food, angle is random somewhere ahead
-	if ( sensedObjs.size() > 0 ) {
+	if ( sensedFood.size() > 0 ) {
 
-		min_dist = sensedObjs[0].d;
-		int foodX = sensedObjs[0].x;
-		int foodY = sensedObjs[0].y;
+		min_dist = sensedFood[0].distance;
+		int foodX = sensedFood[0].entity->posX;
+		int foodY = sensedFood[0].entity->posY;
 
 		float dX = foodX - posX;
 		float dY = foodY - posY;
@@ -412,7 +364,7 @@ void Animat::react( VectorXf motor ) {
 
 	if ( motor(0) > 0.5 ) {
 		// if eat action is successful (some energy is gained), the animat can no longer act
-		if ( sensedObjs.size() > 0 && sensedObjs[0].d <= reach && eat( sensedObjs[0].x, sensedObjs[0].y ) != 0 ) return;
+		if ( sensedFood.size() > 0 && sensedFood[0].distance <= reach && eat( sensedFood[0].entity->posX, sensedFood[0].entity->posY ) != 0 ) return;
 	}
 
 	// only one turn action at a time: 		<< TODO: maybe both? opposing forces, ya'know....
@@ -482,67 +434,68 @@ void Animat::react( VectorXf motor ) {
 
 
 
-void Animat::calculateDecision() {
-
-	// if there is food, eat it
-	int indexX = floor( posX );
-	int indexY = floor( posY );
-
-	if ( environment->foodReserve( indexX, indexY ) != 0 ) {
-		eat();
-		return;
-	}
-
-	// plan to reach the closest food target
-	std::vector<f_sens>::iterator it;
-	int index = -1, counter = 0;
-	double min_dist = environment->sizeX*10; // definitely farther than any point on map
-
-	for ( it=sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
-		if ( it->d < min_dist ) {
-			index = counter;
-			min_dist = it->d;
-		}
-		++counter;
-	}
-
-	if ( index == -1 ) {
-
-		float randturn = util::randFromUnitInterval() * PI;
-		float randvel = util::randFromUnitInterval() * 5;
-
-		if ( velocity == 0 ) {
-			// turn in random direction and with random speed
-			turn( randturn );
-			setVelocity( randvel );
-		}
-		else {
-			// continue in this direction or turn with small probability
-			if ( util::randFromUnitInterval() < 0.2 )
-				turn ( randturn );
-
-			// change speed with small probability
-			if ( util::randFromUnitInterval() < 0.3 )
-				setVelocity( randvel );
-
-		}
-		return;
-	}
-
-
-	Vector2f v( cos( direction ), sin( direction ) );
-	Vector2f g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
-
-	// get absolute angles
-	turn( util::getAngleBetween( v, g ) );
-
-	setVelocity( g.norm() );
-
-	if ( velocity > maxVelocity )
-		setVelocity( maxVelocity );
-
-
-}
+// deprecated, used before FCM
+//void Animat::calculateDecision() {
+//
+//	// if there is food, eat it
+//	int indexX = floor( posX );
+//	int indexY = floor( posY );
+//
+//	if ( environment->grassTree.find( util::coordinate( indexX, indexY ) ) != nullptr ) {
+//		eat();
+//		return;
+//	}
+//
+//	// plan to reach the closest food target
+//	std::vector<f_sens>::iterator it;
+//	int index = -1, counter = 0;
+//	double min_dist = environment->sizeX*10; // definitely farther than any point on map
+//
+//	for ( it=sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
+//		if ( it->d < min_dist ) {
+//			index = counter;
+//			min_dist = it->d;
+//		}
+//		++counter;
+//	}
+//
+//	if ( index == -1 ) {
+//
+//		float randturn = util::randFromUnitInterval() * PI;
+//		float randvel = util::randFromUnitInterval() * 5;
+//
+//		if ( velocity == 0 ) {
+//			// turn in random direction and with random speed
+//			turn( randturn );
+//			setVelocity( randvel );
+//		}
+//		else {
+//			// continue in this direction or turn with small probability
+//			if ( util::randFromUnitInterval() < 0.2 )
+//				turn ( randturn );
+//
+//			// change speed with small probability
+//			if ( util::randFromUnitInterval() < 0.3 )
+//				setVelocity( randvel );
+//
+//		}
+//		return;
+//	}
+//
+//
+//	Vector2f v( cos( direction ), sin( direction ) );
+//	Vector2f g( sensedObjs[index].x - posX, sensedObjs[index].y - posY );
+//
+//	// get absolute angles
+//	turn( util::getAngleBetween( v, g ) );
+//
+//	setVelocity( g.norm() );
+//
+//	if ( velocity > maxVelocity )
+//		setVelocity( maxVelocity );
+//
+//
+//}
 
 
 
@@ -552,14 +505,26 @@ void Animat::forgetSensations() {
 
 
 
-void Animat::addSensedObject( f_sens loc ) {
-	sensedObjs.push_back( loc );
+void Animat::addFoodSensation( sensation s ) {
+	sensedFood.push_back( s );
 }
 
 
 
-void Animat::forgetSensedObjects() {
-	sensedObjs.clear();
+void Animat::forgetFoodSensations() {
+	sensedFood.clear();
+}
+
+
+
+void Animat::addAgentSensation( sensation s ) {
+	sensedAgents.push_back( s );
+}
+
+
+
+void Animat::forgetAgentSensations() {
+	sensedAgents.clear();
 }
 
 
@@ -583,7 +548,7 @@ void Animat::forgetSensedObjects() {
 
 
 
-void Animat::initFCM( int nConcepts, string filename_cs, string filename_fcm ) {
+void Animat::initFCM( int nConcepts, std::string filename_cs, std::string filename_fcm ) {
 	cognition = FCM( nConcepts );
 	cognition.loadConceptsFromFile( filename_cs );
 	cognition.loadLinkMatrixFromFile( filename_fcm );
@@ -600,24 +565,24 @@ void Animat::initFCM( int nConcepts, string filename_cs, string filename_fcm ) {
 
 void Animat::toString() {
 
-	cout << name << "; ";
-	cout << posX << ", " << posY << "; ";
-	cout << "a: " << direction << " rad; ";
-	cout << endl;
+	std::cout << name << "; ";
+	std::cout << posX << ", " << posY << "; ";
+	std::cout << "a: " << direction << " rad; ";
+	std::cout << std::endl;
 
 }
 
 
 
-void Animat::printSensedObjects() {
-
-	vector<f_sens>::iterator it;
-
-	for ( it = sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
-		cout << it->x << " " << it->y << "" << it->d << endl;
-	}
-
-}
+//void Animat::printSensedObjects() {
+//
+//	vector<f_sens>::iterator it;
+//
+//	for ( it = sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
+//		cout << it->x << " " << it->y << "" << it->d << endl;
+//	}
+//
+//}
 
 
 

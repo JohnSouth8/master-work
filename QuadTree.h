@@ -12,6 +12,8 @@
 #include <vector>
 #include <string>
 
+#include "structs.h"
+
 
 // forward declaration
 namespace ecosystem {
@@ -19,17 +21,6 @@ namespace ecosystem {
 }
 
 namespace util {
-
-// TODO: standardize this and the one in structs..
-struct coordinate {
-
-	float x;
-	float y;
-
-	coordinate() : x( 0.0 ), y( 0.0 ) {}
-	coordinate( float _x, float _y ) : x( _x ), y( _y ) {}
-
-};
 
 
 class QuadTree {

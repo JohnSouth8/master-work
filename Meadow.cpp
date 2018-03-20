@@ -48,7 +48,7 @@ int Meadow::grow() {
 		int x = util::getWrappedIndex( centerX + offsetX, envSizeX );
 		int y = util::getWrappedIndex( centerY + offsetY, envSizeY );
 
-		if ( environment->foodTree.find( util::coordinate( x, y ) ) == nullptr ) {
+		if ( environment->grassTree.find( util::coordinate( x, y ) ) == nullptr ) {
 			environment->growGrass( x, y );
 			grownFood++;
 		}

@@ -24,47 +24,15 @@
 #include "Animat.h"
 #include "Meadow.h"
 
-using namespace std;
-using namespace Eigen;
+
+using util::coordinate;
+using util::QuadTree;
+
 
 namespace ecosystem {
 
 /* constructors */
 
-
-//Habitat::Habitat( int sx, int sy, int fe, double density, util::Chance* ch ) {
-//
-//	sizeX = sx;
-//	sizeY = sy;
-//	foodEnergyVal = fe;
-//	foodReserve = MatrixXf::Zero( sizeX, sizeY );
-//	distributeFood( density );
-//	fate = ch;
-//
-//}
-//
-//Habitat::Habitat( int sx, int sy, int fe, int n_meadows, int rAvg_meadows, float grAvg_meadows, util::Chance* ch ) {
-//
-//	sizeX = sx;
-//	sizeY = sy;
-//	foodEnergyVal = fe;
-//	foodReserve = MatrixXf::Zero( sizeX, sizeY );
-//	fate = ch;
-//
-//	std::vector<int> rs_m = fate->normalIntsString( n_meadows, rAvg_meadows, rAvg_meadows/5 );
-//	std::vector<float> grs_m = fate->normalFloatsString( n_meadows, grAvg_meadows, grAvg_meadows/10 );
-//
-//	for ( int i = 0; i < n_meadows; ++i ) {
-//
-//		int randX = util::randIntFrom( 0, sizeX );
-//		int randY = util::randIntFrom( 0, sizeY );
-//
-//		Meadow* m = new Meadow( randX, randY, rs_m[i], grs_m[i], this );
-//		meadows.push_back( m );
-//
-//	}
-//
-//}
 
 Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
 
@@ -80,10 +48,10 @@ Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
 
 	// quad trees
 	unsigned int qt_bucketsize = static_cast<unsigned int>( ini["quadtree_bucketsize"] );
-	util::coordinate env0( 0, 0 );
-	util::coordinate env1( sizeX, sizeY );
-	foodTree = util::QuadTree( qt_bucketsize, env0, env1 );
-	populationTree = util::QuadTree( qt_bucketsize, env0, env1 );
+	coordinate env0( 0, 0 );
+	coordinate env1( sizeX, sizeY );
+	grassTree = QuadTree( qt_bucketsize, env0, env1 );
+	populationTree = QuadTree( qt_bucketsize, env0, env1 );
 
 	// food emanators - meadows
 	int n_mdw = static_cast<int>( ini["n_meadows"] );
@@ -111,8 +79,8 @@ Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
 
 Habitat::~Habitat() {
 	// destroy objects that pointers in data structures are pointing at: animats, meadows,...
-	for ( auto g: vegetation )
-		delete g;
+//	for ( auto g: vegetation )
+//		delete g;
 
 	for ( auto m : meadows )
 		delete m;
@@ -250,23 +218,23 @@ void Habitat::growMeadows() {
 void Habitat::growGrass( int x, int y ) {
 
 	Grass* ng = new Grass( x, y );
-	vegetation.push_back( ng );
-	foodTree.insert( ng );
+//	vegetation.push_back( ng );
+	grassTree.insert( ng );
 
 }
 
 
 
-int Habitat::consumeFood( int x, int y ){
+float Habitat::consumeFood( int x, int y ){
 	// TODO: set up mutual exclusions here
 
-	Organism* gr = foodTree.find( util::coordinate( x, y ) );
+	Organism* gr = grassTree.find( util::coordinate( x, y ) );
 
 	if ( gr == nullptr )
 		return 0;
 	else {
-		foodTree.remove( gr );
-		vegetation.			// TODO: check if std::remove and erase only erase pointer or also delete object;
+		grassTree.remove( gr );
+//		vegetation.find
 		return foodEnergyVal;
 	}
 

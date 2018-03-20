@@ -23,8 +23,12 @@
 //#include <glm/glm.hpp>
 //#include <glm/gtc/matrix_transform.hpp>
 
-#include "Habitat.h"
-#include "Animat.h"
+// forward declarations
+namespace ecosystem {
+	class Animat;
+	class Habitat;
+	class Organism;
+}
 
 
 //class ecosystem::Habitat;

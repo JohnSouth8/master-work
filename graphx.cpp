@@ -16,7 +16,10 @@
 #include <unistd.h>
 
 #include "util.h"
-
+#include "structs.h"
+#include "Organism.h"
+#include "Habitat.h"
+#include "Animat.h"
 
 
 using namespace ecosystem;
@@ -52,7 +55,7 @@ namespace gx {
 
 
 	// draws one step of simulation
-	void drawHabitat( GLFWwindow* context, ecosystem::Habitat* env, GLuint shaderProg ) {
+	void drawHabitat( GLFWwindow* context, Habitat* env, GLuint shaderProg ) {
 
 		// in case it is not so
 		glfwMakeContextCurrent( context );
@@ -71,7 +74,7 @@ namespace gx {
 		glEnableVertexAttribArray( colAttr );
 		glVertexAttribPointer( colAttr, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)) );
 
-		int n_food = env->foodTree.count();
+		int n_food = env->grassTree.count();
 		int n_anis = env->population.size();
 //		int n_points = n_food + n_anis;
 
@@ -89,7 +92,7 @@ namespace gx {
 
 
 
-	void drawFCM( GLFWwindow* context, ecosystem::Animat* ani, GLuint shaderProg, GLuint posBuffer, GLuint linBuffer ) {
+	void drawFCM( GLFWwindow* context, Animat* ani, GLuint shaderProg, GLuint posBuffer, GLuint linBuffer ) {
 
 		// in case it is not so
 		glfwMakeContextCurrent( context );
@@ -166,36 +169,55 @@ namespace gx {
 
 		glBindVertexArray( vao );
 
-		int n_data_food = environment->foodTree.count(),
+		int n_data_food = environment->grassTree.count(),
 			n_data_pop = environment->population.size(),
 			n_data = n_data_food + n_data_pop,
 			env_w = environment->sizeX,
 			env_h = environment->sizeY,
 			counter = 0;
 
+		util::coordinate rng0 ( 0, 0 );
+		util::coordinate lmts ( env_w, env_h );
+
 		static GLfloat points_buffer_data[5000000]; //= new GLfloat[n_data*5];		// << each point has 5 datums: X Y R G B
 
 		// TODO
 		// add green food points
-		for ( int i = 0; i < env_w; ++i ) {
-			for ( int j = 0; j < env_h; ++j ) {
-				if ( environment->foodReserve(i,j) != 0 ) {
+		std::vector<Organism*> grass = environment->grassTree.rangeQuery( rng0, lmts, lmts );
+		for ( auto herb : grass ) {
 
-					points_buffer_data[counter*5 + 0] = 2.0f*i / float(env_w) - 1; 	// X
-					points_buffer_data[counter*5 + 1] = 2.0f*j / float(env_h) - 1; 	// Y
-					points_buffer_data[counter*5 + 2] = 0.0f;						// R
-					points_buffer_data[counter*5 + 3] = 0.9f;						// G
-					points_buffer_data[counter*5 + 4] = 0.0f;						// B
+			int px = static_cast<int>( herb->posX );
+			int py = static_cast<int>( herb->posY );
 
-					++counter;
+			points_buffer_data[counter*5 + 0] = 2.0f*px / float(env_w) - 1; 	// X
+			points_buffer_data[counter*5 + 1] = 2.0f*py / float(env_h) - 1; 	// Y
+			points_buffer_data[counter*5 + 2] = 0.0f;							// R
+			points_buffer_data[counter*5 + 3] = 0.9f;							// G
+			points_buffer_data[counter*5 + 4] = 0.0f;							// B
 
-				}
-				if ( counter == n_data_food )
-					break;
-			}
-			if ( counter == n_data_food )
-				break;
+			++counter;
+
 		}
+
+//		for ( int i = 0; i < env_w; ++i ) {
+//			for ( int j = 0; j < env_h; ++j ) {
+//				if ( environment->foodReserve(i,j) != 0 ) {
+//
+//					points_buffer_data[counter*5 + 0] = 2.0f*i / float(env_w) - 1; 	// X
+//					points_buffer_data[counter*5 + 1] = 2.0f*j / float(env_h) - 1; 	// Y
+//					points_buffer_data[counter*5 + 2] = 0.0f;						// R
+//					points_buffer_data[counter*5 + 3] = 0.9f;						// G
+//					points_buffer_data[counter*5 + 4] = 0.0f;						// B
+//
+//					++counter;
+//
+//				}
+//				if ( counter == n_data_food )
+//					break;
+//			}
+//			if ( counter == n_data_food )
+//				break;
+//		}
 
 		// add yellow/red animat points
 		std::map<std::string, Animat*>::iterator it;

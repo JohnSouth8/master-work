@@ -76,7 +76,9 @@ int main( void ) {
 	// TODO: nicely put stuff together - happening and rendering
 
 //	test_quadTreeAnimats();
-	test_quadTreeFood();
+//	test_quadTreeFood();
+//	test_with_visuals();
+	test();
 
 	delete fate;	// TODO: organize destructors everywhere!!
 
@@ -659,54 +661,62 @@ int test_quadTreeFood() {
 	auto tm1 = chrono::steady_clock::now();
 	auto elapsed = chrono::duration_cast<chrono::microseconds>( tm1 - start );
 
-	auto tmp1 = chrono::steady_clock::now();
-	cout << "amount of food reserve: " << env.foodReserve.sum() << endl;
-	auto tmp2 = chrono::steady_clock::now();
-	cout << "food quad tree count: " << env.foodTree.count() << endl;
-	auto tmp3 = chrono::steady_clock::now();
-
-	auto elapsedtmp1 = chrono::duration_cast<chrono::microseconds>( tmp2 - tmp1 );
-	auto elapsedtmp2 = chrono::duration_cast<chrono::microseconds>( tmp3 - tmp2 );
-
-	cout << "time for reserve sum: " << elapsedtmp1.count() << endl;
-	cout << "time for quad count: " << elapsedtmp2.count() << endl << endl;
+//	auto tmp1 = chrono::steady_clock::now();
+//	cout << "amount of vegetation: " << env.vegetation.size() << endl;
+//	auto tmp2 = chrono::steady_clock::now();
+//	cout << "food quad tree count: " << env.foodTree.count() << endl;
+//	auto tmp3 = chrono::steady_clock::now();
+//
+//	auto elapsedtmp1 = chrono::duration_cast<chrono::microseconds>( tmp2 - tmp1 );
+//	auto elapsedtmp2 = chrono::duration_cast<chrono::microseconds>( tmp3 - tmp2 );
+//
+//	cout << "time for vector size: " << elapsedtmp1.count() << endl;
+//	cout << "time for quad count: " << elapsedtmp2.count() << endl << endl;
 
 	cout << "Food growth: " << elapsed.count() << " us" << endl << endl;
 
 
+	int cnt = 0;
 	float r = 30;
 	float r_sq = pow( r, 2 );
 	float rx = fate->uniformRandomFloatFrom( 1+r, env.sizeX-1-r );
 	float ry = fate->uniformRandomFloatFrom( 1+r, env.sizeY-1-r );
 
-
-	auto tm2 = chrono::steady_clock::now();
-
-	int cnt = 0;
-	for ( int x = rx-r; x < rx+r; x++ ) {
-		for ( int y = ry-r; y < ry+r; y++ ) {
-			if ( env.foodReserve( x, y ) == 1 ) {
-				float dist = pow( (x - rx), 2 ) + pow( (y - ry), 2 );
-				if ( dist <= r_sq )
-					cnt++;
-			}
-		}
-	}
-
-	cout << "found " << cnt << " food nearby." << endl << endl;
-
-	auto tm3 = chrono::steady_clock::now();
-	elapsed = chrono::duration_cast<chrono::microseconds>( tm3 - tm2 );
-	cout << "restricted search: " << elapsed.count() << " us" << endl << endl;
-
-
 	util::coordinate rng0 ( rx - r, ry - r );
 	util::coordinate rng1 ( rx + r, ry + r );
 	util::coordinate limits ( env.sizeX, env.sizeY );
 
+	auto tm2 = chrono::steady_clock::now();
+
+//	int cnt = 0;
+//	for ( int x = rx-r; x < rx+r; x++ ) {
+//		for ( int y = ry-r; y < ry+r; y++ ) {
+//			if ( env.foodReserve( x, y ) == 1 ) {
+//				float dist = pow( (x - rx), 2 ) + pow( (y - ry), 2 );
+//				if ( dist <= r_sq )
+//					cnt++;
+//			}
+//		}
+//	}
+//
+//	cout << "found " << cnt << " food nearby." << endl << endl;
+//
+//	auto tm3 = chrono::steady_clock::now();
+//	elapsed = chrono::duration_cast<chrono::microseconds>( tm3 - tm2 );
+//	cout << "restricted search: " << elapsed.count() << " us" << endl << endl;
+
+	// get all the foods
+	vector<Organism*> allFood = env.grassTree.rangeQuery( util::coordinate( 0, 0 ), limits, limits );
+
+	auto tm3 = chrono::steady_clock::now();
+	elapsed = chrono::duration_cast<chrono::microseconds>( tm3 - tm2 );
+	cout << "amount of food queried: " << allFood.size() << endl;
+	cout << "all food query: " << elapsed.count() << " us" << endl << endl;
+
+
 	auto tm4 = chrono::steady_clock::now();
 
-	vector<Organism*> results = env.foodTree.rangeQuery( rng0, rng1, limits );
+	vector<Organism*> results = env.grassTree.rangeQuery( rng0, rng1, limits );
 
 	cnt = 0;
 	for ( auto gr : results ) {

@@ -63,7 +63,8 @@ public:
 //	float integrity;			// possible synergy with pain and fight...
 
 	// perception model
-	std::vector<f_sens> sensedObjs;
+	std::vector<util::sensation> sensedFood;
+	std::vector<util::sensation> sensedAgents;		// TODO: should we have this separate for conspecifics and enemies?
 	Eigen::VectorXf sensations;
 
 	// brain
@@ -79,7 +80,7 @@ public:
 	int eat();
 	int eat( int, int );
 	void sense();
-	void sense_analytic();
+	void senseFood();
 	void calculateDecision();
 	void reason();
 	void react( Eigen::VectorXf );
@@ -98,12 +99,13 @@ public:
 	void initFCM( int, std::string, std::string );
 //	void setFCM( Eigen::MatrixXd );
 
-	void toString();
 	void forgetSensations();
-	void addSensedObject( f_sens );
-	void forgetSensedObjects();
-	void printSensedObjects();
+	void addFoodSensation( util::sensation );
+	void forgetFoodSensations();
+	void addAgentSensation( util::sensation );
+	void forgetAgentSensations();
 
+	void toString();
 
 };
 

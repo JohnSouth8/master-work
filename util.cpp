@@ -15,7 +15,9 @@
 
 #include "util.h"
 
+#include "Organism.h"
 #include "Animat.h"
+#include "Habitat.h"
 
 
 namespace util {
@@ -106,6 +108,13 @@ namespace util {
 	}
 
 
+	float distanceBetweenOrganisms( ecosystem::Organism* org1, ecosystem::Organism* org2, ecosystem::Habitat* env ) {
+
+		return distanceInPeriodicBoundary( org1->posX, org1->posY, org2->posX, org2->posY, env->sizeX, env->sizeY );
+
+	}
+
+
 	float getAngleBetween( Eigen::Vector2f v1, Eigen::Vector2f v2 ) {
 
 		float v_angle = atan2( v1(1), v1(0) );
@@ -149,8 +158,8 @@ namespace util {
 
 
 
-	bool compareFoodSensations( ecosystem::f_sens arg1, ecosystem::f_sens arg2 ) {
-		return arg1.d < arg2.d;
+	bool compareFoodSensations( sensation arg1, sensation arg2 ) {
+		return arg1.distance < arg2.distance;
 	}
 
 
@@ -223,14 +232,14 @@ namespace util {
 		outputFile.close();
 	}
 
-	void printSensationsToFile( std::vector<ecosystem::f_sens> sss, std::string fname ) {
+	void printSensationsToFile( std::vector<sensation> sss, std::string fname ) {
 		std::ofstream outputFile;
 		outputFile.open( fname.c_str(), std::ofstream::out | std::ofstream::app );
 
-		std::vector<ecosystem::f_sens>::iterator it;
+		std::vector<sensation>::iterator it;
 
 		for ( it = sss.begin(); it != sss.end(); ++it ) {
-			outputFile << it->x << " " << it->y << std::endl;
+			outputFile << it->entity->posX << " " << it->entity->posY << std::endl;
 		}
 
 		outputFile.close();
