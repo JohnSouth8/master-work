@@ -35,20 +35,20 @@ namespace util {
 	float getWrappedCoordinate( float, int );
 	float distanceInPeriodicBoundary( float, float, float, float, int, int );
 
-	float distanceBetweenOrganisms( ecosystem::Organism*, ecosystem::Organism*, ecosystem::Habitat* );
 	float getAngleBetween( Eigen::Vector2f, Eigen::Vector2f );
+	std::vector<float> getLineParameters( coordinate, float );
 
 	int countNonZeroElements( Eigen::MatrixXf );
 
 	std::vector<float> getColourFromGradient( std::vector<float>, std::vector<float>, float );
 
-	bool compareFoodSensations( sensation, sensation );
+	bool compareStimuli( stimulus, stimulus );
 
 	std::string readFileContent( std::string );
 	std::map<std::string, float> readSimpleIni( std::string );
 	void cleanFile ( std::string );
 	void printMatrixToFile( Eigen::MatrixXf, std::string, bool = true );
-	void printSensationsToFile( std::vector<sensation>, std::string );
+	void printSensationsToFile( std::vector<stimulus>, std::string );
 	void printAnimatLocationsToFile( std::map<const char*, ecosystem::Animat*>, std::string );
 
 }

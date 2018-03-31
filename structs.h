@@ -27,13 +27,13 @@ struct coordinate {
 
 };
 
-struct sensation {
+struct stimulus {
 
 	ecosystem::Organism* entity;
 	float distance;			// distance to sensed organism
 
-	sensation() : entity(), distance( 0.0 ) {}
-	sensation( ecosystem::Organism* porg, float d ) : entity( porg ), distance( d ) {}
+	stimulus() : entity(), distance( 0.0 ) {}
+	stimulus( ecosystem::Organism* sorg, float d ) : entity( sorg ), distance( d ) {}
 
 };
 

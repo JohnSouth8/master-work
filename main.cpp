@@ -60,6 +60,7 @@ int test_foodGrowth_visual();
 int test_randomness();
 int test_quadTreeAnimats();
 int test_quadTreeFood();
+int test_angles();
 
 
 
@@ -78,7 +79,8 @@ int main( void ) {
 //	test_quadTreeAnimats();
 //	test_quadTreeFood();
 //	test_with_visuals();
-	test();
+//	test();
+	test_angles();
 
 	delete fate;	// TODO: organize destructors everywhere!!
 
@@ -732,6 +734,22 @@ int test_quadTreeFood() {
 	cout << "quad tree search: " << elapsed.count() << " us" << endl << endl;
 
 
+
+	return 0;
+
+}
+
+
+
+int test_angles() {
+
+	util::coordinate x( 2.08, 1.4 );
+	float a = 1.225;
+
+	// TODO: figure out border conditions and signums
+	vector<float> line = util::getLineParameters( x, a );
+
+	cout << "y = " << line[0] << "x + " << line[1] << endl;
 
 	return 0;
 

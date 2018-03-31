@@ -36,35 +36,29 @@ namespace ecosystem {
 
 Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
 
-	std::map<std::string, float> ini = util::readSimpleIni( iniFileName );
+	env_ini = util::readSimpleIni( iniFileName );
 
 	// basic params
-	sizeX = static_cast<int>( ini["size_x"] );
-	sizeY = static_cast<int>( ini["size_y"] );
-	foodEnergyVal = static_cast<int>( ini["food_energy"] );
+	sizeX = static_cast<int>( env_ini["size_x"] );
+	sizeY = static_cast<int>( env_ini["size_y"] );
+	foodEnergyVal = static_cast<int>( env_ini["food_energy"] );
 
 	// member structures
 	fate = ch;
 
 	// quad trees
-	unsigned int qt_bucketsize = static_cast<unsigned int>( ini["quadtree_bucketsize"] );
+	unsigned int qt_bucketsize = static_cast<unsigned int>( env_ini["quadtree_bucketsize"] );
 	coordinate env0( 0, 0 );
 	coordinate env1( sizeX, sizeY );
 	grassTree = QuadTree( qt_bucketsize, env0, env1 );
 	populationTree = QuadTree( qt_bucketsize, env0, env1 );
 
 	// food emanators - meadows
-	int n_mdw = static_cast<int>( ini["n_meadows"] );
-	p_newMeadow = ini["probability_new_meadow"];
-	mean_rMeadows = ini["radius_mean_meadows"];
-	std_rMeadows = ini["radius_std_meadows"];
-	mean_grMeadows = ini["growrate_mean_meadows"];
-	std_grMeadows = ini["growrate_std_meadows"];
-
+	int n_mdw = static_cast<int>( env_ini["n_meadows"] );
 	std::vector<int> xs = fate->nUniformRandomIntsFrom( n_mdw, 0, sizeX-1 );
 	std::vector<int> ys = fate->nUniformRandomIntsFrom( n_mdw, 0, sizeY-1 );
-	std::vector<int> rs = fate->normalIntsString( n_mdw, mean_rMeadows, std_rMeadows );
-	std::vector<float> grs = fate->normalFloatsString( n_mdw, mean_grMeadows, std_grMeadows );
+	std::vector<int> rs = fate->normalIntsString( n_mdw, env_ini["radius_mean_meadows"], env_ini["radius_std_meadows"] );
+	std::vector<float> grs = fate->normalFloatsString( n_mdw, env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
 
 	for ( int i = 0; i < n_mdw; ++i ) {
 		Meadow* m = new Meadow( xs[i], ys[i], rs[i], grs[i], this );
@@ -96,21 +90,21 @@ Habitat::~Habitat() {
 
 void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std::string fcm_concepts_fileName, std::string fcm_fileName ) {
 
-	std::map<std::string, float> ini = util::readSimpleIni( animat_iniFileName );
+	ani_ini = util::readSimpleIni( animat_iniFileName );
 
 	if ( n_animats == 0 )
-		n_animats = static_cast<int>( ini["n_animats"] );
+		n_animats = static_cast<int>( ani_ini["n_animats"] );
 
-	float avg_size = ini["size"];
-	float max_energy = ini["max_energy"];
-	float start_energy = ini["start_energy"];
-	float max_velocity = ini["max_velocity"];
+	float avg_size = ani_ini["size"];
+	float max_energy = ani_ini["max_energy"];
+	float start_energy = ani_ini["start_energy"];
+	float max_velocity = ani_ini["max_velocity"];
 //	float start_velocity = ini["start_velocity"];
-	int max_age = static_cast<int>( ini["max_age"] );
-	float vision_range = ini["vision_range"];
-	float vision_angle = ini["vision_angle"];
-	float olfactory_range = ini["olfactory_range"];
-	float std_degree = ini["init_std_degree"];
+	int max_age = static_cast<int>( ani_ini["max_age"] );
+	float vision_range = ani_ini["vision_range"];
+	float vision_angle = ani_ini["vision_angle"];
+	float olfactory_range = ani_ini["olfactory_range"];
+	float std_degree = ani_ini["init_std_degree"];
 
 	std::vector<float> sizes = fate->normalFloatsString( n_animats, avg_size, avg_size*std_degree );
 	std::vector<float> max_vels = fate->normalFloatsString( n_animats, max_velocity, max_velocity*std_degree );
@@ -196,12 +190,12 @@ void Habitat::growMeadows() {
 	}
 
 	// fractional chance of a new meadow appearing
-	if ( fate->uniformRandomUnitFloat() < p_newMeadow ) {
+	if ( fate->uniformRandomUnitFloat() < env_ini["probability_new_meadow"] ) {
 
 		int cx = fate->uniformRandomIntFrom( 0, sizeX-1 );
 		int cy = fate->uniformRandomIntFrom( 0, sizeY-1 );
-		int r = fate->normalInt( mean_rMeadows, std_rMeadows );
-		float gr = fate->normalFloat( mean_grMeadows, std_grMeadows );
+		int r = fate->normalInt( env_ini["radius_mean_meadow"], env_ini["radius_std_meadows"] );
+		float gr = fate->normalFloat( env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
 
 		Meadow* m = new Meadow( cx, cy, r, gr, this );
 		meadows.push_back( m );
@@ -237,6 +231,14 @@ float Habitat::consumeFood( int x, int y ){
 //		vegetation.find
 		return foodEnergyVal;
 	}
+
+}
+
+
+
+float Habitat::distanceBetweenOrganisms( ecosystem::Organism* org1, ecosystem::Organism* org2 ) {
+
+	return util::distanceInPeriodicBoundary( org1->posX, org1->posY, org2->posX, org2->posY, sizeX, sizeY );
 
 }
 

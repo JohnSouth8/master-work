@@ -108,19 +108,26 @@ namespace util {
 	}
 
 
-	float distanceBetweenOrganisms( ecosystem::Organism* org1, ecosystem::Organism* org2, ecosystem::Habitat* env ) {
-
-		return distanceInPeriodicBoundary( org1->posX, org1->posY, org2->posX, org2->posY, env->sizeX, env->sizeY );
-
-	}
-
-
 	float getAngleBetween( Eigen::Vector2f v1, Eigen::Vector2f v2 ) {
 
 		float v_angle = atan2( v1(1), v1(0) );
 		float g_angle = atan2( v2(1), v2(0) );
 
 		return g_angle - v_angle;
+
+	}
+
+
+
+	std::vector<float> getLineParameters( coordinate point, float angle ) {
+		// find parameters to line equation of form y=ax+b
+
+		std::vector<float> params ( 2 );
+
+		params[0] = 1 / tan( angle );
+		params[1] = point.y + point.x / tan( angle );
+
+		return params;
 
 	}
 
@@ -158,7 +165,7 @@ namespace util {
 
 
 
-	bool compareFoodSensations( sensation arg1, sensation arg2 ) {
+	bool compareStimuli( stimulus arg1, stimulus arg2 ) {
 		return arg1.distance < arg2.distance;
 	}
 
@@ -232,11 +239,11 @@ namespace util {
 		outputFile.close();
 	}
 
-	void printSensationsToFile( std::vector<sensation> sss, std::string fname ) {
+	void printSensationsToFile( std::vector<stimulus> sss, std::string fname ) {
 		std::ofstream outputFile;
 		outputFile.open( fname.c_str(), std::ofstream::out | std::ofstream::app );
 
-		std::vector<sensation>::iterator it;
+		std::vector<stimulus>::iterator it;
 
 		for ( it = sss.begin(); it != sss.end(); ++it ) {
 			outputFile << it->entity->posX << " " << it->entity->posY << std::endl;

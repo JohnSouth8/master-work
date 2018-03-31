@@ -25,9 +25,7 @@ Meadow::Meadow( int cx, int cy, int r, float gr, Habitat* env ) {
 
 }
 
-Meadow::~Meadow() {
-	// TODO Auto-generated destructor stub
-}
+Meadow::~Meadow() {}
 
 
 int Meadow::grow() {

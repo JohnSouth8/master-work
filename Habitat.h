@@ -48,11 +48,11 @@ public:
 
 	int foodEnergyVal;
 	std::vector<Meadow*> meadows;
-	float mean_rMeadows;
-	float std_rMeadows;
-	float mean_grMeadows;
-	float std_grMeadows;
-	float p_newMeadow;
+//	float mean_rMeadows;
+//	float std_rMeadows;
+//	float mean_grMeadows;
+//	float std_grMeadows;
+//	float p_newMeadow;
 
 	// QuadTrees for easy storage and search
 	util::QuadTree grassTree;
@@ -60,8 +60,13 @@ public:
 
 	// deprecated as of QuadTree implementation
 	// helper variables for distance computation
-	Eigen::MatrixXf animatDistances;
-	std::vector<std::string> animatOrder;		// order of animats in the population map
+//	Eigen::MatrixXf animatDistances;
+//	std::vector<std::string> animatOrder;		// order of animats in the population map
+
+
+	// ini data
+	std::map<std::string, float> env_ini;
+	std::map<std::string, float> ani_ini;
 
 
 	// member functions
@@ -73,6 +78,8 @@ public:
 	void birth( Animat* );
 	void death( std::string );
 	std::string generateAnimatName();
+
+	float distanceBetweenOrganisms( ecosystem::Organism*, ecosystem::Organism* );
 
 };
 

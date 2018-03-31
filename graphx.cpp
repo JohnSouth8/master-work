@@ -227,9 +227,9 @@ namespace gx {
 			points_buffer_data[counter*5 + 1] = float( 2.0f * it->second->posY / float(env_h) - 1 );	// Y
 			points_buffer_data[counter*5 + 2] = 0.95f;													// R
 			if ( it == environment->population.begin() )
-				points_buffer_data[counter*5 + 3] = 0.95f;													// G
+				points_buffer_data[counter*5 + 3] = 0.95f;												// G
 			else
-				points_buffer_data[counter*5 + 3] = 0.0f;													// G
+				points_buffer_data[counter*5 + 3] = 0.0f;												// G
 			points_buffer_data[counter*5 + 4] = 0.0f;													// B
 
 			++counter;

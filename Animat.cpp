@@ -22,7 +22,7 @@ using Eigen::VectorXf;
 using Eigen::MatrixXf;
 
 using util::coordinate;
-using util::sensation;
+using util::stimulus;
 
 namespace ecosystem {
 
@@ -131,6 +131,46 @@ void Animat::turn( float rads ) {
 
 
 
+void Animat::sense() {
+
+	int env_x = environment->sizeX;
+	int env_y = environment->sizeY;
+
+	// create a range for quad tree query
+	int x_max = std::ceil( posX + visionRange );
+	int y_max = std::ceil( posY + visionRange );
+	int x_min = std::floor( posX - visionRange );
+	int y_min = std::floor( posY - visionRange );
+
+	coordinate rng0( x_min, y_min );
+	coordinate rng1( x_max, y_max );
+	coordinate lmts( env_x, env_y );
+
+	std::vector<Organism*> grasses = environment->grassTree.rangeQuery( rng0, rng1, lmts );
+	std::vector<Organism*> animats = environment->populationTree.rangeQuery( rng0, rng1, lmts );
+
+	// TODO: paralelization of this part
+	for ( auto gr : grasses ) {
+		float dist = environment->distanceBetweenOrganisms( this, gr );
+		if ( dist < visionRange )
+			foodStimulus( { gr, dist } );
+	}
+	for ( auto an : animats ) {
+		float dist = environment->distanceBetweenOrganisms( this, an );
+		if ( dist < visionRange )
+			kinStimulus( { an, dist } );		// TODO: separate for kin and foe, when foes are implemented
+	}
+
+	// TODO: is this necessary or just overhead?
+	std::sort( sensedFood.begin(), sensedFood.end(), util::compareStimuli );
+	std::sort( sensedKin.begin(), sensedKin.end(), util::compareStimuli );
+
+	// prepare sensations vector
+
+}
+
+
+
 void Animat::senseFood() {
 
 	int env_x = environment->sizeX;
@@ -149,13 +189,14 @@ void Animat::senseFood() {
 	std::vector<Organism*> foods = environment->grassTree.rangeQuery( rng0, rng1, lmts );
 
 	for ( auto food : foods ) {
-		float dist = util::distanceBetweenOrganisms( this, food, environment );
+		float dist = environment->distanceBetweenOrganisms( this, food );
 		if ( dist < visionRange )
-			addFoodSensation( { food, dist } );
+			foodStimulus( { food, dist } );
 	}
 
-	// TODO: rethink this
-	std::sort( sensedFood.begin(), sensedFood.end(), util::compareFoodSensations );
+	// TODO: is this necessary or just overhead?
+	std::sort( sensedFood.begin(), sensedFood.end(), util::compareStimuli );
+
 
 }
 
@@ -234,9 +275,9 @@ void Animat::reason() {
 
 
 
-void Animat::sense() {
+void Animat::senseOld() {
 
-	forgetFoodSensations();
+	forgetStimuli();
 	senseFood();
 
 	// plan to reach the closest food target
@@ -367,7 +408,7 @@ void Animat::react( VectorXf motor ) {
 		if ( sensedFood.size() > 0 && sensedFood[0].distance <= reach && eat( sensedFood[0].entity->posX, sensedFood[0].entity->posY ) != 0 ) return;
 	}
 
-	// only one turn action at a time: 		<< TODO: maybe both? opposing forces, ya'know....
+	// only one turn action at a time: 		<< TODO: maybe both? opposing forces....
 	if ( motor(1) > motor(2) && motor(1) > 0.15 ) {
 		float ta = (motor(1) - 0.15) / 0.75;
 		turn( ta );
@@ -499,32 +540,28 @@ void Animat::react( VectorXf motor ) {
 
 
 
-void Animat::forgetSensations() {
+void Animat::forgetSensation() {
 	sensations = Eigen::VectorXf::Zero( cognition.getNInput() );
 }
 
 
 
-void Animat::addFoodSensation( sensation s ) {
+void Animat::foodStimulus( stimulus s ) {
 	sensedFood.push_back( s );
 }
 
 
 
-void Animat::forgetFoodSensations() {
+void Animat::kinStimulus( stimulus s ) {
+	sensedKin.push_back( s );
+}
+
+
+
+void Animat::forgetStimuli() {
 	sensedFood.clear();
-}
-
-
-
-void Animat::addAgentSensation( sensation s ) {
-	sensedAgents.push_back( s );
-}
-
-
-
-void Animat::forgetAgentSensations() {
-	sensedAgents.clear();
+	sensedKin.clear();
+	sensedFoes.clear();
 }
 
 
@@ -571,18 +608,6 @@ void Animat::toString() {
 	std::cout << std::endl;
 
 }
-
-
-
-//void Animat::printSensedObjects() {
-//
-//	vector<f_sens>::iterator it;
-//
-//	for ( it = sensedObjs.begin(); it != sensedObjs.end(); ++it ) {
-//		cout << it->x << " " << it->y << "" << it->d << endl;
-//	}
-//
-//}
 
 
 

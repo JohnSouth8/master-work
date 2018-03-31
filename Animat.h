@@ -50,8 +50,6 @@ public:
 	int maxAge;
 
 	// physical parameters
-//	float posX;		already members of base class organism
-//	float posY;
 	float direction;
 	float velocity;
 	int age;
@@ -63,8 +61,9 @@ public:
 //	float integrity;			// possible synergy with pain and fight...
 
 	// perception model
-	std::vector<util::sensation> sensedFood;
-	std::vector<util::sensation> sensedAgents;		// TODO: should we have this separate for conspecifics and enemies?
+	std::vector<util::stimulus> sensedFood;
+	std::vector<util::stimulus> sensedKin;
+	std::vector<util::stimulus> sensedFoes;
 	Eigen::VectorXf sensations;
 
 	// brain
@@ -73,9 +72,12 @@ public:
 	// environment reference
 	Habitat* environment;
 
-	///*****************
-	// member functions
 
+
+	//// -- member functions --
+
+
+	// TODO: remove deprecated functions
 	// life functions
 	int eat();
 	int eat( int, int );
@@ -99,13 +101,16 @@ public:
 	void initFCM( int, std::string, std::string );
 //	void setFCM( Eigen::MatrixXd );
 
-	void forgetSensations();
-	void addFoodSensation( util::sensation );
-	void forgetFoodSensations();
-	void addAgentSensation( util::sensation );
-	void forgetAgentSensations();
+	void forgetSensation();
+	void foodStimulus( util::stimulus );
+	void kinStimulus( util::stimulus );
+	void forgetStimuli();
 
 	void toString();
+
+
+	// temp funcs
+	void senseOld();
 
 };
 
