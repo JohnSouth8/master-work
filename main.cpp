@@ -78,9 +78,9 @@ int main( void ) {
 
 //	test_quadTreeAnimats();
 //	test_quadTreeFood();
-//	test_with_visuals();
+	test_with_visuals();
 //	test();
-	test_angles();
+//	test_angles();
 
 	delete fate;	// TODO: organize destructors everywhere!!
 

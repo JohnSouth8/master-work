@@ -123,7 +123,7 @@ void Animat::turn( float rads ) {
 	direction = fmod( direction, 2*PI );
 	// when angles exceed +- PI, they should be mirrored across the x-axis
 	if ( direction > PI )
-		direction = -2*PI - direction;
+		direction = -2*PI + direction;
 	if ( direction < -PI )
 		direction = 2*PI + direction;
 
@@ -131,7 +131,7 @@ void Animat::turn( float rads ) {
 
 
 
-void Animat::sense() {
+void Animat::senseOld() {
 
 	int env_x = environment->sizeX;
 	int env_y = environment->sizeY;
@@ -165,7 +165,7 @@ void Animat::sense() {
 	std::sort( sensedFood.begin(), sensedFood.end(), util::compareStimuli );
 	std::sort( sensedKin.begin(), sensedKin.end(), util::compareStimuli );
 
-	// prepare sensations vector
+	// TODO: prepare sensations vector
 
 }
 
@@ -275,7 +275,7 @@ void Animat::reason() {
 
 
 
-void Animat::senseOld() {
+void Animat::sense() {
 
 	forgetStimuli();
 	senseFood();
@@ -298,7 +298,7 @@ void Animat::senseOld() {
 
 	bool isFood = false;
 	float min_dist = visionRange;
-	float dAngle = util::randFromUnitInterval() - 0.5;		// if no food, angle is random somewhere ahead
+	float dAngle = 0;//util::randFromUnitInterval() - 0.5;		// if no food, angle is random somewhere ahead
 	if ( sensedFood.size() > 0 ) {
 
 		min_dist = sensedFood[0].distance;
@@ -322,10 +322,10 @@ void Animat::senseOld() {
 				dY = (foodY + environment->sizeY) - posY;
 		}
 
-		// unit vector in animat's direction
-		Eigen::Vector2f v( cos( direction ), sin( direction ) );
+		// unit vector in animat's direction TODO: this is actually redundant, we already have angle in direction
+		std::vector<float> v = {static_cast<float>( cos( direction ) ), static_cast<float>( sin( direction ) )};
 		// vector from animat to food
-		Eigen::Vector2f g( dX, dY );
+		std::vector<float> g = {dX, dY};
 
 		dAngle = util::getAngleBetween( v, g );
 		// when angles are more or less to the left of the vertical, atan2 returns large values which
@@ -380,7 +380,7 @@ void Animat::senseOld() {
 
 //	sensations(3) = -1 + 2.0*energy / maxEnergy;
 
-	if ( isFood && abs( dAngle ) < 0.05 )
+	if ( isFood && fabs( dAngle ) < 0.05 )
 		sensations(4) = 1;
 	else
 		sensations(4) = 0;

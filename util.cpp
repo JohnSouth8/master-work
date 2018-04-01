@@ -36,6 +36,8 @@ namespace util {
 
 	}
 
+
+
 	Eigen::VectorXf tanh( const Eigen::VectorXf in ) {
 
 		const unsigned int size = in.size();
@@ -49,16 +51,7 @@ namespace util {
 
 	}
 
-	// deprecated, use util::Chance
-	int randIntFrom( int min, int max ) {
-		int range = max - min + 1;
-		return rand() % range + min;
-	}
 
-	// deprecated, use util::Chance
-	float randFromUnitInterval() {
-		return float( rand() ) / float( RAND_MAX );
-	}
 
 	int getWrappedIndex( int index, int domainSize ) {
 
@@ -79,6 +72,8 @@ namespace util {
 
 	}
 
+
+
 	float getWrappedCoordinate( float coordinate, int domainSize ) {
 
 		double retval = coordinate;
@@ -95,6 +90,7 @@ namespace util {
 	}
 
 
+
 	float distanceInPeriodicBoundary( float x1, float y1, float x2, float y2, int maxX, int maxY ) {
 
 		float dx = x2 - x1;
@@ -108,10 +104,11 @@ namespace util {
 	}
 
 
-	float getAngleBetween( Eigen::Vector2f v1, Eigen::Vector2f v2 ) {
 
-		float v_angle = atan2( v1(1), v1(0) );
-		float g_angle = atan2( v2(1), v2(0) );
+	float getAngleBetween( std::vector<float> v1, std::vector<float> v2 ) {
+
+		float v_angle = atan2( v1[1], v1[0] );
+		float g_angle = atan2( v2[1], v2[0] );
 
 		return g_angle - v_angle;
 
@@ -124,8 +121,19 @@ namespace util {
 
 		std::vector<float> params ( 2 );
 
-		params[0] = 1 / tan( angle );
-		params[1] = point.y + point.x / tan( angle );
+		if ( angle >= 0 ) {
+			// TODO: tan is correctly +-, use this
+		}
+		else {
+
+		}
+
+		float a = 1 / tan( angle );
+		float yb = point.x / tan( angle );
+		float b = point.y + point.x / tan( angle );
+
+		params[0] = a;
+		params[1] = b;
 
 		return params;
 
@@ -225,6 +233,8 @@ namespace util {
 		outputFile.close();
 	}
 
+
+
 	void printMatrixToFile( Eigen::MatrixXf data, std::string fname, bool transpose ) {
 
 		Eigen::MatrixXf outputData = data;
@@ -239,6 +249,8 @@ namespace util {
 		outputFile.close();
 	}
 
+
+
 	void printSensationsToFile( std::vector<stimulus> sss, std::string fname ) {
 		std::ofstream outputFile;
 		outputFile.open( fname.c_str(), std::ofstream::out | std::ofstream::app );
@@ -252,6 +264,8 @@ namespace util {
 		outputFile.close();
 	}
 
+
+
 	void printAnimatLocationsToFile( std::map<const char*, ecosystem::Animat*> pop, std::string fname ) {
 		std::ofstream outputFile;
 		outputFile.open( fname.c_str(), std::ofstream::out | std::ofstream::app );
@@ -264,6 +278,8 @@ namespace util {
 
 		outputFile.close();
 	}
+
+
 
 }
 

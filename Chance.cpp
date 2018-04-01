@@ -39,6 +39,7 @@ float Chance::uniformRandomUnitFloat() {
 
 
 int Chance::uniformRandomIntFrom( int min, int max ) {
+	// returns from range [min, max]
 
 	std::uniform_int_distribution<int> dist( min, max );
 	return dist( twister );
@@ -59,6 +60,7 @@ std::vector<int> Chance::nUniformRandomIntsFrom( int n, int min, int max ) {
 
 
 float Chance::uniformRandomFloatFrom( float min, float max ) {
+	// returns from range [min, max)
 
 	std::uniform_real_distribution<float> dist( min, max );
 	return dist( twister );

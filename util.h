@@ -35,7 +35,7 @@ namespace util {
 	float getWrappedCoordinate( float, int );
 	float distanceInPeriodicBoundary( float, float, float, float, int, int );
 
-	float getAngleBetween( Eigen::Vector2f, Eigen::Vector2f );
+	float getAngleBetween( std::vector<float>, std::vector<float> );
 	std::vector<float> getLineParameters( coordinate, float );
 
 	int countNonZeroElements( Eigen::MatrixXf );

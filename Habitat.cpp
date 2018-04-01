@@ -166,13 +166,13 @@ void Habitat::death( std::string name ) {
 
 std::string Habitat::generateAnimatName() {
 
-	int charmin = 65, charmax = 90, randint;
+	int charmin = 65, charmax = 90;
 	std::string sname;
 
-	for ( int i = 0; i < 10; ++i ) {
-		randint = util::randIntFrom( charmin, charmax );
-		sname.push_back( randint );
-	}
+	std::vector<int> chars = fate->nUniformRandomIntsFrom( 10, charmin, charmax );
+
+	for ( int i = 0; i < 10; ++i )
+		sname += chars[i];
 
 	return sname;
 
