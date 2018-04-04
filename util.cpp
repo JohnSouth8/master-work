@@ -121,19 +121,12 @@ namespace util {
 
 		std::vector<float> params ( 2 );
 
-		if ( angle >= 0 ) {
-			// TODO: tan is correctly +-, use this
-		}
-		else {
+		float tanang = tan( angle );
+		if ( tanang > 1000 )
+			tanang = 1000;
 
-		}
-
-		float a = 1 / tan( angle );
-		float yb = point.x / tan( angle );
-		float b = point.y + point.x / tan( angle );
-
-		params[0] = a;
-		params[1] = b;
+		params[0] = -tanang;
+		params[1] = point.y + point.x * tanang;
 
 		return params;
 

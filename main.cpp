@@ -32,6 +32,8 @@ using namespace std;
 using namespace Eigen;
 using namespace ecosystem;
 
+using util::coordinate;
+
 
 const float PI = 3.14159;
 
@@ -78,9 +80,9 @@ int main( void ) {
 
 //	test_quadTreeAnimats();
 //	test_quadTreeFood();
-	test_with_visuals();
+//	test_with_visuals();
 //	test();
-//	test_angles();
+	test_angles();
 
 	delete fate;	// TODO: organize destructors everywhere!!
 
@@ -743,13 +745,45 @@ int test_quadTreeFood() {
 
 int test_angles() {
 
-	util::coordinate x( 2.08, 1.4 );
-	float a = 1.225;
+	int n_tests = 50;
 
-	// TODO: figure out border conditions and signums
-	vector<float> line = util::getLineParameters( x, a );
+	vector<float> rxs = fate->nUniformRandomFloatsFrom( n_tests, 0, 2 );
+	vector<float> rys = fate->nUniformRandomFloatsFrom( n_tests, 0, 2 );
+//	vector<float> ccs = fate->nUniformRandomFloatsFrom( n_tests / 2, 0, PI );
+//	vector<float> cls = fate->nUniformRandomFloatsFrom( n_tests / 2, -PI, 0 );
+//	vector<float> ras;
+//	ras.insert( ras.end(), ccs.begin(), ccs.end() );
+//	ras.insert( ras.end(), cls.begin(), cls.end() );
 
-	cout << "y = " << line[0] << "x + " << line[1] << endl;
+	coordinate p( 0.5, 2.5 );
+	float dir = PI / 4 + 0.1;
+	float v_ang = PI / 2;
+	float v_r = 1.5;
+
+	float e0 = dir - v_ang / 2;
+	float e1 = dir + v_ang / 2;
+	vector<float> le0 = util::getLineParameters( p, e0 );
+	vector<float> le1 = util::getLineParameters( p, e1 );
+
+	int cnt = 1;
+	for ( int i = 0; i < n_tests; ++i ) {
+		if ( rys[i] <= le0[0]*rxs[i] + le0[1] &&
+				rys[i] <= le1[0]*rxs[i] + le1[1] &&
+				sqrt( pow( rxs[i] - p.x, 2 ) + pow( rys[i] - p.y, 2 ) ) <= v_r ) {
+			cout << cnt << ": (" << rxs[i] << "," << rys[i] << ") seen" << endl;
+			cnt++;
+		}
+	}
+
+//	for ( int i = 0; i < n_tests; ++i ) {
+//		coordinate x ( rxs[i], rys[i] );
+//
+//		line = util::getLineParameters( x, ras[i] );
+//
+//		cout << "(" << rxs[i] << "," << rys[i] << "), angle = " << ras[i] << ". Line: ";
+//		cout << "y = " << line[0] << "x + " << line[1] << endl;
+//
+//	}
 
 	return 0;
 
