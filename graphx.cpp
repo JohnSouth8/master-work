@@ -250,7 +250,7 @@ namespace gx {
 
 		int n_concepts = ani->cognition.nConcepts;
 		int n_conceptsInLayer[3] = {ani->cognition.nInput, ani->cognition.nInternal, ani->cognition.nOutput};
-		std::vector<int> concepts_layers[3] = {ani->cognition.inputConcepts, ani->cognition.internalConcepts, ani->cognition.outputConcepts};
+		std::vector<int> concepts_layers[3] = {ani->cognition.inputConceptIdxs, ani->cognition.internalConceptIdxs, ani->cognition.outputConceptIdxs};
 
 		int n_point_data = n_concepts * 5;
 		int n_line_data = util::countNonZeroElements( ani->cognition.L ) * 10;		// 2 vertices per line

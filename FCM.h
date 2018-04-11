@@ -8,6 +8,7 @@
 #ifndef FCM_H_
 #define FCM_H_
 
+#include <map>
 #include <Eigen/Dense>
 #include <vector>
 
@@ -27,11 +28,14 @@ public:
 	int nInternal;
 	int nOutput;
 
-	std::vector<int> inputConcepts;		// state indices
-	std::vector<int> internalConcepts;
-	std::vector<int> outputConcepts;
+	// concepts' names
+	std::map<std::string, int> concepts;
 
-	std::vector<std::string> concepts;
+	// indices in the state vector
+	std::vector<int> inputConceptIdxs;
+	std::vector<int> internalConceptIdxs;
+	std::vector<int> outputConceptIdxs;
+
 	Eigen::VectorXf state;
 	Eigen::MatrixXf L;
 //	int initialized;

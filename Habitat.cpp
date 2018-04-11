@@ -102,7 +102,8 @@ void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std:
 //	float start_velocity = ini["start_velocity"];
 	int max_age = static_cast<int>( ani_ini["max_age"] );
 	float vision_range = ani_ini["vision_range"];
-	float vision_angle = ani_ini["vision_angle"];
+	float eye_offset_angle = ani_ini["eye_offset_angle"];
+	float eye_vision_angle = ani_ini["eye_vision_angle"];
 	float olfactory_range = ani_ini["olfactory_range"];
 	float std_degree = ani_ini["init_std_degree"];
 
@@ -110,7 +111,8 @@ void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std:
 	std::vector<float> max_vels = fate->normalFloatsString( n_animats, max_velocity, max_velocity*std_degree );
 	std::vector<int> max_ages = fate->normalIntsString( n_animats, max_age, max_age*std_degree );
 	std::vector<float> vis_ranges = fate->normalFloatsString( n_animats, vision_range, vision_range*std_degree );
-	std::vector<float> vis_angles = fate->normalFloatsString( n_animats, vision_angle, vision_angle*std_degree );
+	std::vector<float> eye_angles = fate->normalFloatsString( n_animats, eye_offset_angle, eye_offset_angle*std_degree );
+	std::vector<float> eye_fovs = fate->normalFloatsString( n_animats, eye_vision_angle, eye_vision_angle*std_degree );
 	std::vector<float> olf_ranges = fate->normalFloatsString( n_animats, olfactory_range, olfactory_range*std_degree);
 
 	std::vector<float> pxs = fate->nUniformRandomFloatsFrom( n_animats, 0, sizeX );
@@ -123,12 +125,13 @@ void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std:
 		Animat* ani = new Animat (
 			name,
 			sizes[i],
-			vis_ranges[i],
-			vis_angles[i],
-			olf_ranges[i],
 			max_vels[i],
 			max_energy,
 			max_ages[i],
+			vis_ranges[i],
+			eye_angles[i],
+			eye_fovs[i],
+			olf_ranges[i],
 			pxs[i],
 			pys[i],
 			dirs[i],

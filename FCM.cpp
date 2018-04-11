@@ -28,7 +28,6 @@ FCM::FCM( int nc ) {
 	nInput = 0;
 	nInternal = 0;
 	nOutput = 0;
-//	concepts = std::vector<string>( nConcepts );
 	state = VectorXf::Zero( nConcepts );		// TODO: rename. Edit: why? Edit2: don't know anymore..
 	L = MatrixXf::Zero( nConcepts, nConcepts );
 
@@ -57,20 +56,20 @@ void FCM::loadConceptsFromFile( string filename ) {
 	for ( int i = 0; i < nConcepts; ++i ) {
 		if ( !strstream.eof() ) {
 			strstream >> buf;
-			concepts.push_back( buf );
+			concepts[buf] = i;
 			char type = buf[0];
 			switch ( type ) {
 				case 's':
 					++nInput;
-					inputConcepts.push_back( i );
+					inputConceptIdxs.push_back( i );
 					break;
 				case 'i':
 					++nInternal;
-					internalConcepts.push_back( i );
+					internalConceptIdxs.push_back( i );
 					break;
 				case 'm':
 					++nOutput;
-					outputConcepts.push_back( i );
+					outputConceptIdxs.push_back( i );
 					break;
 			}
 		}

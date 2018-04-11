@@ -81,8 +81,8 @@ int main( void ) {
 //	test_quadTreeAnimats();
 //	test_quadTreeFood();
 //	test_with_visuals();
-//	test();
-	test_angles();
+	test();
+//	test_angles();
 
 	delete fate;	// TODO: organize destructors everywhere!!
 
@@ -775,15 +775,7 @@ int test_angles() {
 		}
 	}
 
-//	for ( int i = 0; i < n_tests; ++i ) {
-//		coordinate x ( rxs[i], rys[i] );
-//
-//		line = util::getLineParameters( x, ras[i] );
-//
-//		cout << "(" << rxs[i] << "," << rys[i] << "), angle = " << ras[i] << ". Line: ";
-//		cout << "y = " << line[0] << "x + " << line[1] << endl;
-//
-//	}
+	// TO BE CONTINUED: how can we determine when we need above or below the line?
 
 	return 0;
 

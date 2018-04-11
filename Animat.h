@@ -32,7 +32,7 @@ class Animat : public Organism {
 public:
 
 	// constructors
-	Animat( std::string, float, float, float, float, float, float, int, float, float, float, float, float, Habitat* );
+	Animat( std::string, float, float, float, int, float, float, float, float, float, float, float, float, float, Habitat* );
 	virtual ~Animat();
 
 
@@ -42,12 +42,15 @@ public:
 	std::string name;
 	float size;
 	float reach;
-	float visionRange;
-	float visionAngle;
-	float olfactoryRange;
 	float maxVelocity;
 	float maxEnergy;
 	int maxAge;
+
+	// senses
+	float visionRange;
+	float eyeOffsetAngle;
+	float eyeFieldOfView;
+	float olfactoryRange;
 
 	// physical parameters
 	float direction;
@@ -56,15 +59,15 @@ public:
 
 	// homeostasis variables
 	float energy;
-	float comfort;
-	float fatigue;
+	float comfort;				// 0-100
+	float fatigue;				// 0-100
 //	float integrity;			// possible synergy with pain and fight...
 
 	// perception model
-	std::vector<util::stimulus> sensedFood;
-	std::vector<util::stimulus> sensedKin;
-	std::vector<util::stimulus> sensedFoes;
-	Eigen::VectorXf sensations;
+	std::vector<util::stimulus> nearbyFood;
+	std::vector<util::stimulus> nearbyKin;
+	std::vector<util::stimulus> nearbyFoes;
+	Eigen::VectorXf sensation;
 
 	// brain
 	FCM cognition;
@@ -81,11 +84,13 @@ public:
 	// life functions
 	int eat();
 	int eat( int, int );
-	void sense();
-	void senseFood();
 	void calculateDecision();
 	void reason();
 	void react( Eigen::VectorXf );
+
+	// perception model
+	void sense();
+
 
 	// movement functions
 	void changeVelocityAbsolute( float );
@@ -102,15 +107,14 @@ public:
 //	void setFCM( Eigen::MatrixXd );
 
 	void forgetSensation();
-	void foodStimulus( util::stimulus );
-	void kinStimulus( util::stimulus );
 	void forgetStimuli();
 
 	void toString();
 
 
 	// temp funcs
-	void senseOld();
+	void senseUpdate();
+	void senseFood();
 
 };
 

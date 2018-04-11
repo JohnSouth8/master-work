@@ -30,10 +30,12 @@ struct coordinate {
 struct stimulus {
 
 	ecosystem::Organism* entity;
-	float distance;			// distance to sensed organism
+	int type;						// 0 - grass, 1 - animat
+	float distance;					// distance to sensed organism
+	float angle;					// angle to sensed organism
 
-	stimulus() : entity(), distance( 0.0 ) {}
-	stimulus( ecosystem::Organism* sorg, float d ) : entity( sorg ), distance( d ) {}
+	stimulus() : entity(), type(0), distance( 0.0 ), angle( 0.0 ) {}
+	stimulus( ecosystem::Organism* sorg, int t, float d, float a ) : entity( sorg ), type( t ), distance( d ), angle( a ) {}
 
 };
 

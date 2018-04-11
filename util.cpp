@@ -105,13 +105,64 @@ namespace util {
 
 
 
-	float getAngleBetween( std::vector<float> v1, std::vector<float> v2 ) {
+	float getAngleBetweenVectors( std::vector<float> v1, std::vector<float> v2 ) {
 
 		float v_angle = atan2( v1[1], v1[0] );
 		float g_angle = atan2( v2[1], v2[0] );
 
 		return g_angle - v_angle;
 
+	}
+
+
+
+	float getStimulusAngle( ecosystem::Animat* agent, ecosystem::Organism* target ) {
+
+		float maxX = agent->environment->sizeX;
+		float maxY = agent->environment->sizeY;
+		float dX = target->posX - agent->posX;
+		float dY = target->posY - agent->posY;
+
+		// correct deltas if stimulus is over the edge
+		if ( dX > agent->visionRange ) {
+			if ( target->posX > agent->posX )
+				dX = target->posX - (agent->posX + maxX);
+			else
+				dX = (target->posX + maxX) - agent->posX;
+		}
+		if ( dY > agent->visionRange ) {
+			if ( target->posY > agent->posY )
+				dY = target->posY - (agent->posY + maxY);
+			else
+				dY = (target->posY + maxY) - agent->posY;
+		}
+
+		float angle = atan2( dY, dX ) - agent->direction;
+
+		// when angles are more or less to the left of the vertical, atan2 returns large values which
+		//  lead to turning in the wrong direction (over the x-axis at 0rad) rather than shorter turns
+		//  (over the x-axis at PIrad), thus those values are added to the opposite-signed full circle
+		if ( angle > PI )
+			angle = -2*PI + angle;
+		if ( angle < -PI )
+			angle = 2*PI + angle;
+
+		return angle;
+
+	}
+
+
+
+	float stimulusVisualActivation( float angle, float distance ) {
+		// TODO: subject to testing and change!
+		return (PI - fabs( angle ) / PI) / pow( distance, 2 );
+	}
+
+
+
+	float stimulusOlfactoryActivation( float distance ) {
+		// TODO: subject to testing and change, currently just a placeholder
+		return 1 / distance;
 	}
 
 

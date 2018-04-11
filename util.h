@@ -35,14 +35,17 @@ namespace util {
 	float getWrappedCoordinate( float, int );
 	float distanceInPeriodicBoundary( float, float, float, float, int, int );
 
-	float getAngleBetween( std::vector<float>, std::vector<float> );
+	float getAngleBetweenVectors( std::vector<float>, std::vector<float> );
+	float getStimulusAngle( ecosystem::Animat*, ecosystem::Organism* );
 	std::vector<float> getLineParameters( coordinate, float );
+
+	float stimulusVisualActivation( float, float );
+	float stimulusOlfactoryActivation( float );
+	bool compareStimuli( stimulus, stimulus );
 
 	int countNonZeroElements( Eigen::MatrixXf );
 
 	std::vector<float> getColourFromGradient( std::vector<float>, std::vector<float>, float );
-
-	bool compareStimuli( stimulus, stimulus );
 
 	std::string readFileContent( std::string );
 	std::map<std::string, float> readSimpleIni( std::string );

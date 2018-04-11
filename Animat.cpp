@@ -26,17 +26,18 @@ using util::stimulus;
 
 namespace ecosystem {
 
-Animat::Animat( std::string nm, float sz, float r_v, float a_v, float r_o, float max_v, float max_e, int max_a, float px, float py, float dir, float v, float e, Habitat* env ) :
+Animat::Animat( std::string nm, float sz, float max_v, float max_e, int max_a, float r_v, float e_a, float e_fov, float r_o, float px, float py, float dir, float v, float e, Habitat* env ) :
 	Organism( px, py ),
 	name( nm ),
 	size( sz ),
 	reach( 2*sz ),
-	visionRange( r_v ),
-	visionAngle( a_v ),
-	olfactoryRange( r_o ),
 	maxVelocity( max_v ),
 	maxEnergy( max_e ),
 	maxAge( max_a ),
+	visionRange( r_v ),
+	eyeOffsetAngle( e_a ),
+	eyeFieldOfView( e_fov ),
+	olfactoryRange( r_o ),
 	direction( dir ),
 	velocity( v ),
 	age( 0 ),
@@ -119,28 +120,37 @@ int Animat::eat( int indexX, int indexY ) {
 
 void Animat::turn( float rads ) {
 
-	direction += rads;
+	// can't turn more than 180 degrees in one turn
+	if ( rads > PI )
+		rads = PI;
+	if ( rads < -PI )
+		rads = -PI;
+
+	direction += rads + 2*PI; 	// ensure positive values by adding a full circle
 	direction = fmod( direction, 2*PI );
-	// when angles exceed +- PI, they should be mirrored across the x-axis
-	if ( direction > PI )
-		direction = -2*PI + direction;
-	if ( direction < -PI )
-		direction = 2*PI + direction;
+	// when angles exceed +- PI, they should be mirrored across the x-axis. Or should they?
+//	if ( direction > PI )
+//		direction = -2*PI + direction;
+//	if ( direction < -PI )
+//		direction = 2*PI + direction;
 
 }
 
 
 
-void Animat::senseOld() {
+void Animat::senseUpdate() {
 
-	int env_x = environment->sizeX;
-	int env_y = environment->sizeY;
+	// first clear previous sensations
+	forgetSensation();
+	forgetStimuli();
 
 	// create a range for quad tree query
-	int x_max = std::ceil( posX + visionRange );
-	int y_max = std::ceil( posY + visionRange );
-	int x_min = std::floor( posX - visionRange );
-	int y_min = std::floor( posY - visionRange );
+	int x_max = std::ceil( posX + visionRange ),
+		y_max = std::ceil( posY + visionRange ),
+		x_min = std::floor( posX - visionRange ),
+		y_min = std::floor( posY - visionRange ),
+		env_x = environment->sizeX,
+		env_y = environment->sizeY;
 
 	coordinate rng0( x_min, y_min );
 	coordinate rng1( x_max, y_max );
@@ -149,28 +159,99 @@ void Animat::senseOld() {
 	std::vector<Organism*> grasses = environment->grassTree.rangeQuery( rng0, rng1, lmts );
 	std::vector<Organism*> animats = environment->populationTree.rangeQuery( rng0, rng1, lmts );
 
-	// TODO: paralelization of this part
-	for ( auto gr : grasses ) {
-		float dist = environment->distanceBetweenOrganisms( this, gr );
-		if ( dist < visionRange )
-			foodStimulus( { gr, dist } );
+
+	// analyze nearby organisms
+	// TODO: parallelization of this part
+	for ( auto grs : grasses ) {
+		float dist = environment->distanceBetweenOrganisms( this, grs );
+		if ( dist < visionRange ) {
+			float angle = util::getStimulusAngle( this, grs );
+			nearbyFood.push_back( {grs, 0, dist, angle} );
+		}
 	}
-	for ( auto an : animats ) {
-		float dist = environment->distanceBetweenOrganisms( this, an );
-		if ( dist < visionRange )
-			kinStimulus( { an, dist } );		// TODO: separate for kin and foe, when foes are implemented
+	for ( auto ani : animats ) {
+		float dist = environment->distanceBetweenOrganisms( this, ani );
+		if ( dist < visionRange ) {
+			float angle = util::getStimulusAngle( this, ani );
+			nearbyKin.push_back( {ani, 1, dist, angle} );		// TODO: separate for kin and foe, when foes are implemented
+		}
 	}
 
-	// TODO: is this necessary or just overhead?
-	std::sort( sensedFood.begin(), sensedFood.end(), util::compareStimuli );
-	std::sort( sensedKin.begin(), sensedKin.end(), util::compareStimuli );
+	float foodActivation = 0,		// olfactory
+		kinActivation = 0,			// olfactory
+		foodActivation_l = 0,		// visual
+		kinActivation_l = 0,		// visual
+		foodActivation_r = 0,		// visual
+		kinActivation_r = 0;		// visual
 
-	// TODO: prepare sensations vector
+	int foodInReach = 0,
+		kinInReach = 0;
+
+	// angles
+	float minLimit_l = eyeOffsetAngle - eyeFieldOfView / 2.0,
+		maxLimit_l = eyeOffsetAngle + eyeFieldOfView / 2.0,
+		minLimit_r = -eyeOffsetAngle - eyeFieldOfView / 2.0,
+		maxLimit_r = -eyeOffsetAngle + eyeFieldOfView / 2.0;
+
+	// TODO: parallelization of this part
+	for ( auto fd : nearbyFood ) {
+
+		// visual input
+		if ( minLimit_l <= fd.angle && fd.angle <= maxLimit_l )
+			foodActivation_l += util::stimulusVisualActivation( fd.angle, fd.distance );
+		if ( minLimit_r <= fd.angle && fd.angle <= maxLimit_r )
+			foodActivation_r += util::stimulusVisualActivation( fd.angle, fd.distance );
+
+		// olfactory input
+		if ( fd.distance <= olfactoryRange )
+			foodActivation += util::stimulusOlfactoryActivation( fd.distance );
+
+		if ( fd.distance <= reach )
+			foodInReach = 1;
+
+	}
+
+	for ( auto an : nearbyKin ) {
+
+		// visual input
+		if ( minLimit_l <= an.angle && an.angle <= maxLimit_l )
+			kinActivation_l += util::stimulusVisualActivation( an.angle, an.distance );
+		if ( minLimit_r <= an.angle && an.angle <= maxLimit_r )
+			kinActivation_r += util::stimulusVisualActivation( an.angle, an.distance );
+
+		// olfactory input
+		if ( an.distance <= olfactoryRange )
+			kinActivation += util::stimulusOlfactoryActivation( an.distance );
+
+		if ( an.distance <= reach )
+			kinInReach = 1;
+
+		// tactile input
+		if ( an.distance <= size ) {
+			// TODO: find how to appropriately use velocity instead of acceleration... size ~~ mass and vel ~~ acc... just do vector product to calculate how intense the collision is
+		}
+
+	}
+
+	// add activations to sensation
+	sensation(cognition.concepts["s_foodNearby"]) += foodActivation;
+	sensation(cognition.concepts["s_kinNearby"]) += kinActivation;
+	sensation(cognition.concepts["s_foodLeft"]) += foodActivation_l;
+	sensation(cognition.concepts["s_foodRight"]) += foodActivation_r;
+	sensation(cognition.concepts["s_kinLeft"]) += kinActivation_l;
+	sensation(cognition.concepts["s_kinRight"]) += kinActivation_r;
+
+	// proprioceptive sensation
+	float energyActivation = energy / maxEnergy;
+	float comfortActivation = comfort / 100;
+	float fatigueActivation = fatigue / 100;
+
 
 }
 
 
 
+// in deprecation
 void Animat::senseFood() {
 
 	int env_x = environment->sizeX;
@@ -188,14 +269,14 @@ void Animat::senseFood() {
 
 	std::vector<Organism*> foods = environment->grassTree.rangeQuery( rng0, rng1, lmts );
 
-	for ( auto food : foods ) {
-		float dist = environment->distanceBetweenOrganisms( this, food );
-		if ( dist < visionRange )
-			foodStimulus( { food, dist } );
-	}
+//	for ( auto food : foods ) {
+//		float dist = environment->distanceBetweenOrganisms( this, food );
+//		if ( dist < visionRange )
+//			foodStimulus( { food, dist, 0.0 } );
+//	}
 
 	// TODO: is this necessary or just overhead?
-	std::sort( sensedFood.begin(), sensedFood.end(), util::compareStimuli );
+	std::sort( nearbyFood.begin(), nearbyFood.end(), util::compareStimuli );
 
 
 }
@@ -263,7 +344,7 @@ void Animat::reason() {
 
 //	cout << cognition.getState().transpose() << endl;
 
-	cognition.applySensations( sensations );
+	cognition.applySensations( sensation );
 
 //	cout << cognition.getState().transpose() << endl;
 
@@ -299,11 +380,11 @@ void Animat::sense() {
 	bool isFood = false;
 	float min_dist = visionRange;
 	float dAngle = 0;//util::randFromUnitInterval() - 0.5;		// if no food, angle is random somewhere ahead
-	if ( sensedFood.size() > 0 ) {
+	if ( nearbyFood.size() > 0 ) {
 
-		min_dist = sensedFood[0].distance;
-		int foodX = sensedFood[0].entity->posX;
-		int foodY = sensedFood[0].entity->posY;
+		min_dist = nearbyFood[0].distance;
+		int foodX = nearbyFood[0].entity->posX;
+		int foodY = nearbyFood[0].entity->posY;
 
 		float dX = foodX - posX;
 		float dY = foodY - posY;
@@ -327,7 +408,7 @@ void Animat::sense() {
 		// vector from animat to food
 		std::vector<float> g = {dX, dY};
 
-		dAngle = util::getAngleBetween( v, g );
+		dAngle = util::getAngleBetweenVectors( v, g );
 		// when angles are more or less to the left of the vertical, atan2 returns large values which
 		//  lead to turning in the wrong direction (over the x-axis at 0rad) rather than shorter turns
 		//  (over the x-axis at PIrad), thus those values are added to the opposite-signed full circle
@@ -357,37 +438,37 @@ void Animat::sense() {
 //	sensations(0) = 1 - 2*min_dist/senseRadius;
 
 	if ( min_dist <= reach )
-		sensations(0) = 1;
+		sensation(0) = 1;
 	else
-		sensations(0) = 0;
+		sensation(0) = 0;
 
 	double dv = min_dist / velocity;
 	if ( dv > 3*maxVelocity )
-		sensations(1) = -1;
+		sensation(1) = -1;
 	else
-		sensations(1) = 1 - 2 * (dv / (3 * maxVelocity));
+		sensation(1) = 1 - 2 * (dv / (3 * maxVelocity));
 
 
 	if ( dAngle > 0 )
-		sensations(2) = dAngle / PI;
+		sensation(2) = dAngle / PI;
 	else
-		sensations(2) = 0;
+		sensation(2) = 0;
 
 	if ( dAngle < 0 )
-		sensations(3) = -dAngle / PI;
+		sensation(3) = -dAngle / PI;
 	else
-		sensations(3) = 0;
+		sensation(3) = 0;
 
 //	sensations(3) = -1 + 2.0*energy / maxEnergy;
 
 	if ( isFood && fabs( dAngle ) < 0.05 )
-		sensations(4) = 1;
+		sensation(4) = 1;
 	else
-		sensations(4) = 0;
+		sensation(4) = 0;
 
 	// speed
 	float speed = -1 + 2 * ( velocity / maxVelocity );
-	sensations(5) = speed;
+	sensation(5) = speed;
 
 }
 
@@ -405,7 +486,7 @@ void Animat::react( VectorXf motor ) {
 
 	if ( motor(0) > 0.5 ) {
 		// if eat action is successful (some energy is gained), the animat can no longer act
-		if ( sensedFood.size() > 0 && sensedFood[0].distance <= reach && eat( sensedFood[0].entity->posX, sensedFood[0].entity->posY ) != 0 ) return;
+		if ( nearbyFood.size() > 0 && nearbyFood[0].distance <= reach && eat( nearbyFood[0].entity->posX, nearbyFood[0].entity->posY ) != 0 ) return;
 	}
 
 	// only one turn action at a time: 		<< TODO: maybe both? opposing forces....
@@ -541,27 +622,14 @@ void Animat::react( VectorXf motor ) {
 
 
 void Animat::forgetSensation() {
-	sensations = Eigen::VectorXf::Zero( cognition.getNInput() );
+	sensation = Eigen::VectorXf::Zero( cognition.getNInput() );
 }
-
-
-
-void Animat::foodStimulus( stimulus s ) {
-	sensedFood.push_back( s );
-}
-
-
-
-void Animat::kinStimulus( stimulus s ) {
-	sensedKin.push_back( s );
-}
-
 
 
 void Animat::forgetStimuli() {
-	sensedFood.clear();
-	sensedKin.clear();
-	sensedFoes.clear();
+	nearbyFood.clear();
+	nearbyKin.clear();
+	nearbyFoes.clear();
 }
 
 
@@ -589,7 +657,7 @@ void Animat::initFCM( int nConcepts, std::string filename_cs, std::string filena
 	cognition = FCM( nConcepts );
 	cognition.loadConceptsFromFile( filename_cs );
 	cognition.loadLinkMatrixFromFile( filename_fcm );
-	sensations = Eigen::VectorXf::Zero( cognition.getNInput() );
+	sensation = Eigen::VectorXf::Zero( cognition.getNInput() );
 }
 
 

@@ -1,0 +1,11 @@
+s_foodNearby
+s_foodLeft
+s_foodRight
+s_kinNearby
+s_kinLeft
+s_kinRight
+s_speed
+m_eat
+m_turnLeft
+m_turnRight
+m_adjustVelocity
