@@ -128,6 +128,7 @@ void Animat::turn( float rads ) {
 
 	direction += rads + 2*PI; 	// ensure positive values by adding a full circle
 	direction = fmod( direction, 2*PI );
+	// TODO: revise all changes to angles! This should work as intended!
 	// when angles exceed +- PI, they should be mirrored across the x-axis. Or should they?
 //	if ( direction > PI )
 //		direction = -2*PI + direction;
@@ -194,41 +195,44 @@ void Animat::senseUpdate() {
 		maxLimit_r = -eyeOffsetAngle + eyeFieldOfView / 2.0;
 
 	// TODO: parallelization of this part
-	for ( auto fd : nearbyFood ) {
+	for ( auto nfd : nearbyFood ) {
 
 		// visual input
-		if ( minLimit_l <= fd.angle && fd.angle <= maxLimit_l )
-			foodActivation_l += util::stimulusVisualActivation( fd.angle, fd.distance );
-		if ( minLimit_r <= fd.angle && fd.angle <= maxLimit_r )
-			foodActivation_r += util::stimulusVisualActivation( fd.angle, fd.distance );
+		if ( minLimit_l <= nfd.angle && nfd.angle <= maxLimit_l )
+			foodActivation_l += util::stimulusVisualActivation( nfd.angle, nfd.distance );
+		if ( minLimit_r <= nfd.angle && nfd.angle <= maxLimit_r )
+			foodActivation_r += util::stimulusVisualActivation( nfd.angle, nfd.distance );
 
 		// olfactory input
-		if ( fd.distance <= olfactoryRange )
-			foodActivation += util::stimulusOlfactoryActivation( fd.distance );
+		if ( nfd.distance <= olfactoryRange )
+			foodActivation += util::stimulusOlfactoryActivation( nfd.distance );
 
-		if ( fd.distance <= reach )
+		// affordance
+		if ( nfd.distance <= reach )
 			foodInReach = 1;
 
 	}
 
-	for ( auto an : nearbyKin ) {
+	for ( auto nkn : nearbyKin ) {
 
 		// visual input
-		if ( minLimit_l <= an.angle && an.angle <= maxLimit_l )
-			kinActivation_l += util::stimulusVisualActivation( an.angle, an.distance );
-		if ( minLimit_r <= an.angle && an.angle <= maxLimit_r )
-			kinActivation_r += util::stimulusVisualActivation( an.angle, an.distance );
+		if ( minLimit_l <= nkn.angle && nkn.angle <= maxLimit_l )
+			kinActivation_l += util::stimulusVisualActivation( nkn.angle, nkn.distance );
+		if ( minLimit_r <= nkn.angle && nkn.angle <= maxLimit_r )
+			kinActivation_r += util::stimulusVisualActivation( nkn.angle, nkn.distance );
 
 		// olfactory input
-		if ( an.distance <= olfactoryRange )
-			kinActivation += util::stimulusOlfactoryActivation( an.distance );
+		if ( nkn.distance <= olfactoryRange )
+			kinActivation += util::stimulusOlfactoryActivation( nkn.distance );
 
-		if ( an.distance <= reach )
+		// affordance
+		if ( nkn.distance <= reach )
 			kinInReach = 1;
 
 		// tactile input
-		if ( an.distance <= size ) {
-			// TODO: find how to appropriately use velocity instead of acceleration... size ~~ mass and vel ~~ acc... just do vector product to calculate how intense the collision is
+		Animat* an = dynamic_cast<Animat*>(nkn.entity);
+		if ( nkn.distance <= size + an->size ) {
+			float pain = (nkn.angle / PI) * velocity * an->velocity;
 		}
 
 	}
@@ -236,12 +240,14 @@ void Animat::senseUpdate() {
 	// add activations to sensation
 	sensation(cognition.concepts["s_foodNearby"]) += foodActivation;
 	sensation(cognition.concepts["s_kinNearby"]) += kinActivation;
+	sensation(cognition.concepts["s_foodInReach"]) += foodInReach;
+	sensation(cognition.concepts["s_kinInReach"]) += kinInReach;
 	sensation(cognition.concepts["s_foodLeft"]) += foodActivation_l;
 	sensation(cognition.concepts["s_foodRight"]) += foodActivation_r;
 	sensation(cognition.concepts["s_kinLeft"]) += kinActivation_l;
 	sensation(cognition.concepts["s_kinRight"]) += kinActivation_r;
 
-	// proprioceptive sensation
+	// proprioceptive sensation. BUT! this should be somehow done by a drive function...
 	float energyActivation = energy / maxEnergy;
 	float comfortActivation = comfort / 100;
 	float fatigueActivation = fatigue / 100;

@@ -1,7 +1,9 @@
 s_foodNearby
+s_foodInReach
 s_foodLeft
 s_foodRight
 s_kinNearby
+s_kinInReach
 s_kinLeft
 s_kinRight
 s_speed
