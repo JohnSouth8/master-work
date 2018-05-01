@@ -47,6 +47,9 @@ public:
 	int normalInt( float, float );
 	std::vector<int> normalIntsString( int, float, float );
 
+	bool bernoulliBoolean( float );
+	std::vector<bool> bernoulliBooleanString( int, float );
+
 
 };
 

@@ -20,6 +20,7 @@
 
 
 extern const float PI;
+extern util::Chance* const FATE;
 
 namespace ecosystem {
 
@@ -35,7 +36,8 @@ public:
 	// constructors
 //	Habitat( int, int, int, double, util::Chance* );
 //	Habitat( int, int, int, int, int, float, util::Chance* );
-	Habitat( std::string, util::Chance* );
+	Habitat( std::string );
+//	Habitat( std::string iniFileName );
 	virtual ~Habitat();
 
 	// member variables
@@ -44,7 +46,6 @@ public:
 	std::map<std::string, Animat*> population;
 //	Eigen::MatrixXf foodReserve;				// deprecated, temporarily here for compatibility reasons
 //	std::vector<Grass*> vegetation;				// Possibly not really required? All food is already in food tree.. But it's faster for graphx. Graphx don't reaaly count here
-	util::Chance* fate;
 
 	int foodEnergyVal;
 	std::vector<Meadow*> meadows;

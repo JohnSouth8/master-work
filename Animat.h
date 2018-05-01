@@ -105,6 +105,7 @@ public:
 //	void initFCM( int, std::vector<std::string>, Eigen::MatrixXd );
 	void initFCM( int, std::string, std::string );
 //	void setFCM( Eigen::MatrixXd );
+	void initFCMrandom( int, std::string );
 
 	void forgetSensation();
 	void forgetStimuli();
@@ -115,6 +116,7 @@ public:
 	// temp funcs
 	void senseUpdate();
 	void senseFood();
+	void senseOld();
 
 };
 

@@ -8,7 +8,12 @@
 #ifndef MEADOW_H_
 #define MEADOW_H_
 
+#include "Chance.h"
+
+
 extern const float PI;
+extern util::Chance* const FATE;
+
 
 namespace ecosystem {
 

@@ -8,6 +8,8 @@
 #include "FCM.h"
 
 #include "util.h"
+#include "Animat.h"
+#include "Habitat.h"
 
 
 using namespace std;
@@ -32,6 +34,7 @@ FCM::FCM( int nc ) {
 	L = MatrixXf::Zero( nConcepts, nConcepts );
 
 }
+
 
 
 FCM::~FCM() {
@@ -95,8 +98,26 @@ void FCM::loadLinkMatrixFromFile( string filename ) {
 		for ( int j = 0; j < nConcepts; ++j ){
 			if ( !strstream.eof() ) {
 				strstream >> buf;
-				L( i, j ) = atof( buf.c_str() );
+				L(i, j) = atof( buf.c_str() );
 			}
+		}
+	}
+
+}
+
+
+
+void FCM::setRandomLinkMatrix( float p_nonzero ) {
+
+	int nLinks = pow( nConcepts, 2 );
+	std::vector<bool> nonZeroPool = FATE->bernoulliBooleanString( nLinks, p_nonzero );
+
+	for ( int i = 0; i < nLinks; ++i ) {
+		if ( nonZeroPool[i] ) {
+			float link = FATE->uniformRandomUnitFloat();
+			int row = i / nConcepts;
+			int col = i % nConcepts;
+			L(row, col) = link;
 		}
 	}
 

@@ -34,7 +34,7 @@ namespace ecosystem {
 /* constructors */
 
 
-Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
+Habitat::Habitat( std::string iniFileName ) {
 
 	env_ini = util::readSimpleIni( iniFileName );
 
@@ -42,9 +42,6 @@ Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
 	sizeX = static_cast<int>( env_ini["size_x"] );
 	sizeY = static_cast<int>( env_ini["size_y"] );
 	foodEnergyVal = static_cast<int>( env_ini["food_energy"] );
-
-	// member structures
-	fate = ch;
 
 	// quad trees
 	unsigned int qt_bucketsize = static_cast<unsigned int>( env_ini["quadtree_bucketsize"] );
@@ -55,10 +52,10 @@ Habitat::Habitat( std::string iniFileName, util::Chance* ch ) {
 
 	// food emanators - meadows
 	int n_mdw = static_cast<int>( env_ini["n_meadows"] );
-	std::vector<int> xs = fate->nUniformRandomIntsFrom( n_mdw, 0, sizeX-1 );
-	std::vector<int> ys = fate->nUniformRandomIntsFrom( n_mdw, 0, sizeY-1 );
-	std::vector<int> rs = fate->normalIntsString( n_mdw, env_ini["radius_mean_meadows"], env_ini["radius_std_meadows"] );
-	std::vector<float> grs = fate->normalFloatsString( n_mdw, env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
+	std::vector<int> xs = FATE->nUniformRandomIntsFrom( n_mdw, 0, sizeX-1 );
+	std::vector<int> ys = FATE->nUniformRandomIntsFrom( n_mdw, 0, sizeY-1 );
+	std::vector<int> rs = FATE->normalIntsString( n_mdw, env_ini["radius_mean_meadows"], env_ini["radius_std_meadows"] );
+	std::vector<float> grs = FATE->normalFloatsString( n_mdw, env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
 
 	for ( int i = 0; i < n_mdw; ++i ) {
 		Meadow* m = new Meadow( xs[i], ys[i], rs[i], grs[i], this );
@@ -107,17 +104,17 @@ void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std:
 	float olfactory_range = ani_ini["olfactory_range"];
 	float std_degree = ani_ini["init_std_degree"];
 
-	std::vector<float> sizes = fate->normalFloatsString( n_animats, avg_size, avg_size*std_degree );
-	std::vector<float> max_vels = fate->normalFloatsString( n_animats, max_velocity, max_velocity*std_degree );
-	std::vector<int> max_ages = fate->normalIntsString( n_animats, max_age, max_age*std_degree );
-	std::vector<float> vis_ranges = fate->normalFloatsString( n_animats, vision_range, vision_range*std_degree );
-	std::vector<float> eye_angles = fate->normalFloatsString( n_animats, eye_offset_angle, eye_offset_angle*std_degree );
-	std::vector<float> eye_fovs = fate->normalFloatsString( n_animats, eye_vision_angle, eye_vision_angle*std_degree );
-	std::vector<float> olf_ranges = fate->normalFloatsString( n_animats, olfactory_range, olfactory_range*std_degree);
+	std::vector<float> sizes = FATE->normalFloatsString( n_animats, avg_size, avg_size*std_degree );
+	std::vector<float> max_vels = FATE->normalFloatsString( n_animats, max_velocity, max_velocity*std_degree );
+	std::vector<int> max_ages = FATE->normalIntsString( n_animats, max_age, max_age*std_degree );
+	std::vector<float> vis_ranges = FATE->normalFloatsString( n_animats, vision_range, vision_range*std_degree );
+	std::vector<float> eye_angles = FATE->normalFloatsString( n_animats, eye_offset_angle, eye_offset_angle*std_degree );
+	std::vector<float> eye_fovs = FATE->normalFloatsString( n_animats, eye_vision_angle, eye_vision_angle*std_degree );
+	std::vector<float> olf_ranges = FATE->normalFloatsString( n_animats, olfactory_range, olfactory_range*std_degree);
 
-	std::vector<float> pxs = fate->nUniformRandomFloatsFrom( n_animats, 0, sizeX );
-	std::vector<float> pys = fate->nUniformRandomFloatsFrom( n_animats, 0, sizeY );
-	std::vector<float> dirs = fate->nUniformRandomFloatsFrom( n_animats, -PI, PI );
+	std::vector<float> pxs = FATE->nUniformRandomFloatsFrom( n_animats, 0, sizeX );
+	std::vector<float> pys = FATE->nUniformRandomFloatsFrom( n_animats, 0, sizeY );
+	std::vector<float> dirs = FATE->nUniformRandomFloatsFrom( n_animats, -PI, PI );
 
 	for ( int i = 0; i < n_animats; ++i ) {
 
@@ -141,7 +138,8 @@ void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std:
 		);
 
 		int nConcepts = 10;	// TODO: make this number automatic
-		ani->initFCM( nConcepts, fcm_concepts_fileName, fcm_fileName );
+//		ani->initFCM( nConcepts, fcm_concepts_fileName, fcm_fileName );
+		ani->initFCMrandom( nConcepts, fcm_concepts_fileName );
 
 		population[name] = ani;
 
@@ -172,7 +170,7 @@ std::string Habitat::generateAnimatName() {
 	int charmin = 65, charmax = 90;
 	std::string sname;
 
-	std::vector<int> chars = fate->nUniformRandomIntsFrom( 10, charmin, charmax );
+	std::vector<int> chars = FATE->nUniformRandomIntsFrom( 10, charmin, charmax );
 
 	for ( int i = 0; i < 10; ++i )
 		sname += chars[i];
@@ -193,12 +191,12 @@ void Habitat::growMeadows() {
 	}
 
 	// fractional chance of a new meadow appearing
-	if ( fate->uniformRandomUnitFloat() < env_ini["probability_new_meadow"] ) {
+	if ( FATE->uniformRandomUnitFloat() < env_ini["probability_new_meadow"] ) {
 
-		int cx = fate->uniformRandomIntFrom( 0, sizeX-1 );
-		int cy = fate->uniformRandomIntFrom( 0, sizeY-1 );
-		int r = fate->normalInt( env_ini["radius_mean_meadow"], env_ini["radius_std_meadows"] );
-		float gr = fate->normalFloat( env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
+		int cx = FATE->uniformRandomIntFrom( 0, sizeX-1 );
+		int cy = FATE->uniformRandomIntFrom( 0, sizeY-1 );
+		int r = FATE->normalInt( env_ini["radius_mean_meadow"], env_ini["radius_std_meadows"] );
+		float gr = FATE->normalFloat( env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
 
 		Meadow* m = new Meadow( cx, cy, r, gr, this );
 		meadows.push_back( m );

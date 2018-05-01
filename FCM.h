@@ -12,7 +12,14 @@
 #include <Eigen/Dense>
 #include <vector>
 
+#include "Chance.h"
+
+
+extern util::Chance* const FATE;
+
 namespace ecosystem {
+
+class Animat;
 
 class FCM {
 public:
@@ -27,6 +34,7 @@ public:
 	int nInput;
 	int nInternal;
 	int nOutput;
+
 
 	// concepts' names
 	std::map<std::string, int> concepts;
@@ -43,6 +51,7 @@ public:
 	// member functions
 //	void setConcepts( std::vector<std::string> );
 	void loadConceptsFromFile( std::string );
+	void setRandomLinkMatrix( float );
 	void loadLinkMatrixFromFile( std::string );
 	void applySensations( Eigen::VectorXf );
 	Eigen::VectorXf getOutput();

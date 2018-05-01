@@ -16,6 +16,9 @@
 
 #include "structs.h"
 
+
+extern const float PI;
+
 namespace ecosystem {
 	class Organism;
 	class Animat;

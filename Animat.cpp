@@ -10,6 +10,8 @@
 #include <cmath>
 #include <iostream>
 #include <Eigen/Dense>
+
+
 #include "util.h"
 
 #include "Animat.h"
@@ -139,7 +141,7 @@ void Animat::turn( float rads ) {
 
 
 
-void Animat::senseUpdate() {
+void Animat::sense() {
 
 	// first clear previous sensations
 	forgetSensation();
@@ -183,7 +185,8 @@ void Animat::senseUpdate() {
 		foodActivation_l = 0,		// visual
 		kinActivation_l = 0,		// visual
 		foodActivation_r = 0,		// visual
-		kinActivation_r = 0;		// visual
+		kinActivation_r = 0,		// visual
+		pain = 0;					// proprioceptive
 
 	int foodInReach = 0,
 		kinInReach = 0;
@@ -232,25 +235,35 @@ void Animat::senseUpdate() {
 		// tactile input
 		Animat* an = dynamic_cast<Animat*>(nkn.entity);
 		if ( nkn.distance <= size + an->size ) {
-			float pain = (nkn.angle / PI) * velocity * an->velocity;
+			pain = (nkn.angle / PI) * velocity * an->velocity;
 		}
 
 	}
 
-	// add activations to sensation
-	sensation(cognition.concepts["s_foodNearby"]) += foodActivation;
-	sensation(cognition.concepts["s_kinNearby"]) += kinActivation;
-	sensation(cognition.concepts["s_foodInReach"]) += foodInReach;
-	sensation(cognition.concepts["s_kinInReach"]) += kinInReach;
-	sensation(cognition.concepts["s_foodLeft"]) += foodActivation_l;
-	sensation(cognition.concepts["s_foodRight"]) += foodActivation_r;
-	sensation(cognition.concepts["s_kinLeft"]) += kinActivation_l;
-	sensation(cognition.concepts["s_kinRight"]) += kinActivation_r;
+	comfort -= pain;
 
 	// proprioceptive sensation. BUT! this should be somehow done by a drive function...
+	float speedActivation = velocity / maxVelocity;
 	float energyActivation = energy / maxEnergy;
-	float comfortActivation = comfort / 100;
 	float fatigueActivation = fatigue / 100;
+	float comfortActivation = comfort / 100;
+
+
+
+
+	// add activations to sensation
+	sensation(cognition.concepts["s_foodNearby"]) 	+= foodActivation;
+	sensation(cognition.concepts["s_kinNearby"]) 	+= kinActivation;
+	sensation(cognition.concepts["s_foodInReach"])	+= foodInReach;
+	sensation(cognition.concepts["s_kinInReach"]) 	+= kinInReach;
+	sensation(cognition.concepts["s_foodLeft"]) 	+= foodActivation_l;
+	sensation(cognition.concepts["s_foodRight"]) 	+= foodActivation_r;
+	sensation(cognition.concepts["s_kinLeft"]) 		+= kinActivation_l;
+	sensation(cognition.concepts["s_kinRight"]) 	+= kinActivation_r;
+	sensation(cognition.concepts["s_speed"])		+= speedActivation;
+	sensation(cognition.concepts["s_energy"])		+= energyActivation;
+	sensation(cognition.concepts["s_fatigue"])		+= fatigueActivation;
+	sensation(cognition.concepts["s_comfort"])		+= comfortActivation;
 
 
 }
@@ -362,7 +375,7 @@ void Animat::reason() {
 
 
 
-void Animat::sense() {
+void Animat::senseOld() {
 
 	forgetStimuli();
 	senseFood();
@@ -495,15 +508,13 @@ void Animat::react( VectorXf motor ) {
 		if ( nearbyFood.size() > 0 && nearbyFood[0].distance <= reach && eat( nearbyFood[0].entity->posX, nearbyFood[0].entity->posY ) != 0 ) return;
 	}
 
-	// only one turn action at a time: 		<< TODO: maybe both? opposing forces....
-	if ( motor(1) > motor(2) && motor(1) > 0.15 ) {
-		float ta = (motor(1) - 0.15) / 0.75;
-		turn( ta );
-	}
-	else if ( motor(2) > motor(1) && motor(2) > 0.15 ) {
-		float ta = (motor(2) - 0.15) / 0.75;
-		turn( -ta );
-	}
+	// both turns add up, to represent opposing forces
+	float ta = 0;
+	if ( motor(1) > motor(2) && motor(1) > 0.15 )
+		ta += (motor(1) - 0.15) / 0.75;
+	if ( motor(2) > motor(1) && motor(2) > 0.15 )
+		ta -= (motor(2) - 0.15) / 0.75;
+	turn( ta );
 
 	// speed change
 	adjustVelocity( motor(3) );
@@ -668,9 +679,12 @@ void Animat::initFCM( int nConcepts, std::string filename_cs, std::string filena
 
 
 
-//void Animat::setFCM( MatrixXd newfcm ) {
-//	cognition.setFCMap( newfcm );
-//}
+void Animat::initFCMrandom( int nConcepts, std::string filename_cs ) {
+	cognition = FCM( nConcepts );
+	cognition.loadConceptsFromFile( filename_cs );
+	cognition.setRandomLinkMatrix( 0.6 );
+	sensation = Eigen::VectorXf::Zero( cognition.getNInput() );
+}
 
 
 

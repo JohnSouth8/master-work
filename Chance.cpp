@@ -119,11 +119,31 @@ int Chance::normalInt( float mean, float std ) {
 
 std::vector<int> Chance::normalIntsString( int n, float mean, float std ) {
 
-	std::vector<int> retvec( n );
+	std::vector<int> retvec ( n );
 	std::vector<float> fvec = normalFloatsString( n, mean, std );
 
 	for ( int i = 0; i < n; ++i )
 		retvec[i] = static_cast<int>( round( fvec[i] ) );
+
+	return retvec;
+
+}
+
+
+bool Chance::bernoulliBoolean( float p ) {
+
+	std::bernoulli_distribution dist ( p );
+	return dist( twister );
+
+}
+
+std::vector<bool> Chance::bernoulliBooleanString( int n, float p ) {
+
+	std::bernoulli_distribution dist ( p );
+	std::vector<bool> retvec ( n );
+
+	for ( int i = 0; i < n; ++i )
+		retvec[i] = dist( twister );
 
 	return retvec;
 
