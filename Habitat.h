@@ -74,6 +74,8 @@ public:
 	void growGrass( int, int );
 	float consumeFood( int, int );
 
+	bool breed( Animat*, Animat* );
+
 	void populateWorld( int, std::string, std::string, std::string );
 	void birth( Animat* );
 	void death( std::string );

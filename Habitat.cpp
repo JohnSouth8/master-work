@@ -263,6 +263,55 @@ float Habitat::consumeFood( int x, int y ){
 
 
 
+bool Habitat::breed( Animat* groom, Animat* bride ) {
+
+	if ( groom->genome.size() != bride->genome.size() )
+		return false;
+
+	int geneSize = groom->genome.size();
+	float mutationRate = env_ini["mutation_rate"];
+	float mutationEffectSTD = env_ini["mutation_std"];
+
+	float distance = distanceBetweenOrganisms( groom, bride );
+	if ( distance > groom->reach || distance > bride->reach )
+		return false;
+
+	std::vector<float> gene_offspring ( geneSize );
+
+	std::vector<bool> crossover = FATE->bernoulliBooleanString( geneSize, 0.5 );
+	std::vector<bool> mutations = FATE->bernoulliBooleanString( geneSize, mutationRate );
+	for ( int i = 0; i < geneSize; ++i ) {
+
+		float new_gene;
+
+		if ( crossover[i] )
+			new_gene = groom->genome[i];
+		else
+			new_gene = bride->genome[i];
+
+		if ( mutations[i] ) {
+			bool sign = FATE->bernoulliBoolean( 0.5 );
+			float value = FATE->normalFloat( new_gene, mutationEffectSTD );
+			new_gene = (-1 * (int)sign) * value;
+		}
+
+		gene_offspring[i] = new_gene;
+
+	}
+
+
+	std::string name_offspring = generateAnimatName();
+	Animat* offspring = new Animat( name_offspring, gene_offspring );
+	birth( offspring );
+
+
+
+	return false;
+
+}
+
+
+
 float Habitat::distanceBetweenOrganisms( ecosystem::Organism* org1, ecosystem::Organism* org2 ) {
 
 	return util::distanceInPeriodicBoundary( org1->posX, org1->posY, org2->posX, org2->posY, sizeX, sizeY );

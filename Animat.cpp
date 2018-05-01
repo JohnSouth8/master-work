@@ -28,6 +28,17 @@ using util::stimulus;
 
 namespace ecosystem {
 
+
+Animat::Animat( std::string nm, std::vector<float> gnm ) {
+
+	name = nm;
+
+	genome = gnm;
+
+	// TODO: expand on the genome
+
+}
+
 Animat::Animat( std::string nm, float sz, float max_v, float max_e, int max_a, float r_v, float e_a, float e_fov, float r_o, float px, float py, float dir, float v, float e ) :
 	Organism( px, py ),
 	name( nm ),
@@ -135,6 +146,42 @@ void Animat::turn( float rads ) {
 //		direction = -2*PI + direction;
 //	if ( direction < -PI )
 //		direction = 2*PI + direction;
+
+}
+
+
+
+void Animat::procreate() {
+
+	// look for appropriate mate
+	for ( auto mates : nearbyKin ) {
+		if ( mates.distance <= reach ) {
+			Animat* mate = dynamic_cast<Animat*>( mates.entity );
+			if ( court( mate ) )
+				HABITAT->breed( this, mate );
+		}
+	}
+
+
+}
+
+
+
+bool Animat::court( Animat* mate ) {
+
+	return mate->matingResponse();
+
+}
+
+
+
+bool Animat::matingResponse() {
+
+	// TODO: complicate with pickiness - depends on who courts
+	if ( cognition.state( cognition.concepts["m_mate"] ) > 0.5 )
+		return true;
+
+	return false;
 
 }
 

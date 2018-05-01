@@ -34,6 +34,7 @@ class Animat : public Organism {
 public:
 
 	// constructors
+	Animat( std::string, std::vector<float> );
 	Animat( std::string, float, float, float, int, float, float, float, float, float, float, float, float, float );
 	virtual ~Animat();
 
@@ -74,6 +75,9 @@ public:
 	// brain
 	FCM cognition;
 
+	// genes
+	std::vector<float> genome;
+
 
 
 
@@ -98,6 +102,9 @@ public:
 	void setVelocity( float );
 	void move();
 	void turn( float );
+	void procreate();
+	bool court( Animat* );
+	bool matingResponse();
 
 	// utility functions
 //	void initFCM( int );
@@ -109,6 +116,7 @@ public:
 
 	void forgetSensation();
 	void forgetStimuli();
+	void parseGenome();
 
 	void toString();
 

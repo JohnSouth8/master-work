@@ -18,3 +18,4 @@ m_eat
 m_turnLeft
 m_turnRight
 m_adjustVelocity
+m_mate
