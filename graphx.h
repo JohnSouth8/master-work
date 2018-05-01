@@ -31,7 +31,7 @@ namespace ecosystem {
 }
 
 
-//class ecosystem::Habitat;
+extern ecosystem::Habitat* const HABITAT;
 
 
 namespace gx {
@@ -51,7 +51,7 @@ namespace gx {
 
 	int switchContextToWindow( GLFWwindow* );
 
-	void loadHabitatIntoBuffer( ecosystem::Habitat*, GLuint, GLuint );
+	void loadHabitatIntoBuffer( GLuint, GLuint );
 	void loadFCMIntoBuffer( ecosystem::Animat*, GLuint, GLuint, GLuint );
 
 	void setBackground( float, float, float, float );
@@ -59,7 +59,7 @@ namespace gx {
 	void setupKeyboard( GLFWwindow*, GLFWkeyfun );
 
 	void drawingLoop();
-	void drawHabitat( GLFWwindow*, ecosystem::Habitat*, GLuint );
+	void drawHabitat( GLFWwindow*, GLuint );
 	void drawFCM( GLFWwindow*, ecosystem::Animat*, GLuint, GLuint, GLuint );
 
 	int waitForInput();

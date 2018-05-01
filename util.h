@@ -25,6 +25,7 @@ namespace ecosystem {
 	class Habitat;
 }
 
+
 namespace util {
 
 	Eigen::VectorXf sigmoid( Eigen::VectorXf );

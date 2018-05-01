@@ -34,8 +34,7 @@ class Habitat {
 public:
 
 	// constructors
-//	Habitat( int, int, int, double, util::Chance* );
-//	Habitat( int, int, int, int, int, float, util::Chance* );
+	Habitat();
 	Habitat( std::string );
 //	Habitat( std::string iniFileName );
 	virtual ~Habitat();

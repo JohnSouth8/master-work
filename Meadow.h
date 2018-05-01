@@ -9,10 +9,12 @@
 #define MEADOW_H_
 
 #include "Chance.h"
+#include "Habitat.h"
 
 
 extern const float PI;
 extern util::Chance* const FATE;
+extern ecosystem::Habitat* const HABITAT;
 
 
 namespace ecosystem {
@@ -23,14 +25,13 @@ class Habitat;
 class Meadow {
 public:
 
-	Meadow( int, int, int, float, Habitat* );
+	Meadow( int, int, int, float );
 	virtual ~Meadow();
 
 	int centerX;
 	int centerY;
 	int radius;
 	float growRate;
-	Habitat* environment;
 
 	int grow();
 

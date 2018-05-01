@@ -10,9 +10,11 @@
 
 
 #include "Chance.h"
+#include "Habitat.h"
 
 
 extern util::Chance* const FATE;
+extern ecosystem::Habitat* const HABITAT;
 extern const float PI;
 
 

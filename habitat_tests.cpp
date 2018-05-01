@@ -62,18 +62,16 @@ void keyActions( GLFWwindow* window, int key, int scancode, int action, int mods
 
 int test_random_animats() {
 
-	Habitat env( fname_environment_ini );
-
 	// init animats
-	env.populateWorld( 0, fname_animat_ini, fname_fcm_cs, fname_fcm );
-	int n_animats = env.population.size();
+	HABITAT->populateWorld( 0, fname_animat_ini, fname_fcm_cs, fname_fcm );
+	int n_animats = HABITAT->population.size();
 
 	// preinit the food
 	for ( int i = 0; i < 500; ++i ) {
-		env.growMeadows();
+		HABITAT->growMeadows();
 	}
 
-	string tracked_name = env.population.begin()->first;	// track 0-th animat for FCM display
+	string tracked_name = HABITAT->population.begin()->first;	// track 0-th animat for FCM display
 
 	// TODO: place the buffers stuff into gx module, here we only need initEnvironment() etc...
 	// initialize graphics output for simulation
@@ -91,8 +89,8 @@ int test_random_animats() {
 	GLuint vaoEnv = gx::createAndBindVAO();
 	GLuint dataBufEnv = gx::createVBO();
 	GLuint shaderProg1 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
-	gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
-	gx::drawHabitat( simWindow, &env, shaderProg1 );
+	gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv );
+	gx::drawHabitat( simWindow, shaderProg1 );
 
 
 	// create new window for fcm
@@ -104,7 +102,7 @@ int test_random_animats() {
 //	GLuint linesBufFCM = gx::createVBO();
 //	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
 
-//	Animat* tracked = env.population[tracked_name];
+//	Animat* tracked = HABITAT->population[tracked_name];
 //	gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
 //	gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
 
@@ -122,12 +120,12 @@ int test_random_animats() {
 //		if ( simulationProceed )
 		{
 
-			env.growMeadows();
+			HABITAT->growMeadows();
 
 			// cannot remove dead animats in their execution loop, hence they are added to obituary and buried later
 			vector<std::string> obituary;
 
-			for ( auto &nm_ani : env.population )
+			for ( auto &nm_ani : HABITAT->population )
 			{
 
 				Animat* ani = nm_ani.second;
@@ -144,20 +142,20 @@ int test_random_animats() {
 
 			if ( obituary.size() > 0 )
 				for ( auto obt : obituary ) // for ( it = obituary.begin(); it != obituary.end(); ++it )
-					env.death( obt );
+					HABITAT->death( obt );
 
 			// if tracked animat died, transfer tracking to the next animat if any
-			if ( env.population.find( tracked_name ) == env.population.end() && env.population.size() > 0 ) {
-				tracked_name = env.population.begin()->first;
-//				tracked = env.population[tracked_name];
+			if ( HABITAT->population.find( tracked_name ) == HABITAT->population.end() && HABITAT->population.size() > 0 ) {
+				tracked_name = HABITAT->population.begin()->first;
+//				tracked = HABITAT->population[tracked_name];
 			}
 
 
 			glfwMakeContextCurrent( simWindow );
-			gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
-			gx::drawHabitat( simWindow, &env, shaderProg1 );
+			gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv );
+			gx::drawHabitat( simWindow, shaderProg1 );
 
-//			if ( env.population.size() > 0 ) {
+//			if ( HABITAT->population.size() > 0 ) {
 //				glfwMakeContextCurrent( fcmWindow );
 //				gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
 //				gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
@@ -232,8 +230,8 @@ int test_foodGrowth_visual() {
 	GLuint vaoEnv = gx::createAndBindVAO();
 	GLuint dataBufEnv = gx::createVBO();
 	GLuint shaderProg1 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
-	gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
-	gx::drawHabitat( simWindow, &env, shaderProg1 );
+	gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv );
+	gx::drawHabitat( simWindow, shaderProg1 );
 
 
 	int time_counter = 0;
@@ -242,14 +240,14 @@ int test_foodGrowth_visual() {
 //		if ( simulationProceed )
 		{
 
-			env.growMeadows();
+			HABITAT->growMeadows();
 
-			gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
+			gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv );
 
 //			simulationProceed = false;
 		}
 
-		gx::drawHabitat( simWindow, &env, shaderProg1 );
+		gx::drawHabitat( simWindow, shaderProg1 );
 		time_counter++;
 
 		glfwPollEvents();
@@ -280,27 +278,27 @@ int test() {
 	Habitat env( fname_environment_ini );
 
 	// init animats
-	env.populateWorld( 0, fname_animat_ini, fname_fcm_cs, fname_fcm );
+	HABITAT->populateWorld( 0, fname_animat_ini, fname_fcm_cs, fname_fcm );
 
 	// preinit the food
 	for ( int i = 0; i < 500; ++i ) {
-		env.growMeadows();
+		HABITAT->growMeadows();
 	}
 
 	int time_counter = 0;
-	int n_animats = env.population.size();
+	int n_animats = HABITAT->population.size();
 	int n_deaths = 0;
 	// while at least one animat is alive
 	while ( n_deaths < n_animats )
 	{
 
 
-		env.growMeadows();
+		HABITAT->growMeadows();
 
 		// cannot remove dead animats in their execution loop, hence they are added to obituary and buried later
 		vector<std::string> obituary;
 
-		for ( auto &nm_ani : env.population )
+		for ( auto &nm_ani : HABITAT->population )
 		{
 			Animat* ani = nm_ani.second;
 			ani->reason();
@@ -317,7 +315,7 @@ int test() {
 		// remove (bury) dead animats
 		if ( obituary.size() > 0 )
 			for ( auto &name : obituary )
-				env.death( name );
+				HABITAT->death( name );
 
 		++time_counter;
 
@@ -341,15 +339,15 @@ int test_with_visuals() {
 	Habitat env( fname_environment_ini );
 
 	// init animats
-	env.populateWorld( 0, fname_animat_ini, fname_fcm_cs, fname_fcm );
-	int n_animats = env.population.size();
+	HABITAT->populateWorld( 0, fname_animat_ini, fname_fcm_cs, fname_fcm );
+	int n_animats = HABITAT->population.size();
 
 	// preinit the food
 	for ( int i = 0; i < 500; ++i ) {
-		env.growMeadows();
+		HABITAT->growMeadows();
 	}
 
-	string tracked_name = env.population.begin()->first;	// track 0-th animat for FCM display
+	string tracked_name = HABITAT->population.begin()->first;	// track 0-th animat for FCM display
 
 	// TODO: place the buffers stuff into gx module, here we only need initEnvironment() etc...
 	// initialize graphics output for simulation
@@ -367,8 +365,8 @@ int test_with_visuals() {
 	GLuint vaoEnv = gx::createAndBindVAO();
 	GLuint dataBufEnv = gx::createVBO();
 	GLuint shaderProg1 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
-	gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
-	gx::drawHabitat( simWindow, &env, shaderProg1 );
+	gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv );
+	gx::drawHabitat( simWindow, shaderProg1 );
 
 
 	// create new window for fcm
@@ -380,7 +378,7 @@ int test_with_visuals() {
 	GLuint linesBufFCM = gx::createVBO();
 	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
 
-	Animat* tracked = env.population[tracked_name];
+	Animat* tracked = HABITAT->population[tracked_name];
 	gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
 	gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
 
@@ -396,12 +394,12 @@ int test_with_visuals() {
 //		if ( simulationProceed )
 		{
 
-			env.growMeadows();
+			HABITAT->growMeadows();
 
 			// cannot remove dead animats in their execution loop, hence they are added to obituary and buried later
 			vector<std::string> obituary;
 
-			for ( auto &nm_ani : env.population )
+			for ( auto &nm_ani : HABITAT->population )
 			{
 
 				Animat* ani = nm_ani.second;
@@ -418,20 +416,20 @@ int test_with_visuals() {
 
 			if ( obituary.size() > 0 )
 				for ( auto obt : obituary ) // for ( it = obituary.begin(); it != obituary.end(); ++it )
-					env.death( obt );
+					HABITAT->death( obt );
 
 			// if tracked animat died, transfer tracking to the next animat if any
-			if ( env.population.find( tracked_name ) == env.population.end() && env.population.size() > 0 ) {
-				tracked_name = env.population.begin()->first;
-				tracked = env.population[tracked_name];
+			if ( HABITAT->population.find( tracked_name ) == HABITAT->population.end() && HABITAT->population.size() > 0 ) {
+				tracked_name = HABITAT->population.begin()->first;
+				tracked = HABITAT->population[tracked_name];
 			}
 
 
 			glfwMakeContextCurrent( simWindow );
-			gx::loadHabitatIntoBuffer( &env, vaoEnv, dataBufEnv );
-			gx::drawHabitat( simWindow, &env, shaderProg1 );
+			gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv );
+			gx::drawHabitat( simWindow, shaderProg1 );
 
-			if ( env.population.size() > 0 ) {
+			if ( HABITAT->population.size() > 0 ) {
 				glfwMakeContextCurrent( fcmWindow );
 				gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
 				gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );

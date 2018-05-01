@@ -28,7 +28,7 @@ using util::stimulus;
 
 namespace ecosystem {
 
-Animat::Animat( std::string nm, float sz, float max_v, float max_e, int max_a, float r_v, float e_a, float e_fov, float r_o, float px, float py, float dir, float v, float e, Habitat* env ) :
+Animat::Animat( std::string nm, float sz, float max_v, float max_e, int max_a, float r_v, float e_a, float e_fov, float r_o, float px, float py, float dir, float v, float e ) :
 	Organism( px, py ),
 	name( nm ),
 	size( sz ),
@@ -45,8 +45,7 @@ Animat::Animat( std::string nm, float sz, float max_v, float max_e, int max_a, f
 	age( 0 ),
 	energy( e ),
 	comfort( 50 ),
-	fatigue( 0 ),
-	environment( env )
+	fatigue( 0 )
 {}
 
 Animat::~Animat() {
@@ -92,8 +91,8 @@ void Animat::move() {
 	newX = posX + deltaX;
 	newY = posY + deltaY;
 
-	posX = util::getWrappedCoordinate( newX, environment->sizeX );
-	posY = util::getWrappedCoordinate( newY, environment->sizeY );
+	posX = util::getWrappedCoordinate( newX, HABITAT->sizeX );
+	posY = util::getWrappedCoordinate( newY, HABITAT->sizeY );
 	energy -= 1;	// TODO: energy loss should be proportional to action (so not int? or rather some linguistic classes i.e. 'some', 'a lot of' energy lost)
 
 }
@@ -104,7 +103,7 @@ int Animat::eat() {
 	int indexX = floor( posX );
 	int indexY = floor( posY );
 
-	float deltaE = environment->consumeFood( indexX, indexY );
+	float deltaE = HABITAT->consumeFood( indexX, indexY );
 	energy += deltaE;
 	return deltaE;
 
@@ -113,7 +112,7 @@ int Animat::eat() {
 
 int Animat::eat( int indexX, int indexY ) {
 
-	float deltaE = environment->consumeFood( indexX, indexY );
+	float deltaE = HABITAT->consumeFood( indexX, indexY );
 	energy += deltaE;
 	return deltaE;
 
@@ -152,28 +151,28 @@ void Animat::sense() {
 		y_max = std::ceil( posY + visionRange ),
 		x_min = std::floor( posX - visionRange ),
 		y_min = std::floor( posY - visionRange ),
-		env_x = environment->sizeX,
-		env_y = environment->sizeY;
+		env_x = HABITAT->sizeX,
+		env_y = HABITAT->sizeY;
 
 	coordinate rng0( x_min, y_min );
 	coordinate rng1( x_max, y_max );
 	coordinate lmts( env_x, env_y );
 
-	std::vector<Organism*> grasses = environment->grassTree.rangeQuery( rng0, rng1, lmts );
-	std::vector<Organism*> animats = environment->populationTree.rangeQuery( rng0, rng1, lmts );
+	std::vector<Organism*> grasses = HABITAT->grassTree.rangeQuery( rng0, rng1, lmts );
+	std::vector<Organism*> animats = HABITAT->populationTree.rangeQuery( rng0, rng1, lmts );
 
 
 	// analyze nearby organisms
 	// TODO: parallelization of this part
 	for ( auto grs : grasses ) {
-		float dist = environment->distanceBetweenOrganisms( this, grs );
+		float dist = HABITAT->distanceBetweenOrganisms( this, grs );
 		if ( dist < visionRange ) {
 			float angle = util::getStimulusAngle( this, grs );
 			nearbyFood.push_back( {grs, 0, dist, angle} );
 		}
 	}
 	for ( auto ani : animats ) {
-		float dist = environment->distanceBetweenOrganisms( this, ani );
+		float dist = HABITAT->distanceBetweenOrganisms( this, ani );
 		if ( dist < visionRange ) {
 			float angle = util::getStimulusAngle( this, ani );
 			nearbyKin.push_back( {ani, 1, dist, angle} );		// TODO: separate for kin and foe, when foes are implemented
@@ -273,8 +272,8 @@ void Animat::sense() {
 // in deprecation
 void Animat::senseFood() {
 
-	int env_x = environment->sizeX;
-	int env_y = environment->sizeY;
+	int env_x = HABITAT->sizeX;
+	int env_y = HABITAT->sizeY;
 
 	// create a range for quad tree query
 	int x_max = std::ceil( posX + visionRange );
@@ -286,7 +285,7 @@ void Animat::senseFood() {
 	coordinate rng1( x_max, y_max );
 	coordinate lmts( env_x, env_y );
 
-	std::vector<Organism*> foods = environment->grassTree.rangeQuery( rng0, rng1, lmts );
+	std::vector<Organism*> foods = HABITAT->grassTree.rangeQuery( rng0, rng1, lmts );
 
 //	for ( auto food : foods ) {
 //		float dist = environment->distanceBetweenOrganisms( this, food );
@@ -411,15 +410,15 @@ void Animat::senseOld() {
 		// if food is over the edge
 		if ( dX > visionRange ) {
 			if ( foodX > posX )
-				dX = foodX - (posX + environment->sizeX);
+				dX = foodX - (posX + HABITAT->sizeX);
 			else
-				dX = (foodX + environment->sizeX) - posX;
+				dX = (foodX + HABITAT->sizeX) - posX;
 		}
 		if ( dY > visionRange ) {
 			if ( foodY > posY )
-				dY = foodY - (posY + environment->sizeY);
+				dY = foodY - (posY + HABITAT->sizeY);
 			else
-				dY = (foodY + environment->sizeY) - posY;
+				dY = (foodY + HABITAT->sizeY) - posY;
 		}
 
 		// unit vector in animat's direction TODO: this is actually redundant, we already have angle in direction

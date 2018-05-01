@@ -20,6 +20,8 @@
 
 
 extern const float PI;
+extern util::Chance* const FATE;
+extern ecosystem::Habitat* const HABITAT;
 
 
 namespace ecosystem {
@@ -32,7 +34,7 @@ class Animat : public Organism {
 public:
 
 	// constructors
-	Animat( std::string, float, float, float, int, float, float, float, float, float, float, float, float, float, Habitat* );
+	Animat( std::string, float, float, float, int, float, float, float, float, float, float, float, float, float );
 	virtual ~Animat();
 
 
@@ -72,8 +74,6 @@ public:
 	// brain
 	FCM cognition;
 
-	// environment reference
-	Habitat* environment;
 
 
 

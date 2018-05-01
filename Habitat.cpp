@@ -32,7 +32,35 @@ using util::QuadTree;
 namespace ecosystem {
 
 /* constructors */
+Habitat::Habitat() {
 
+	env_ini = util::readSimpleIni( "environment.ini" );
+
+	// basic params
+	sizeX = static_cast<int>( env_ini["size_x"] );
+	sizeY = static_cast<int>( env_ini["size_y"] );
+	foodEnergyVal = static_cast<int>( env_ini["food_energy"] );
+
+	// quad trees
+	unsigned int qt_bucketsize = static_cast<unsigned int>( env_ini["quadtree_bucketsize"] );
+	coordinate env0( 0, 0 );
+	coordinate env1( sizeX, sizeY );
+	grassTree = QuadTree( qt_bucketsize, env0, env1 );
+	populationTree = QuadTree( qt_bucketsize, env0, env1 );
+
+	// food emanators - meadows
+	int n_mdw = static_cast<int>( env_ini["n_meadows"] );
+	std::vector<int> xs = FATE->nUniformRandomIntsFrom( n_mdw, 0, sizeX-1 );
+	std::vector<int> ys = FATE->nUniformRandomIntsFrom( n_mdw, 0, sizeY-1 );
+	std::vector<int> rs = FATE->normalIntsString( n_mdw, env_ini["radius_mean_meadows"], env_ini["radius_std_meadows"] );
+	std::vector<float> grs = FATE->normalFloatsString( n_mdw, env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
+
+	for ( int i = 0; i < n_mdw; ++i ) {
+		Meadow* m = new Meadow( xs[i], ys[i], rs[i], grs[i] );
+		meadows.push_back( m );
+	}
+
+}
 
 Habitat::Habitat( std::string iniFileName ) {
 
@@ -58,13 +86,12 @@ Habitat::Habitat( std::string iniFileName ) {
 	std::vector<float> grs = FATE->normalFloatsString( n_mdw, env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
 
 	for ( int i = 0; i < n_mdw; ++i ) {
-		Meadow* m = new Meadow( xs[i], ys[i], rs[i], grs[i], this );
+		Meadow* m = new Meadow( xs[i], ys[i], rs[i], grs[i] );
 		meadows.push_back( m );
 	}
 
 
 }
-
 
 /* destructor */
 
@@ -133,8 +160,7 @@ void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std:
 			pys[i],
 			dirs[i],
 			0,
-			start_energy,
-			this
+			start_energy
 		);
 
 		int nConcepts = 10;	// TODO: make this number automatic
@@ -198,7 +224,7 @@ void Habitat::growMeadows() {
 		int r = FATE->normalInt( env_ini["radius_mean_meadow"], env_ini["radius_std_meadows"] );
 		float gr = FATE->normalFloat( env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
 
-		Meadow* m = new Meadow( cx, cy, r, gr, this );
+		Meadow* m = new Meadow( cx, cy, r, gr );
 		meadows.push_back( m );
 
 	}

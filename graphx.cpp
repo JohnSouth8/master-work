@@ -55,7 +55,7 @@ namespace gx {
 
 
 	// draws one step of simulation
-	void drawHabitat( GLFWwindow* context, Habitat* env, GLuint shaderProg ) {
+	void drawHabitat( GLFWwindow* context, GLuint shaderProg ) {
 
 		// in case it is not so
 		glfwMakeContextCurrent( context );
@@ -74,8 +74,8 @@ namespace gx {
 		glEnableVertexAttribArray( colAttr );
 		glVertexAttribPointer( colAttr, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)) );
 
-		int n_food = env->grassTree.count();
-		int n_anis = env->population.size();
+		int n_food = HABITAT->grassTree.count();
+		int n_anis = HABITAT->population.size();
 //		int n_points = n_food + n_anis;
 
 		glPointSize( 1.0f );
@@ -165,15 +165,15 @@ namespace gx {
 
 
 
-	void loadHabitatIntoBuffer( Habitat* environment, GLuint vao, GLuint vbo ) {
+	void loadHabitatIntoBuffer( GLuint vao, GLuint vbo ) {
 
 		glBindVertexArray( vao );
 
-		int n_data_food = environment->grassTree.count(),
-			n_data_pop = environment->population.size(),
+		int n_data_food = HABITAT->grassTree.count(),
+			n_data_pop = HABITAT->population.size(),
 			n_data = n_data_food + n_data_pop,
-			env_w = environment->sizeX,
-			env_h = environment->sizeY,
+			env_w = HABITAT->sizeX,
+			env_h = HABITAT->sizeY,
 			counter = 0;
 
 		util::coordinate rng0 ( 0, 0 );
@@ -183,7 +183,7 @@ namespace gx {
 
 		// TODO
 		// add green food points
-		std::vector<Organism*> grass = environment->grassTree.rangeQuery( rng0, lmts, lmts );
+		std::vector<Organism*> grass = HABITAT->grassTree.rangeQuery( rng0, lmts, lmts );
 		for ( auto herb : grass ) {
 
 			int px = static_cast<int>( herb->posX );
@@ -221,12 +221,12 @@ namespace gx {
 
 		// add yellow/red animat points
 		std::map<std::string, Animat*>::iterator it;
-		for ( it = environment->population.begin(); it != environment->population.end(); ++it ) {
+		for ( it = HABITAT->population.begin(); it != HABITAT->population.end(); ++it ) {
 
 			points_buffer_data[counter*5 + 0] = float( 2.0f * it->second->posX / float(env_w) - 1 );	// X
 			points_buffer_data[counter*5 + 1] = float( 2.0f * it->second->posY / float(env_h) - 1 );	// Y
 			points_buffer_data[counter*5 + 2] = 0.95f;													// R
-			if ( it == environment->population.begin() )
+			if ( it == HABITAT->population.begin() )
 				points_buffer_data[counter*5 + 3] = 0.95f;												// G
 			else
 				points_buffer_data[counter*5 + 3] = 0.0f;												// G

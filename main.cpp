@@ -24,9 +24,8 @@
 #include "Chance.h"
 #include "QuadTree.h"
 #include "graphx.h"
+
 #include "constants.h"
-
-
 
 GLFWwindow* simWindow;
 GLFWwindow* fcmWindow;
@@ -66,7 +65,6 @@ int main( void ) {
 
 	// init timer
 	auto t_start = chrono::steady_clock::now();
-
 
 
 	// TODO: nicely put stuff together - happening and rendering

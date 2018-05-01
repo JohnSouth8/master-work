@@ -118,8 +118,8 @@ namespace util {
 
 	float getStimulusAngle( ecosystem::Animat* agent, ecosystem::Organism* target ) {
 
-		float maxX = agent->environment->sizeX;
-		float maxY = agent->environment->sizeY;
+		float maxX = HABITAT->sizeX;
+		float maxY = HABITAT->sizeY;
 		float dX = target->posX - agent->posX;
 		float dY = target->posY - agent->posY;
 
