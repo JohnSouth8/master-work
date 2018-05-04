@@ -20,7 +20,8 @@
 
 
 extern const float PI;
-extern util::Chance* const FATE;
+extern util::Chance* const RNGESUS;
+extern const float STD_DEGREE;
 extern ecosystem::Habitat* const HABITAT;
 
 
@@ -34,7 +35,7 @@ class Animat : public Organism {
 public:
 
 	// constructors
-	Animat( std::string, std::vector<float> );
+	Animat( std::string, std::vector<float>, float, float, float );
 	Animat( std::string, float, float, float, int, float, float, float, float, float, float, float, float, float );
 	virtual ~Animat();
 
@@ -45,8 +46,8 @@ public:
 	std::string name;
 	float size;
 	float reach;
-	float maxVelocity;
 	float maxEnergy;
+	float maxVelocity;
 	int maxAge;
 
 	// senses
@@ -107,16 +108,11 @@ public:
 	bool matingResponse();
 
 	// utility functions
-//	void initFCM( int );
-//	void initFCM( int, std::vector<std::string> );
-//	void initFCM( int, std::vector<std::string>, Eigen::MatrixXd );
-	void initFCM( int, std::string, std::string );
-//	void setFCM( Eigen::MatrixXd );
-	void initFCMrandom( int, std::string );
 
 	void forgetSensation();
 	void forgetStimuli();
-	void parseGenome();
+
+	void formPhenotype();
 
 	void toString();
 

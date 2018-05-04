@@ -47,13 +47,6 @@ using util::coordinate;
 
 
 
-string fname_environment_ini = "environment.ini";
-string fname_animat_ini = "animat.ini";
-string fname_fcm_cs = "fcm_0.2.concepts.txt";
-string fname_fcm = "fcm_0.2.txt";
-
-
-
 #include "habitat_tests.h"
 #include "debug_tests.h"
 
@@ -72,8 +65,9 @@ int main( void ) {
 //	test_quadTreeAnimats();
 //	test_quadTreeFood();
 //	test_with_visuals();
-	test_random_animats();
+//	test_random_animats();
 //	test_angles();
+	test();
 
 
 
@@ -83,7 +77,7 @@ int main( void ) {
 	cout << endl << endl << "Runtime: " << elapsed.count() << " milliseconds" << endl;
 
 
-	delete FATE;
+	delete RNGESUS;
 	return 0;
 
 }

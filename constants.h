@@ -9,17 +9,27 @@
 #define CONSTANTS_H_
 
 
-
+#include <string>
 #include <random>
 #include "Chance.h"
 #include "Habitat.h"
 
 
+// math
 extern const float PI;
-extern util::Chance* const FATE;
+
+// filenames
+extern const std::string ENVIRONMENT_INI;
+extern const std::string ANIMAT_INI;
+extern const std::string FCM_CONCEPTS_FILE;
+extern const std::string FCM_MASK_FILE;
+
+// randomness
+extern util::Chance* const RNGESUS;
+extern const float STD_DEGREE;
+
+// world
 extern ecosystem::Habitat* const HABITAT;
-
-
 
 
 

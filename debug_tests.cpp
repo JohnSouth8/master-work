@@ -73,29 +73,29 @@ int test_randomness() {
 
 	for ( int i = 0; i < n_rolls; i++ ) {
 
-		bool randbool = FATE->randomBoolean();
+		bool randbool = RNGESUS->randomBoolean();
 		++testBool[randbool];
 
-		int randint = FATE->uniformRandomIntFrom( 0, 100 );
+		int randint = RNGESUS->uniformRandomIntFrom( 0, 100 );
 		index = (int) floor( randint / 10 );
 		++testInt[index];
 
-		float randf = FATE->uniformRandomUnitFloat();
+		float randf = RNGESUS->uniformRandomUnitFloat();
 		index = (int) floor( randf * 10 );
 		++testFloat[index];
 
-		float randlin = FATE->linearDescRandomFloatFrom( 0.0, 10.0 );
+		float randlin = RNGESUS->linearDescRandomFloatFrom( 0.0, 10.0 );
 		index = (int) floor( randlin );
 		++testLinear[index];
 
-		float randGauss = FATE->normalFloat( 10, 0.1 );
+		float randGauss = RNGESUS->normalFloat( 10, 0.1 );
 		if ( randGauss > 0.0 && randGauss < 20.0 ) {
 			index = (int) floor( randGauss / 2 );
 			++testNormal[index];
 		}
 	}
 
-	vector<float> rands = FATE->normalFloatsString( n_rolls, 5.0, 3.0 );
+	vector<float> rands = RNGESUS->normalFloatsString( n_rolls, 5.0, 3.0 );
 	for ( auto rnd : rands ) {
 		if ( rnd > 0.0 && rnd < 10.0 ) {
 			index = (int) floor( rnd );
@@ -155,10 +155,10 @@ int test_quadTreeAnimats() {
 
 	long test_results[n_caps][n_tests][2];
 
-	Habitat env ( fname_environment_ini );
+	Habitat env ( ENVIRONMENT_INI );
 
 	// init animats
-	env.populateWorld( n_animats, fname_animat_ini, fname_fcm_cs, fname_fcm );
+	env.populateWorld( n_animats );
 
 
 	for ( int i = 0; i < n_caps; ++i ) {
@@ -325,7 +325,7 @@ int test_quadTreeFood() {
 
 	auto start = chrono::steady_clock::now();
 
-	Habitat env( fname_environment_ini );
+	Habitat env( ENVIRONMENT_INI );
 
 	// preinit the food
 	for ( int i = 0; i < 5000; ++i ) {
@@ -354,8 +354,8 @@ int test_quadTreeFood() {
 	int cnt = 0;
 	float r = 30;
 	float r_sq = pow( r, 2 );
-	float rx = FATE->uniformRandomFloatFrom( 1+r, env.sizeX-1-r );
-	float ry = FATE->uniformRandomFloatFrom( 1+r, env.sizeY-1-r );
+	float rx = RNGESUS->uniformRandomFloatFrom( 1+r, env.sizeX-1-r );
+	float ry = RNGESUS->uniformRandomFloatFrom( 1+r, env.sizeY-1-r );
 
 	util::coordinate rng0 ( rx - r, ry - r );
 	util::coordinate rng1 ( rx + r, ry + r );
@@ -418,8 +418,8 @@ int test_angles() {
 
 	int n_tests = 50;
 
-	vector<float> rxs = FATE->nUniformRandomFloatsFrom( n_tests, 0, 2 );
-	vector<float> rys = FATE->nUniformRandomFloatsFrom( n_tests, 0, 2 );
+	vector<float> rxs = RNGESUS->nUniformRandomFloatsFrom( n_tests, 0, 2 );
+	vector<float> rys = RNGESUS->nUniformRandomFloatsFrom( n_tests, 0, 2 );
 //	vector<float> ccs = FATE->nUniformRandomFloatsFrom( n_tests / 2, 0, PI );
 //	vector<float> cls = FATE->nUniformRandomFloatsFrom( n_tests / 2, -PI, 0 );
 //	vector<float> ras;

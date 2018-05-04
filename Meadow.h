@@ -13,7 +13,7 @@
 
 
 extern const float PI;
-extern util::Chance* const FATE;
+extern util::Chance* const RNGESUS;
 extern ecosystem::Habitat* const HABITAT;
 
 

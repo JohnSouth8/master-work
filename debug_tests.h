@@ -13,9 +13,10 @@
 #include "Habitat.h"
 
 
-extern util::Chance* const FATE;
-extern ecosystem::Habitat* const HABITAT;
 extern const float PI;
+extern util::Chance* const RNGESUS;
+extern ecosystem::Habitat* const HABITAT;
+extern const std::string ENVIRONMENT_INI;
 
 
 namespace ecosystem {

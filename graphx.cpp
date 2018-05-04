@@ -249,8 +249,8 @@ namespace gx {
 		glBindVertexArray( vao );
 
 		int n_concepts = ani->cognition.nConcepts;
-		int n_conceptsInLayer[3] = {ani->cognition.nInput, ani->cognition.nInternal, ani->cognition.nOutput};
-		std::vector<int> concepts_layers[3] = {ani->cognition.inputConceptIdxs, ani->cognition.internalConceptIdxs, ani->cognition.outputConceptIdxs};
+		int n_conceptsInLayer[3] = {ani->cognition.nSensory, ani->cognition.nMental, ani->cognition.nMotor};
+		std::vector<int> concepts_layers[3] = {ani->cognition.sensoryConceptIdxs, ani->cognition.mentalConceptIdxs, ani->cognition.motorConceptIdxs};
 
 		int n_point_data = n_concepts * 5;
 		int n_line_data = util::countNonZeroElements( ani->cognition.L ) * 10;		// 2 vertices per line

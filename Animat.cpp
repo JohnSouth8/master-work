@@ -22,6 +22,7 @@
 
 using Eigen::VectorXf;
 using Eigen::MatrixXf;
+using std::string;
 
 using util::coordinate;
 using util::stimulus;
@@ -29,23 +30,32 @@ using util::stimulus;
 namespace ecosystem {
 
 
-Animat::Animat( std::string nm, std::vector<float> gnm ) {
+Animat::Animat( string nm, std::vector<float> gnm, float px, float py, float dir ) {
+
+	Organism( px, py );
 
 	name = nm;
-
 	genome = gnm;
+	cognition = FCM();
+	sensation = Eigen::VectorXf::Zero( cognition.nSensory );
 
-	// TODO: expand on the genome
+	formPhenotype();
+	age = 0;
+
+	direction = dir;
+	velocity = 0;
+
 
 }
 
-Animat::Animat( std::string nm, float sz, float max_v, float max_e, int max_a, float r_v, float e_a, float e_fov, float r_o, float px, float py, float dir, float v, float e ) :
+// deprecated
+Animat::Animat( string nm, float sz, float max_v, float max_e, int max_a, float r_v, float e_a, float e_fov, float r_o, float px, float py, float dir, float v, float e ) :
 	Organism( px, py ),
 	name( nm ),
 	size( sz ),
 	reach( 2*sz ),
-	maxVelocity( max_v ),
 	maxEnergy( max_e ),
+	maxVelocity( max_v ),
 	maxAge( max_a ),
 	visionRange( r_v ),
 	eyeOffsetAngle( e_a ),
@@ -57,7 +67,10 @@ Animat::Animat( std::string nm, float sz, float max_v, float max_e, int max_a, f
 	energy( e ),
 	comfort( 50 ),
 	fatigue( 0 )
-{}
+{
+	cognition = FCM();
+	sensation = Eigen::VectorXf::Zero( cognition.nSensory );
+}
 
 Animat::~Animat() {
 
@@ -685,7 +698,7 @@ void Animat::react( VectorXf motor ) {
 
 
 void Animat::forgetSensation() {
-	sensation = Eigen::VectorXf::Zero( cognition.getNInput() );
+	sensation = Eigen::VectorXf::Zero( cognition.nSensory );
 }
 
 
@@ -693,6 +706,37 @@ void Animat::forgetStimuli() {
 	nearbyFood.clear();
 	nearbyKin.clear();
 	nearbyFoes.clear();
+}
+
+
+
+void Animat::formPhenotype() {
+
+	int gene = 0;
+
+	size 			= genome[gene++];
+	reach			= genome[gene++];
+	maxEnergy 		= genome[gene++];
+	maxVelocity 	= genome[gene++];
+	maxAge 			= genome[gene++];
+	visionRange  	= genome[gene++];
+	eyeOffsetAngle  = genome[gene++];
+	eyeFieldOfView  = genome[gene++];
+	olfactoryRange	= genome[gene++];
+
+	// randomize attributes
+	size 			= RNGESUS->normalFloat( size, STD_DEGREE*size );
+	reach 			= RNGESUS->normalFloat( reach, STD_DEGREE*reach );
+	maxEnergy 		= RNGESUS->normalFloat( maxEnergy, STD_DEGREE*maxEnergy );
+	maxVelocity 	= RNGESUS->normalFloat( maxVelocity, STD_DEGREE*maxVelocity );
+	maxAge 			= RNGESUS->normalFloat( maxAge, STD_DEGREE*maxAge );
+	visionRange		= RNGESUS->normalFloat( visionRange, STD_DEGREE*visionRange );
+	eyeOffsetAngle	= RNGESUS->normalFloat( eyeOffsetAngle, STD_DEGREE*eyeOffsetAngle );
+	eyeFieldOfView	= RNGESUS->normalFloat( eyeFieldOfView, STD_DEGREE*eyeFieldOfView );
+	olfactoryRange	= RNGESUS->normalFloat( olfactoryRange, STD_DEGREE*olfactoryRange );
+
+	cognition.setLinkMatrixFromMask( genome, gene );
+
 }
 
 
@@ -716,21 +760,21 @@ void Animat::forgetStimuli() {
 
 
 
-void Animat::initFCM( int nConcepts, std::string filename_cs, std::string filename_fcm ) {
-	cognition = FCM( nConcepts );
-	cognition.loadConceptsFromFile( filename_cs );
-	cognition.loadLinkMatrixFromFile( filename_fcm );
-	sensation = Eigen::VectorXf::Zero( cognition.getNInput() );
-}
+//void Animat::initFCM( int n_concepts, string filename_cs, string filename_fcm ) {
+//	cognition = FCM( n_concepts );
+//	cognition.loadConceptsFromFile(  );
+//	cognition.loadLinkMatrixFromFile( filename_fcm );
+//	sensation = Eigen::VectorXf::Zero( cognition.nSensory );
+//}
 
 
 
-void Animat::initFCMrandom( int nConcepts, std::string filename_cs ) {
-	cognition = FCM( nConcepts );
-	cognition.loadConceptsFromFile( filename_cs );
-	cognition.setRandomLinkMatrix( 0.6 );
-	sensation = Eigen::VectorXf::Zero( cognition.getNInput() );
-}
+//void Animat::initFCMrandom( int n_concepts, string filename_cs ) {
+//	cognition = FCM( n_concepts );
+//	cognition.loadConceptsFromFile( filename_cs );
+//	cognition.setRandomLinkMatrix( 0.6 );
+//	sensation = Eigen::VectorXf::Zero( cognition.nSensory );
+//}
 
 
 

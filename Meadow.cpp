@@ -33,11 +33,11 @@ int Meadow::grow() {
 	int envSizeX = HABITAT->sizeX;
 	int envSizeY = HABITAT->sizeY;
 
-	while ( FATE->uniformRandomUnitFloat() < growRate ) {
+	while ( RNGESUS->uniformRandomUnitFloat() < growRate ) {
 
 //		float offset = environment->fate->linearDescRandomFloatFrom( 0, radius );
-		float offset = FATE->uniformRandomFloatFrom( 0, radius );
-		float angle = FATE->uniformRandomFloatFrom( -PI, PI );
+		float offset = RNGESUS->uniformRandomFloatFrom( 0, radius );
+		float angle = RNGESUS->uniformRandomFloatFrom( -PI, PI );
 
 		int offsetX = offset * cos( angle );
 		int offsetY = offset * sin( angle );

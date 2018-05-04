@@ -19,6 +19,9 @@
 #include "Animat.h"
 #include "Habitat.h"
 
+using std::string;
+using std::istringstream;
+
 
 namespace util {
 
@@ -223,13 +226,114 @@ namespace util {
 
 
 
-	std::string readFileContent( std::string fname ) {
+	std::vector<float> constructGenome( std::map<string, float> ini ) {
+
+		int genomeLength = 8 + pow( ini["n_concepts"], 2 );
+		std::vector<float> genome( genomeLength );
+
+		int gene = 0;
+
+		genome[gene++] = ini["size"];
+		genome[gene++] = ini["reach"];
+		genome[gene++] = ini["max_energy"];
+		genome[gene++] = ini["max_velocity"];
+		genome[gene++] = static_cast<int>( ini["max_age"] );
+		genome[gene++] = ini["vision_range"];
+		genome[gene++] = ini["eye_offset_angle"];
+		genome[gene++] = ini["eye_vision_angle"];
+		genome[gene++] = ini["olfactory_range"];
+
+
+		// read genome weight after weight
+		string fcmMask = readFileContent( FCM_MASK_FILE );
+		istringstream strstream( fcmMask );
+		string buf;
+
+		for ( gene; gene < genomeLength; gene++ )
+			if ( !strstream.eof() ) {
+				strstream >> buf;
+				genome[gene] = stoi( buf );
+			}
+
+		return genome;
+
+	}
+
+
+
+	std::vector<float> constructRandomGenome( std::map<string, float> ini ) {
+
+		int genomeLength = 8 + pow( ini["n_concepts"], 2 );
+		std::vector<float> genome( genomeLength );
+
+		// prepare genome randomization
+		float avg_size = ini["size"];
+		float reach_factor = ini["reach"];
+		float max_velocity = ini["max_velocity"];
+		int max_age = static_cast<int>( ini["max_age"] );
+		float vision_range = ini["vision_range"];
+		float eye_offset_angle = ini["eye_offset_angle"];
+		float eye_vision_angle = ini["eye_vision_angle"];
+		float olfactory_range = ini["olfactory_range"];
+
+		int gene = 0;
+
+		genome[gene++] = RNGESUS->normalFloat( avg_size, avg_size*STD_DEGREE );
+		genome[gene++] = RNGESUS->normalFloat( reach_factor, reach_factor*STD_DEGREE );
+		genome[gene++] = ini["max_energy"];
+		genome[gene++] = RNGESUS->normalFloat( max_velocity, max_velocity*STD_DEGREE );
+		genome[gene++] = RNGESUS->normalInt  ( max_age, max_age*STD_DEGREE );
+		genome[gene++] = RNGESUS->normalFloat( vision_range, vision_range*STD_DEGREE );
+		genome[gene++] = RNGESUS->normalFloat( eye_offset_angle, eye_offset_angle*STD_DEGREE );
+		genome[gene++] = RNGESUS->normalFloat( eye_vision_angle, eye_vision_angle*STD_DEGREE );
+		genome[gene++] = RNGESUS->normalFloat( olfactory_range, olfactory_range*STD_DEGREE );
+
+
+		// read genome weight after weight
+		string fcmMask = readFileContent( FCM_MASK_FILE );
+		istringstream strstream( fcmMask );
+		string buf;
+
+		for ( gene; gene < genomeLength; gene++ ) {
+
+			if ( !strstream.eof() ) strstream >> buf;
+			int mask = stoi( buf );
+			if ( mask == 1 )
+				genome[gene] = RNGESUS->uniformRandomFloatFrom( -1, 1 );
+			else
+				genome[gene] = 0;
+
+		}
+
+		return genome;
+
+	}
+
+
+
+	string generateName( int length ) {
+
+		int charmin = 65, charmax = 90;
+		string sname;
+
+		std::vector<int> chars = RNGESUS->nUniformRandomIntsFrom( length, charmin, charmax );
+
+		for ( int i = 0; i < length; ++i )
+			sname += chars[i];
+
+		return sname;
+
+	}
+
+
+
+	string readFileContent( string fname ) {
 
 		std::ifstream inputFile;
 		inputFile.open( fname.c_str(), std::ifstream::in );
 
-		std::string fileContent = "";
-		std::string line;
+		string fileContent = "";
+		string line;
 		while ( std::getline( inputFile, line ) ) {
 			fileContent += line;
 			fileContent += '\n';
@@ -242,22 +346,22 @@ namespace util {
 
 
 
-	std::map<std::string, float> readSimpleIni( std::string fname ) {
+	std::map<string, float> readSimpleIni( string fname ) {
 
 		std::ifstream inputFile;
 		inputFile.open( fname.c_str(), std::ifstream::in );
 
-		std::map<std::string, float> retmap;
+		std::map<string, float> retmap;
 
-		std::string line;
+		string line;
 		while ( std::getline( inputFile, line ) ) {
 
 			int eqPos = line.find( "=" );
 			if ( eqPos == -1 )
 				continue;		// ignore lines without '='˘
 
-			std::string keyword = line.substr( 0, eqPos );
-			std::string value = line.substr( eqPos + 1 );
+			string keyword = line.substr( 0, eqPos );
+			string value = line.substr( eqPos + 1 );
 			float fval = atof( value.c_str() );
 
 			retmap[keyword] = fval;
@@ -271,7 +375,7 @@ namespace util {
 
 
 
-	void cleanFile( std::string fname ) {
+	void cleanFile( string fname ) {
 		std::ofstream outputFile;
 		outputFile.open( fname.c_str(), std::ofstream::out | std::ofstream::trunc );
 		outputFile.close();
@@ -279,7 +383,7 @@ namespace util {
 
 
 
-	void printMatrixToFile( Eigen::MatrixXf data, std::string fname, bool transpose ) {
+	void printMatrixToFile( Eigen::MatrixXf data, string fname, bool transpose ) {
 
 		Eigen::MatrixXf outputData = data;
 		if ( transpose )
@@ -295,7 +399,7 @@ namespace util {
 
 
 
-	void printSensationsToFile( std::vector<stimulus> sss, std::string fname ) {
+	void printSensationsToFile( std::vector<stimulus> sss, string fname ) {
 		std::ofstream outputFile;
 		outputFile.open( fname.c_str(), std::ofstream::out | std::ofstream::app );
 
@@ -310,7 +414,7 @@ namespace util {
 
 
 
-	void printAnimatLocationsToFile( std::map<const char*, ecosystem::Animat*> pop, std::string fname ) {
+	void printAnimatLocationsToFile( std::map<const char*, ecosystem::Animat*> pop, string fname ) {
 		std::ofstream outputFile;
 		outputFile.open( fname.c_str(), std::ofstream::out | std::ofstream::app );
 

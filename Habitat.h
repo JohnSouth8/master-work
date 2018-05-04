@@ -20,7 +20,11 @@
 
 
 extern const float PI;
-extern util::Chance* const FATE;
+extern util::Chance* const RNGESUS;
+extern const std::string ENVIRONMENT_INI;
+extern const std::string ANIMAT_INI;
+
+
 
 namespace ecosystem {
 
@@ -36,33 +40,21 @@ public:
 	// constructors
 	Habitat();
 	Habitat( std::string );
-//	Habitat( std::string iniFileName );
+
 	virtual ~Habitat();
+
 
 	// member variables
 	int sizeX;
 	int sizeY;
 	std::map<std::string, Animat*> population;
-//	Eigen::MatrixXf foodReserve;				// deprecated, temporarily here for compatibility reasons
-//	std::vector<Grass*> vegetation;				// Possibly not really required? All food is already in food tree.. But it's faster for graphx. Graphx don't reaaly count here
 
 	int foodEnergyVal;
 	std::vector<Meadow*> meadows;
-//	float mean_rMeadows;
-//	float std_rMeadows;
-//	float mean_grMeadows;
-//	float std_grMeadows;
-//	float p_newMeadow;
 
 	// QuadTrees for easy storage and search
 	util::QuadTree grassTree;
 	util::QuadTree populationTree;
-
-	// deprecated as of QuadTree implementation
-	// helper variables for distance computation
-//	Eigen::MatrixXf animatDistances;
-//	std::vector<std::string> animatOrder;		// order of animats in the population map
-
 
 	// ini data
 	std::map<std::string, float> env_ini;
@@ -74,12 +66,12 @@ public:
 	void growGrass( int, int );
 	float consumeFood( int, int );
 
-	bool breed( Animat*, Animat* );
 
-	void populateWorld( int, std::string, std::string, std::string );
-	void birth( Animat* );
+	void populateWorld( int );
+	void populateWorldOld( int, std::string, std::string, std::string );
+	bool breed( Animat*, Animat* );
+	void birth( std::vector<float>, util::coordinate location, float direction );
 	void death( std::string );
-	std::string generateAnimatName();
 
 	float distanceBetweenOrganisms( ecosystem::Organism*, ecosystem::Organism* );
 

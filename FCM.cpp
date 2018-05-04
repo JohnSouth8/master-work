@@ -18,18 +18,21 @@ using namespace Eigen;
 namespace ecosystem {
 
 FCM::FCM() {
-	nConcepts = 0;
-	nInput = 0;
-	nInternal = 0;
-	nOutput = 0;
+
+	// reads concepts and sets their numbers
+	loadConceptsFromFCMFile();
+
+	state = VectorXf::Zero( nConcepts );
+	L = MatrixXf::Zero( nConcepts, nConcepts );
+
 }
 
 FCM::FCM( int nc ) {
 
 	nConcepts = nc;
-	nInput = 0;
-	nInternal = 0;
-	nOutput = 0;
+//	nInput = 0;
+//	nInternal = 0;
+//	nOutput = 0;
 	state = VectorXf::Zero( nConcepts );		// TODO: rename. Edit: why? Edit2: don't know anymore..
 	L = MatrixXf::Zero( nConcepts, nConcepts );
 
@@ -49,9 +52,9 @@ FCM::~FCM() {
 
 
 
-void FCM::loadConceptsFromFile( string filename ) {
+void FCM::loadConceptsFromFCMFile() {
 
-	string fcontent = util::readFileContent( filename );
+	string fcontent = util::readFileContent( FCM_CONCEPTS_FILE );
 
 	istringstream strstream( fcontent );
 	string buf;
@@ -63,20 +66,22 @@ void FCM::loadConceptsFromFile( string filename ) {
 			char type = buf[0];
 			switch ( type ) {
 				case 's':
-					++nInput;
-					inputConceptIdxs.push_back( i );
+					++nSensory;
+					sensoryConceptIdxs.push_back( i );
 					break;
 				case 'i':
-					++nInternal;
-					internalConceptIdxs.push_back( i );
+					++nMental;
+					mentalConceptIdxs.push_back( i );
 					break;
 				case 'm':
-					++nOutput;
-					outputConceptIdxs.push_back( i );
+					++nMotor;
+					motorConceptIdxs.push_back( i );
 					break;
 			}
 		}
 	}
+
+	nConcepts = nSensory + nMental + nMotor;
 }
 
 
@@ -98,7 +103,7 @@ void FCM::loadLinkMatrixFromFile( string filename ) {
 		for ( int j = 0; j < nConcepts; ++j ){
 			if ( !strstream.eof() ) {
 				strstream >> buf;
-				L(i, j) = atof( buf.c_str() );
+				L(i, j) = stof( buf );
 			}
 		}
 	}
@@ -110,11 +115,11 @@ void FCM::loadLinkMatrixFromFile( string filename ) {
 void FCM::setRandomLinkMatrix( float p_nonzero ) {
 
 	int nLinks = pow( nConcepts, 2 );
-	std::vector<bool> nonZeroPool = FATE->bernoulliBooleanString( nLinks, p_nonzero );
+	std::vector<bool> nonZeroPool = RNGESUS->bernoulliBooleanString( nLinks, p_nonzero );
 
 	for ( int i = 0; i < nLinks; ++i ) {
 		if ( nonZeroPool[i] ) {
-			float link = FATE->uniformRandomUnitFloat();
+			float link = RNGESUS->uniformRandomUnitFloat();
 			int row = i / nConcepts;
 			int col = i % nConcepts;
 			L(row, col) = link;
@@ -125,14 +130,31 @@ void FCM::setRandomLinkMatrix( float p_nonzero ) {
 
 
 
+void FCM::setLinkMatrixFromMask( std::vector<float> genome, int maskStart ) {
+
+	int gene = maskStart;
+
+	for ( int row = 0; row < nConcepts; ++row ) {
+		for ( int col = 0; col < nConcepts; ++col ) {
+
+			if ( genome[gene++] != 0 )
+				L(row, col) = RNGESUS->uniformRandomFloatFrom( -1, 1 );
+
+		}
+	}
+
+}
+
+
+
 void FCM::applySensations( VectorXf sensations ) {
 
 	// if sensations is not the input vector
-	if ( sensations.size() != nInput )
+	if ( sensations.size() != nSensory )
 		return;
 
 	// put sensations into current state
-	for ( int i = 0; i < nInput; ++i ) {
+	for ( int i = 0; i < nSensory; ++i ) {
 		state(i) = sensations(i);
 	}
 
@@ -148,42 +170,7 @@ void FCM::applySensations( VectorXf sensations ) {
 
 
 VectorXf FCM::getOutput() {
-	return state.tail( nOutput );
-}
-
-
-
-
-VectorXf FCM::getState() {
-	return state;
-}
-
-
-
-
-int FCM::getNConcepts() {
-	return nConcepts;
-}
-
-
-
-
-int FCM::getNInput() {
-	return nInput;
-}
-
-
-
-
-int FCM::getNInternal() {
-	return nInternal;
-}
-
-
-
-
-int FCM::getNOutput() {
-	return nOutput;
+	return state.tail( nMotor );
 }
 
 

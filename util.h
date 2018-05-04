@@ -18,6 +18,8 @@
 
 
 extern const float PI;
+extern const float STD_DEGREE;
+extern const std::string FCM_MASK_FILE;
 
 namespace ecosystem {
 	class Organism;
@@ -47,9 +49,14 @@ namespace util {
 	float stimulusOlfactoryActivation( float );
 	bool compareStimuli( stimulus, stimulus );
 
+	std::vector<float> constructGenome( std::map<std::string, float> );
+	std::vector<float> constructRandomGenome( std::map<std::string, float> );
+
 	int countNonZeroElements( Eigen::MatrixXf );
 
 	std::vector<float> getColourFromGradient( std::vector<float>, std::vector<float>, float );
+
+	std::string generateName( int );
 
 	std::string readFileContent( std::string );
 	std::map<std::string, float> readSimpleIni( std::string );

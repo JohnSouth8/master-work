@@ -27,6 +27,7 @@
 
 using util::coordinate;
 using util::QuadTree;
+using std::string;
 
 
 namespace ecosystem {
@@ -34,7 +35,7 @@ namespace ecosystem {
 /* constructors */
 Habitat::Habitat() {
 
-	env_ini = util::readSimpleIni( "environment.ini" );
+	env_ini = util::readSimpleIni( ENVIRONMENT_INI );
 
 	// basic params
 	sizeX = static_cast<int>( env_ini["size_x"] );
@@ -50,10 +51,10 @@ Habitat::Habitat() {
 
 	// food emanators - meadows
 	int n_mdw = static_cast<int>( env_ini["n_meadows"] );
-	std::vector<int> xs = FATE->nUniformRandomIntsFrom( n_mdw, 0, sizeX-1 );
-	std::vector<int> ys = FATE->nUniformRandomIntsFrom( n_mdw, 0, sizeY-1 );
-	std::vector<int> rs = FATE->normalIntsString( n_mdw, env_ini["radius_mean_meadows"], env_ini["radius_std_meadows"] );
-	std::vector<float> grs = FATE->normalFloatsString( n_mdw, env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
+	std::vector<int> xs = RNGESUS->nUniformRandomIntsFrom( n_mdw, 0, sizeX-1 );
+	std::vector<int> ys = RNGESUS->nUniformRandomIntsFrom( n_mdw, 0, sizeY-1 );
+	std::vector<int> rs = RNGESUS->normalIntsString( n_mdw, env_ini["radius_mean_meadows"], env_ini["radius_std_meadows"] );
+	std::vector<float> grs = RNGESUS->normalFloatsString( n_mdw, env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
 
 	for ( int i = 0; i < n_mdw; ++i ) {
 		Meadow* m = new Meadow( xs[i], ys[i], rs[i], grs[i] );
@@ -62,7 +63,7 @@ Habitat::Habitat() {
 
 }
 
-Habitat::Habitat( std::string iniFileName ) {
+Habitat::Habitat( string iniFileName ) {
 
 	env_ini = util::readSimpleIni( iniFileName );
 
@@ -80,10 +81,10 @@ Habitat::Habitat( std::string iniFileName ) {
 
 	// food emanators - meadows
 	int n_mdw = static_cast<int>( env_ini["n_meadows"] );
-	std::vector<int> xs = FATE->nUniformRandomIntsFrom( n_mdw, 0, sizeX-1 );
-	std::vector<int> ys = FATE->nUniformRandomIntsFrom( n_mdw, 0, sizeY-1 );
-	std::vector<int> rs = FATE->normalIntsString( n_mdw, env_ini["radius_mean_meadows"], env_ini["radius_std_meadows"] );
-	std::vector<float> grs = FATE->normalFloatsString( n_mdw, env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
+	std::vector<int> xs = RNGESUS->nUniformRandomIntsFrom( n_mdw, 0, sizeX-1 );
+	std::vector<int> ys = RNGESUS->nUniformRandomIntsFrom( n_mdw, 0, sizeY-1 );
+	std::vector<int> rs = RNGESUS->normalIntsString( n_mdw, env_ini["radius_mean_meadows"], env_ini["radius_std_meadows"] );
+	std::vector<float> grs = RNGESUS->normalFloatsString( n_mdw, env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
 
 	for ( int i = 0; i < n_mdw; ++i ) {
 		Meadow* m = new Meadow( xs[i], ys[i], rs[i], grs[i] );
@@ -112,7 +113,27 @@ Habitat::~Habitat() {
 /* member functions */
 
 
-void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std::string fcm_concepts_fileName, std::string fcm_fileName ) {
+void Habitat::populateWorld( int n_animats ) {
+
+	ani_ini = util::readSimpleIni( ANIMAT_INI );
+
+	if ( n_animats == 0 )
+		n_animats = static_cast<int>( ani_ini["n_animats"] );
+
+	std::vector<float> pxs = RNGESUS->nUniformRandomFloatsFrom( n_animats, 0, sizeX );
+	std::vector<float> pys = RNGESUS->nUniformRandomFloatsFrom( n_animats, 0, sizeY );
+	std::vector<float> dirs = RNGESUS->nUniformRandomFloatsFrom( n_animats, -PI, PI );
+
+	std::vector<float> ancestor_genome = util::constructGenome( ani_ini );
+
+	for ( int i = 0; i < n_animats; ++i ) {
+		birth( ancestor_genome, coordinate( pxs[i], pys[i] ), dirs[i] );
+	}
+
+}
+
+
+void Habitat::populateWorldOld( int n_animats, string animat_iniFileName, string fcm_concepts_fileName, string fcm_fileName ) {
 
 	ani_ini = util::readSimpleIni( animat_iniFileName );
 
@@ -123,29 +144,27 @@ void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std:
 	float max_energy = ani_ini["max_energy"];
 	float start_energy = ani_ini["start_energy"];
 	float max_velocity = ani_ini["max_velocity"];
-//	float start_velocity = ini["start_velocity"];
 	int max_age = static_cast<int>( ani_ini["max_age"] );
 	float vision_range = ani_ini["vision_range"];
 	float eye_offset_angle = ani_ini["eye_offset_angle"];
 	float eye_vision_angle = ani_ini["eye_vision_angle"];
 	float olfactory_range = ani_ini["olfactory_range"];
-	float std_degree = ani_ini["init_std_degree"];
 
-	std::vector<float> sizes = FATE->normalFloatsString( n_animats, avg_size, avg_size*std_degree );
-	std::vector<float> max_vels = FATE->normalFloatsString( n_animats, max_velocity, max_velocity*std_degree );
-	std::vector<int> max_ages = FATE->normalIntsString( n_animats, max_age, max_age*std_degree );
-	std::vector<float> vis_ranges = FATE->normalFloatsString( n_animats, vision_range, vision_range*std_degree );
-	std::vector<float> eye_angles = FATE->normalFloatsString( n_animats, eye_offset_angle, eye_offset_angle*std_degree );
-	std::vector<float> eye_fovs = FATE->normalFloatsString( n_animats, eye_vision_angle, eye_vision_angle*std_degree );
-	std::vector<float> olf_ranges = FATE->normalFloatsString( n_animats, olfactory_range, olfactory_range*std_degree);
+	std::vector<float> sizes = RNGESUS->normalFloatsString( n_animats, avg_size, avg_size*STD_DEGREE );
+	std::vector<float> max_vels = RNGESUS->normalFloatsString( n_animats, max_velocity, max_velocity*STD_DEGREE );
+	std::vector<int> max_ages = RNGESUS->normalIntsString( n_animats, max_age, max_age*STD_DEGREE );
+	std::vector<float> vis_ranges = RNGESUS->normalFloatsString( n_animats, vision_range, vision_range*STD_DEGREE );
+	std::vector<float> eye_angles = RNGESUS->normalFloatsString( n_animats, eye_offset_angle, eye_offset_angle*STD_DEGREE );
+	std::vector<float> eye_fovs = RNGESUS->normalFloatsString( n_animats, eye_vision_angle, eye_vision_angle*STD_DEGREE );
+	std::vector<float> olf_ranges = RNGESUS->normalFloatsString( n_animats, olfactory_range, olfactory_range*STD_DEGREE);
 
-	std::vector<float> pxs = FATE->nUniformRandomFloatsFrom( n_animats, 0, sizeX );
-	std::vector<float> pys = FATE->nUniformRandomFloatsFrom( n_animats, 0, sizeY );
-	std::vector<float> dirs = FATE->nUniformRandomFloatsFrom( n_animats, -PI, PI );
+	std::vector<float> pxs = RNGESUS->nUniformRandomFloatsFrom( n_animats, 0, sizeX );
+	std::vector<float> pys = RNGESUS->nUniformRandomFloatsFrom( n_animats, 0, sizeY );
+	std::vector<float> dirs = RNGESUS->nUniformRandomFloatsFrom( n_animats, -PI, PI );
 
 	for ( int i = 0; i < n_animats; ++i ) {
 
-		std::string name = generateAnimatName();
+		string name = util::generateName( 10 );
 		Animat* ani = new Animat (
 			name,
 			sizes[i],
@@ -163,9 +182,8 @@ void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std:
 			start_energy
 		);
 
-		int nConcepts = 10;	// TODO: make this number automatic
 //		ani->initFCM( nConcepts, fcm_concepts_fileName, fcm_fileName );
-		ani->initFCMrandom( nConcepts, fcm_concepts_fileName );
+//		ani->initFCMrandom( nConcepts, fcm_concepts_fileName );
 
 		population[name] = ani;
 
@@ -174,34 +192,20 @@ void Habitat::populateWorld( int n_animats, std::string animat_iniFileName, std:
 }
 
 
-void Habitat::birth( Animat* ani ) {
+void Habitat::birth( std::vector<float> genome, coordinate location, float direction ) {
 
+	string name = util::generateName( 10 );
+	Animat* ani = new Animat( name, genome, location.x, location.y, direction );
 	population[ani->name] = ani;
 
 }
 
 
 
-void Habitat::death( std::string name ) {
+void Habitat::death( string name ) {
 
 	delete population[name];
 	population.erase( name );
-
-}
-
-
-
-std::string Habitat::generateAnimatName() {
-
-	int charmin = 65, charmax = 90;
-	std::string sname;
-
-	std::vector<int> chars = FATE->nUniformRandomIntsFrom( 10, charmin, charmax );
-
-	for ( int i = 0; i < 10; ++i )
-		sname += chars[i];
-
-	return sname;
 
 }
 
@@ -217,12 +221,12 @@ void Habitat::growMeadows() {
 	}
 
 	// fractional chance of a new meadow appearing
-	if ( FATE->uniformRandomUnitFloat() < env_ini["probability_new_meadow"] ) {
+	if ( RNGESUS->uniformRandomUnitFloat() < env_ini["probability_new_meadow"] ) {
 
-		int cx = FATE->uniformRandomIntFrom( 0, sizeX-1 );
-		int cy = FATE->uniformRandomIntFrom( 0, sizeY-1 );
-		int r = FATE->normalInt( env_ini["radius_mean_meadow"], env_ini["radius_std_meadows"] );
-		float gr = FATE->normalFloat( env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
+		int cx = RNGESUS->uniformRandomIntFrom( 0, sizeX-1 );
+		int cy = RNGESUS->uniformRandomIntFrom( 0, sizeY-1 );
+		int r = RNGESUS->normalInt( env_ini["radius_mean_meadow"], env_ini["radius_std_meadows"] );
+		float gr = RNGESUS->normalFloat( env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
 
 		Meadow* m = new Meadow( cx, cy, r, gr );
 		meadows.push_back( m );
@@ -278,8 +282,8 @@ bool Habitat::breed( Animat* groom, Animat* bride ) {
 
 	std::vector<float> gene_offspring ( geneSize );
 
-	std::vector<bool> crossover = FATE->bernoulliBooleanString( geneSize, 0.5 );
-	std::vector<bool> mutations = FATE->bernoulliBooleanString( geneSize, mutationRate );
+	std::vector<bool> crossover = RNGESUS->bernoulliBooleanString( geneSize, 0.5 );
+	std::vector<bool> mutations = RNGESUS->bernoulliBooleanString( geneSize, mutationRate );
 	for ( int i = 0; i < geneSize; ++i ) {
 
 		float new_gene;
@@ -290,8 +294,8 @@ bool Habitat::breed( Animat* groom, Animat* bride ) {
 			new_gene = bride->genome[i];
 
 		if ( mutations[i] ) {
-			bool sign = FATE->bernoulliBoolean( 0.5 );
-			float value = FATE->normalFloat( new_gene, mutationEffectSTD );
+			bool sign = RNGESUS->bernoulliBoolean( 0.5 );
+			float value = RNGESUS->normalFloat( new_gene, mutationEffectSTD );
 			new_gene = (-1 * (int)sign) * value;
 		}
 
@@ -299,14 +303,8 @@ bool Habitat::breed( Animat* groom, Animat* bride ) {
 
 	}
 
-
-	std::string name_offspring = generateAnimatName();
-	Animat* offspring = new Animat( name_offspring, gene_offspring );
-	birth( offspring );
-
-
-
-	return false;
+	birth( gene_offspring, coordinate( bride->posX, bride->posY ), bride->direction );
+	return true;
 
 }
 
