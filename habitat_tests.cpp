@@ -50,8 +50,12 @@ namespace ecosystem {
 
 
 void keyActions( GLFWwindow* window, int key, int scancode, int action, int mods ) {
-	if ( key == GLFW_KEY_ENTER && action == GLFW_PRESS )
-		simulationProceed = true;
+	if ( key == GLFW_KEY_ENTER && action == GLFW_PRESS ) {
+		if ( simulationProceed )
+			simulationProceed = false;
+		else
+			simulationProceed = true;
+	}
 }
 
 
@@ -106,7 +110,7 @@ int test() {
 
 	while( HABITAT->population.size() > 0 && !glfwWindowShouldClose( simWindow ) /*&& !glfwWindowShouldClose( fcmWindow )*/ ) {
 
-//		if ( simulationProceed )
+		if ( simulationProceed )
 		{
 
 			HABITAT->growMeadows();
@@ -150,7 +154,7 @@ int test() {
 //				gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
 //			}
 
-			simulationProceed = false;
+//			simulationProceed = false;
 			++time_counter;
 
 			std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
