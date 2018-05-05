@@ -56,6 +56,7 @@ public:
 	ecosystem::Organism* find( coordinate );
 	std::vector<ecosystem::Organism*> rangeQuery( coordinate, coordinate, coordinate );
 	// TODO: optimize with an additional function of move() (requires parent node to be known)
+	std::vector<ecosystem::Organism*> getAll();
 
 	void print( int );
 

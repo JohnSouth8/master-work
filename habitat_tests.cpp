@@ -62,7 +62,7 @@ void keyActions( GLFWwindow* window, int key, int scancode, int action, int mods
 
 int test() {
 
-	HABITAT->populateWorld( 0 );
+	HABITAT->populateWorld( 0 );	//!!
 	int n_animats = HABITAT->population.size();
 
 	for ( int i = 0; i < 500; ++i ) HABITAT->growMeadows();
@@ -135,7 +135,7 @@ int test() {
 
 			if ( obituary.size() > 0 )
 				for ( auto obt : obituary ) // for ( it = obituary.begin(); it != obituary.end(); ++it )
-					HABITAT->death( obt );
+					HABITAT->deathOld( obt );
 
 			// if tracked animat died, transfer tracking to the next animat if any
 			if ( HABITAT->population.find( tracked_name ) == HABITAT->population.end() && HABITAT->population.size() > 0 ) {
@@ -287,7 +287,7 @@ int test_random_animats() {
 
 			if ( obituary.size() > 0 )
 				for ( auto obt : obituary ) // for ( it = obituary.begin(); it != obituary.end(); ++it )
-					HABITAT->death( obt );
+					HABITAT->deathOld( obt );
 
 			// if tracked animat died, transfer tracking to the next animat if any
 			if ( HABITAT->population.find( tracked_name ) == HABITAT->population.end() && HABITAT->population.size() > 0 ) {
@@ -460,7 +460,7 @@ int test_old() {
 		// remove (bury) dead animats
 		if ( obituary.size() > 0 )
 			for ( auto &name : obituary )
-				HABITAT->death( name );
+				HABITAT->deathOld( name );
 
 		++time_counter;
 
@@ -561,7 +561,7 @@ int test_with_visuals() {
 
 			if ( obituary.size() > 0 )
 				for ( auto obt : obituary ) // for ( it = obituary.begin(); it != obituary.end(); ++it )
-					HABITAT->death( obt );
+					HABITAT->deathOld( obt );
 
 			// if tracked animat died, transfer tracking to the next animat if any
 			if ( HABITAT->population.find( tracked_name ) == HABITAT->population.end() && HABITAT->population.size() > 0 ) {

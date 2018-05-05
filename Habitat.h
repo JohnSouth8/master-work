@@ -71,9 +71,12 @@ public:
 	void populateWorldOld( int, std::string, std::string, std::string );
 	bool breed( Animat*, Animat* );
 	void birth( std::vector<float>, util::coordinate location, float direction );
-	void death( std::string );
+	void death( Animat* );
 
 	float distanceBetweenOrganisms( ecosystem::Organism*, ecosystem::Organism* );
+
+	// deprecated
+	void deathOld( std::string );
 
 };
 

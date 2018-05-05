@@ -196,13 +196,25 @@ void Habitat::birth( std::vector<float> genome, coordinate location, float direc
 
 	string name = util::generateName( 10 );
 	Animat* ani = new Animat( name, genome, location.x, location.y, direction );
+	populationTree.insert( ani );
 	population[ani->name] = ani;
 
 }
 
 
 
-void Habitat::death( string name ) {
+void Habitat::death( Animat* ani ) {
+
+	string name = ani->name;
+	populationTree.remove( ani );
+	delete population[name];
+	population.erase( name );
+
+}
+
+
+
+void Habitat::deathOld( string name ) {
 
 	delete population[name];
 	population.erase( name );

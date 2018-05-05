@@ -307,6 +307,39 @@ std::vector<Organism*> QuadTree::rangeQuery( coordinate r_start, coordinate r_st
 
 
 
+std::vector<Organism*> QuadTree::getAll() {
+
+	std::vector<Organism*> results;
+
+	if ( northWest == nullptr ) {
+
+		results.insert( results.end(), bucket.begin(), bucket.end() );
+
+	}
+	else {
+
+		std::vector<Organism*> nw_results = northWest->getAll();
+		std::vector<Organism*> ne_results = northEast->getAll();
+		std::vector<Organism*> sw_results = southWest->getAll();
+		std::vector<Organism*> se_results = southEast->getAll();
+
+		if ( nw_results.size() > 0 )
+			results.insert( results.end(), nw_results.begin(), nw_results.end() );
+		if ( ne_results.size() > 0 )
+			results.insert( results.end(), ne_results.begin(), ne_results.end() );
+		if ( sw_results.size() > 0 )
+			results.insert( results.end(), sw_results.begin(), sw_results.end() );
+		if ( se_results.size() > 0 )
+			results.insert( results.end(), se_results.begin(), se_results.end() );
+
+	}
+
+	return results;
+
+}
+
+
+
 
 void QuadTree::print( int depth ) {
 
