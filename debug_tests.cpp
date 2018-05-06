@@ -27,7 +27,7 @@
 
 
 
-
+#include "FCM.h"
 #include "Organism.h"
 #include "Grass.h"
 #include "Animat.h"
@@ -48,13 +48,25 @@ using util::coordinate;
 extern GLFWwindow* simWindow;
 extern GLFWwindow* fcmWindow;
 extern bool simulationProceed;
-extern string fname_environment_ini;
-extern string fname_animat_ini;
-extern string fname_fcm_cs;
-extern string fname_fcm;
 
 
 namespace ecosystem {
+
+
+
+int test_whatever() {
+
+	FCM f = FCM();
+
+	cout << "brain completed!" << endl;
+	cout << "number of concepts: " << f.nConcepts << endl;
+	cout << "sensory: " << f.nSensory << ", mental: " << f.nMental << ", motor: " << f.nMotor << endl;
+
+
+	return 0;
+
+}
+
 
 
 int test_randomness() {

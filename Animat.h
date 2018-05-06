@@ -63,8 +63,8 @@ public:
 
 	// homeostasis variables
 	float energy;
-	float comfort;				// 0-100
 	float fatigue;				// 0-100
+	float comfort;				// 0-100
 //	float integrity;			// possible synergy with pain and fight...
 
 	// perception model

@@ -30,9 +30,14 @@ using util::stimulus;
 namespace ecosystem {
 
 
-Animat::Animat( string nm, std::vector<float> gnm, float px, float py, float dir ) {
-
-	Organism( px, py );
+Animat::Animat( string nm, std::vector<float> gnm, float px, float py, float dir ) :
+	Organism( px, py ),
+	direction( dir ),
+	velocity( 0 ),
+	age( 0 ),
+	fatigue( 0 ),
+	comfort( 50 )
+{
 
 	name = nm;
 	genome = gnm;
@@ -40,8 +45,14 @@ Animat::Animat( string nm, std::vector<float> gnm, float px, float py, float dir
 	sensation = Eigen::VectorXf::Zero( cognition.nSensory );
 
 	formPhenotype();
-	age = 0;
 
+	// debug only!
+//	util::printMatrixToFile( cognition.L, "debug_output/"+name+"_L.txt", false );
+
+	age = 0;
+	energy = maxEnergy / 2;
+	comfort = 50;
+	fatigue = 0;
 	direction = dir;
 	velocity = 0;
 
@@ -65,8 +76,8 @@ Animat::Animat( string nm, float sz, float max_v, float max_e, int max_a, float 
 	velocity( v ),
 	age( 0 ),
 	energy( e ),
-	comfort( 50 ),
-	fatigue( 0 )
+	fatigue( 0 ),
+	comfort( 50 )
 {
 	cognition = FCM();
 	sensation = Eigen::VectorXf::Zero( cognition.nSensory );
@@ -169,7 +180,7 @@ void Animat::procreate() {
 	// look for appropriate mate
 	for ( auto mates : nearbyKin ) {
 		if ( mates.distance <= reach ) {
-			Animat* mate = dynamic_cast<Animat*>( mates.entity );
+			Animat* mate = static_cast<Animat*>( mates.entity );
 			if ( court( mate ) )
 				HABITAT->breed( this, mate );
 		}
@@ -207,12 +218,13 @@ void Animat::sense() {
 	forgetStimuli();
 
 	// create a range for quad tree query
-	int x_max = std::ceil( posX + visionRange ),
-		y_max = std::ceil( posY + visionRange ),
-		x_min = std::floor( posX - visionRange ),
-		y_min = std::floor( posY - visionRange ),
-		env_x = HABITAT->sizeX,
+	int env_x = HABITAT->sizeX,
 		env_y = HABITAT->sizeY;
+	int x_max = util::getWrappedIndex( std::ceil( posX + visionRange ), env_x ),
+		y_max = util::getWrappedIndex( std::ceil( posY + visionRange ), env_y ),
+		x_min = util::getWrappedIndex( std::floor( posX - visionRange ), env_x ),
+		y_min = util::getWrappedIndex( std::floor( posY - visionRange ), env_y );
+
 
 	coordinate rng0( x_min, y_min );
 	coordinate rng1( x_max, y_max );
@@ -232,6 +244,8 @@ void Animat::sense() {
 		}
 	}
 	for ( auto ani : animats ) {
+		if ( name == static_cast<Animat*>(ani)->name )
+			continue;
 		float dist = HABITAT->distanceBetweenOrganisms( this, ani );
 		if ( dist < visionRange ) {
 			float angle = util::getStimulusAngle( this, ani );
@@ -292,7 +306,7 @@ void Animat::sense() {
 			kinInReach = 1;
 
 		// tactile input
-		Animat* an = dynamic_cast<Animat*>(nkn.entity);
+		Animat* an = static_cast<Animat*>(nkn.entity);
 		if ( nkn.distance <= size + an->size ) {
 			pain = (nkn.angle / PI) * velocity * an->velocity;
 		}
@@ -336,10 +350,10 @@ void Animat::senseFood() {
 	int env_y = HABITAT->sizeY;
 
 	// create a range for quad tree query
-	int x_max = std::ceil( posX + visionRange );
-	int y_max = std::ceil( posY + visionRange );
-	int x_min = std::floor( posX - visionRange );
-	int y_min = std::floor( posY - visionRange );
+	int x_max = util::getWrappedIndex( std::ceil( posX + visionRange ), env_x );
+	int y_max = util::getWrappedIndex( std::ceil( posY + visionRange ), env_y );
+	int x_min = util::getWrappedIndex( std::floor( posX - visionRange ), env_x );
+	int y_min = util::getWrappedIndex( std::floor( posY - visionRange ), env_y );
 
 	coordinate rng0( x_min, y_min );
 	coordinate rng1( x_max, y_max );

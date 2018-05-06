@@ -5,6 +5,10 @@
  *      Author: south
  */
 
+
+#include <iostream>
+
+
 #include "FCM.h"
 
 #include "util.h"
@@ -59,29 +63,34 @@ void FCM::loadConceptsFromFCMFile() {
 	istringstream strstream( fcontent );
 	string buf;
 
-	for ( int i = 0; i < nConcepts; ++i ) {
-		if ( !strstream.eof() ) {
-			strstream >> buf;
-			concepts[buf] = i;
-			char type = buf[0];
-			switch ( type ) {
-				case 's':
-					++nSensory;
-					sensoryConceptIdxs.push_back( i );
-					break;
-				case 'i':
-					++nMental;
-					mentalConceptIdxs.push_back( i );
-					break;
-				case 'm':
-					++nMotor;
-					motorConceptIdxs.push_back( i );
-					break;
-			}
+	int i = 0;
+	while ( strstream >> buf ) {
+
+		concepts[buf] = i;
+		char type = buf[0];
+		switch ( type ) {
+			case 's':
+				++nSensory;
+				sensoryConceptIdxs.push_back( i );
+				break;
+			case 'i':
+				++nMental;
+				mentalConceptIdxs.push_back( i );
+				break;
+			case 'm':
+				++nMotor;
+				motorConceptIdxs.push_back( i );
+				break;
 		}
+
+		//debug:
+		std::cout << buf << std::endl;
+
+		i++;
+
 	}
 
-	nConcepts = nSensory + nMental + nMotor;
+	nConcepts = i;
 }
 
 
@@ -154,9 +163,7 @@ void FCM::applySensations( VectorXf sensations ) {
 		return;
 
 	// put sensations into current state
-	for ( int i = 0; i < nSensory; ++i ) {
-		state(i) = sensations(i);
-	}
+	for ( int i = 0; i < nSensory; ++i ) state(i) = sensations(i);
 
 	// delta = state^T * L
 	// newstate = transform(state + delta)

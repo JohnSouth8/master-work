@@ -197,7 +197,12 @@ void Habitat::birth( std::vector<float> genome, coordinate location, float direc
 	string name = util::generateName( 10 );
 	Animat* ani = new Animat( name, genome, location.x, location.y, direction );
 	populationTree.insert( ani );
-	population[ani->name] = ani;
+	population[ani->name] = ani;	// staged to be deprecated
+
+	// debug
+	int n = populationTree.count();
+	std::cout << "Born animat number "<< n << ":\t";
+	ani->toString();
 
 }
 

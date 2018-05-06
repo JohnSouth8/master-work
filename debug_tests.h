@@ -26,6 +26,7 @@ int test_randomness();
 int test_quadTreeAnimats();
 int test_quadTreeFood();
 int test_angles();
+int test_whatever();
 
 
 } /* namespace ecosystem */

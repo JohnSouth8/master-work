@@ -239,7 +239,7 @@ namespace util {
 		genome[gene++] = ini["max_velocity"];
 		genome[gene++] = static_cast<int>( ini["max_age"] );
 		genome[gene++] = ini["vision_range"];
-		genome[gene++] = ini["eye_offset_angle"];
+		genome[gene++] = ini["eye_angle_offset"];
 		genome[gene++] = ini["eye_vision_angle"];
 		genome[gene++] = ini["olfactory_range"];
 
@@ -272,7 +272,7 @@ namespace util {
 		float max_velocity = ini["max_velocity"];
 		int max_age = static_cast<int>( ini["max_age"] );
 		float vision_range = ini["vision_range"];
-		float eye_offset_angle = ini["eye_offset_angle"];
+		float eye_offset_angle = ini["eye_angle_offset"];
 		float eye_vision_angle = ini["eye_vision_angle"];
 		float olfactory_range = ini["olfactory_range"];
 
