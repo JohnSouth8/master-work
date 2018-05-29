@@ -84,7 +84,7 @@ void FCM::loadConceptsFromFCMFile() {
 		}
 
 		//debug:
-		std::cout << buf << std::endl;
+//		std::cout << buf << std::endl;
 
 		i++;
 

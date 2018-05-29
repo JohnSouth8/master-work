@@ -249,7 +249,7 @@ namespace util {
 		istringstream strstream( fcmMask );
 		string buf;
 
-		for ( gene; gene < genomeLength; gene++ )
+		for ( ; gene < genomeLength; gene++ )
 			if ( !strstream.eof() ) {
 				strstream >> buf;
 				genome[gene] = stoi( buf );
@@ -294,7 +294,7 @@ namespace util {
 		istringstream strstream( fcmMask );
 		string buf;
 
-		for ( gene; gene < genomeLength; gene++ ) {
+		for ( ; gene < genomeLength; gene++ ) {
 
 			if ( !strstream.eof() ) strstream >> buf;
 			int mask = stoi( buf );
