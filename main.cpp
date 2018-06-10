@@ -29,7 +29,6 @@
 
 GLFWwindow* simWindow;
 GLFWwindow* fcmWindow;
-bool simulationProceed = false;
 
 
 
@@ -57,7 +56,7 @@ int main( void ) {
 
 
 	// init timer
-	auto t_start = chrono::steady_clock::now();
+  	auto t_start = chrono::steady_clock::now();
 
 
 	// TODO: nicely put stuff together - happening and rendering

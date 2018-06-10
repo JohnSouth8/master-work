@@ -165,7 +165,7 @@ namespace gx {
 
 
 
-	void loadHabitatIntoBuffer( GLuint vao, GLuint vbo ) {
+	void loadHabitatIntoBuffer( GLuint vao, GLuint vbo, std::string trackedName ) {
 
 		glBindVertexArray( vao );
 
@@ -226,7 +226,7 @@ namespace gx {
 			points_buffer_data[counter*5 + 0] = float( 2.0f * it->second->posX / float(env_w) - 1 );	// X
 			points_buffer_data[counter*5 + 1] = float( 2.0f * it->second->posY / float(env_h) - 1 );	// Y
 			points_buffer_data[counter*5 + 2] = 0.95f;													// R
-			if ( it == HABITAT->population.begin() )
+			if ( it->first.compare( trackedName ) == 0 )
 				points_buffer_data[counter*5 + 3] = 0.95f;												// G
 			else
 				points_buffer_data[counter*5 + 3] = 0.0f;												// G
@@ -374,7 +374,7 @@ namespace gx {
 		glBindBuffer( GL_ARRAY_BUFFER, vbo_pos );
 		glBufferData( GL_ARRAY_BUFFER, n_point_data*sizeof(float), points_buffer_data, GL_STATIC_DRAW );
 
-		// load colours data into colour buffer
+		// load lines data into lines buffer
 		glBindBuffer( GL_ARRAY_BUFFER, vbo_lin );
 		glBufferData( GL_ARRAY_BUFFER, n_line_data*sizeof(float), lines_buffer_data, GL_STATIC_DRAW );
 

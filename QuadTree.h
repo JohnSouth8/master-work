@@ -12,7 +12,11 @@
 #include <vector>
 #include <string>
 
+#include "Chance.h"
 #include "structs.h"
+
+
+extern util::Chance* const RNGESUS;
 
 
 // forward declaration
@@ -57,6 +61,7 @@ public:
 	std::vector<ecosystem::Organism*> rangeQuery( coordinate, coordinate, coordinate );
 	// TODO: optimize with an additional function of move() (requires parent node to be known)
 	std::vector<ecosystem::Organism*> getAll();
+	ecosystem::Organism* getRandomOrganism();
 
 	void print( int );
 

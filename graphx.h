@@ -51,7 +51,7 @@ namespace gx {
 
 	int switchContextToWindow( GLFWwindow* );
 
-	void loadHabitatIntoBuffer( GLuint, GLuint );
+	void loadHabitatIntoBuffer( GLuint, GLuint, std::string );
 	void loadFCMIntoBuffer( ecosystem::Animat*, GLuint, GLuint, GLuint );
 
 	void setBackground( float, float, float, float );

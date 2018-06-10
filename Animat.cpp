@@ -578,7 +578,10 @@ void Animat::react( VectorXf motor ) {
 
 	if ( motor(0) > 0.5 ) {
 		// if eat action is successful (some energy is gained), the animat can no longer act
-		if ( nearbyFood.size() > 0 && nearbyFood[0].distance <= reach && eat( nearbyFood[0].entity->posX, nearbyFood[0].entity->posY ) != 0 ) return;
+		if ( nearbyFood.size() > 0 && nearbyFood[0].distance <= reach && eat( nearbyFood[0].entity->posX, nearbyFood[0].entity->posY ) != 0 ) {
+			std::cout << "I, " << name << ", ate!" << std::endl;
+			return;
+		}
 	}
 
 	// both turns add up, to represent opposing forces

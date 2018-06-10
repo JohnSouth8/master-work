@@ -340,6 +340,32 @@ std::vector<Organism*> QuadTree::getAll() {
 
 
 
+Organism* QuadTree::getRandomOrganism() {
+
+	if ( bucket.size() == 0 && northWest == nullptr )
+		return nullptr;
+
+	if ( northWest == nullptr ) {
+		int random = floor( RNGESUS->uniformRandomUnitFloat() * bucket.size() );
+		return bucket[random];
+	}
+
+	int random = floor( RNGESUS->uniformRandomUnitFloat() * 4 );
+	if ( random == 0 )
+		return northWest->getRandomOrganism();
+	if ( random == 1 )
+		return northEast->getRandomOrganism();
+	if ( random == 2 )
+		return southWest->getRandomOrganism();
+	if ( random == 3 )
+		return southEast->getRandomOrganism();
+
+	return nullptr;
+
+}
+
+
+
 
 void QuadTree::print( int depth ) {
 
