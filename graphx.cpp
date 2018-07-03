@@ -268,7 +268,7 @@ namespace gx {
 		colour_p1[0] = 1.0f;
 
 		static GLfloat points_buffer_data[1000];
-		static GLfloat lines_buffer_data[2000];
+		static GLfloat lines_buffer_data[5000];
 
 		// concept related vars
 		float c_x_pos[3] = {-0.5f, 0.0f, 0.5f};

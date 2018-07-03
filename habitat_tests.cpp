@@ -210,8 +210,8 @@ int test() {
 		if ( glfwGetKey( simWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
 			glfwSetWindowShouldClose( simWindow, GL_TRUE );
 
-//		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
-//			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
+		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
 
 
 
@@ -221,17 +221,14 @@ int test() {
 
 	// cleanup buffers	TODO: move to gx
 	glDeleteBuffers( 1, &dataBufEnv );
-//	glDeleteBuffers( 1, &dataBufFCM );
-//	glDeleteBuffers( 1, &linesBufFCM );
+	glDeleteBuffers( 1, &dataBufFCM );
+	glDeleteBuffers( 1, &linesBufFCM );
 	glDeleteProgram( shaderProg1 );
-//	glDeleteProgram( shaderProg2 );
+	glDeleteProgram( shaderProg2 );
 	glDeleteVertexArrays( 1, &vaoEnv );
-//	glDeleteVertexArrays( 1, &vaoFCM );
+	glDeleteVertexArrays( 1, &vaoFCM );
 
 	gx::destroyWindow();
-
-
-
 
 
 

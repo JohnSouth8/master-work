@@ -158,7 +158,8 @@ namespace util {
 
 	float stimulusVisualActivation( float angle, float distance ) {
 		// TODO: subject to testing and change!
-		return (PI - fabs( angle ) / PI) / pow( distance, 2 );
+//		return (PI - fabs( angle ) / PI) / pow( distance, 2 );
+		return (PI - fabs( angle ) / PI) / distance;
 	}
 
 

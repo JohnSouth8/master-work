@@ -56,7 +56,6 @@ Animat::Animat( string nm, std::vector<float> gnm, float px, float py, float dir
 	direction = dir;
 	velocity = 0;
 
-
 }
 
 // deprecated
@@ -129,6 +128,7 @@ void Animat::move() {
 	posX = util::getWrappedCoordinate( newX, HABITAT->sizeX );
 	posY = util::getWrappedCoordinate( newY, HABITAT->sizeY );
 	energy -= 1;	// TODO: energy loss should be proportional to action (so not int? or rather some linguistic classes i.e. 'some', 'a lot of' energy lost)
+					//  also, if no movement is performed, very little energy should be subtracted
 
 }
 

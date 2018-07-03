@@ -68,9 +68,9 @@ public:
 //	float integrity;			// possible synergy with pain and fight...
 
 	// perception model
-	std::vector<util::stimulus> nearbyFood;
-	std::vector<util::stimulus> nearbyKin;
-	std::vector<util::stimulus> nearbyFoes;
+	std::vector<util::stimulus> nearbyFood;		// |
+	std::vector<util::stimulus> nearbyKin;		// ---> together form sensory memory
+	std::vector<util::stimulus> nearbyFoes;		// |
 	Eigen::VectorXf sensation;
 
 	// brain

@@ -426,6 +426,42 @@ int test_quadTreeFood() {
 
 
 
+int test_quadTreeRemoval() {
+
+	HABITAT->populateWorld( 0 );
+
+	cout << "number of animats in the tree: " << HABITAT->populationTree.count() << endl;
+
+	vector<Organism*> animats = HABITAT->populationTree.getAll();
+	int aniLen = animats.size();
+
+	cout << "number of animats retreived from the tree: " << aniLen << endl;
+
+	std::random_shuffle( animats.begin(), animats.end() );
+
+	for ( int i = aniLen-1; i >= 0; --i ) {
+
+		cout << "iteration " << (aniLen - i) << endl;
+
+
+		Animat* remo = dynamic_cast<Animat*>( animats[i] );
+		string nm = remo->name;
+		HABITAT->death( remo );
+
+		cout << "\tanimat " << nm << " died" << endl;
+
+		cout << "\t- number of animats left in the tree: " << HABITAT->populationTree.count() << endl;
+
+//		std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+
+	}
+
+	return 0;
+
+}
+
+
+
 int test_angles() {
 
 	int n_tests = 50;
