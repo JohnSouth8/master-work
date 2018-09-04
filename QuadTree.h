@@ -33,12 +33,14 @@ public:
 
 	QuadTree();
 	QuadTree( unsigned int, coordinate, coordinate );
+	QuadTree( unsigned int, coordinate, coordinate, QuadTree* );
 	virtual ~QuadTree();
 
 	// params
 	unsigned int bucketSize;
 	coordinate start;
 	coordinate end;
+	QuadTree* parent;
 
 	// data
 	std::vector<ecosystem::Organism*> bucket;
@@ -52,11 +54,13 @@ public:
 
 	bool containsCoordinate( coordinate );
 	void subdivide();
+	bool merge();
 
 	bool insert( ecosystem::Organism* );
 	bool remove( ecosystem::Organism* );
+	bool move( ecosystem::Organism*, coordinate );
 
-	int count();
+	unsigned int count();
 	ecosystem::Organism* find( coordinate );
 	std::vector<ecosystem::Organism*> rangeQuery( coordinate, coordinate, coordinate );
 	// TODO: optimize with an additional function of move() (requires parent node to be known)

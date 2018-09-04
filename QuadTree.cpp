@@ -24,6 +24,7 @@ QuadTree::QuadTree() :
 	bucketSize( 0 ),
 	start( coordinate( 0, 0 ) ),
 	end( coordinate( 1, 1 ) ),
+	parent( nullptr ),
 	northWest( nullptr ),
 	northEast( nullptr ),
 	southWest( nullptr ),
@@ -34,6 +35,18 @@ QuadTree::QuadTree( unsigned int capacity, coordinate upright, coordinate downle
 	bucketSize( capacity ),
 	start( upright ),
 	end( downleft ),
+	parent( nullptr ),
+	northWest( nullptr ),
+	northEast( nullptr ),
+	southWest( nullptr ),
+	southEast( nullptr )
+{}
+
+QuadTree::QuadTree( unsigned int capacity, coordinate upright, coordinate downleft, QuadTree* parent ) :
+	bucketSize( capacity ),
+	start( upright ),
+	end( downleft ),
+	parent( parent ),
 	northWest( nullptr ),
 	northEast( nullptr ),
 	southWest( nullptr ),
@@ -66,19 +79,19 @@ void QuadTree::subdivide() {
 
 	coordinate nw_start = start;
 	coordinate nw_end( halfX, halfY );
-	northWest = new QuadTree( bucketSize, nw_start, nw_end );
+	northWest = new QuadTree( bucketSize, nw_start, nw_end, this );
 
 	coordinate ne_start( halfX, start.y );
 	coordinate ne_end( end.x, halfY );
-	northEast = new QuadTree( bucketSize, ne_start, ne_end );
+	northEast = new QuadTree( bucketSize, ne_start, ne_end, this );
 
 	coordinate sw_start( start.x, halfY );
 	coordinate sw_end( halfX, end.y );
-	southWest = new QuadTree( bucketSize, sw_start, sw_end );
+	southWest = new QuadTree( bucketSize, sw_start, sw_end, this );
 
 	coordinate se_start( halfX, halfY );
 	coordinate se_end = end;
-	southEast = new QuadTree( bucketSize, se_start, se_end );
+	southEast = new QuadTree( bucketSize, se_start, se_end, this );
 
 
 	// divide contaning organisms among subtrees
@@ -98,6 +111,15 @@ void QuadTree::subdivide() {
 	std::vector<Organism*>().swap( bucket );
 
 }
+
+
+
+bool QuadTree::merge() {
+
+	return true;
+
+}
+
 
 
 bool QuadTree::insert( Organism* org ) {
@@ -138,14 +160,26 @@ bool QuadTree::remove( Organism* org ) {
 		return false;
 
 	if ( northWest == nullptr ) {
+
 		std::vector<Organism*>::iterator it;
 		for ( it = bucket.begin(); it < bucket.end(); ++it ) {
+
 			if ( (*it)->posX == org->posX && (*it)->posY == org->posY ) {
+
 				bucket.erase( it );
-				return true;
+
+				// if the bucket is empty, try to merge parent node
+				if ( bucket.empty() == 0 && parent->count() < bucketSize )
+					return parent->merge();
+				else
+					return true;
+
 			}
+
 		}
+
 		return false;	// item was not found
+
 	}
 
 	if ( northWest->remove( org ) )
@@ -166,7 +200,30 @@ bool QuadTree::remove( Organism* org ) {
 
 
 
-int QuadTree::count() {
+bool QuadTree::move( Organism* org, coordinate newPos ) {
+
+	if ( !containsCoordinate( coordinate( org->posX, org->posY ) ) )
+		return false;
+
+	if ( northWest == nullptr ) {
+		std::vector<Organism*>::iterator it;
+		for ( it = bucket.begin(); it < bucket.end(); ++it ) {
+			if ( (*it)->posX == org->posX && (*it)->posY == org->posY ) {
+				bucket.erase( it );
+				return true;
+			}
+		}
+		return false;	// item was not found
+	}
+
+
+	return false;
+
+}
+
+
+
+unsigned int QuadTree::count() {
 
 	int counter = 0;
 

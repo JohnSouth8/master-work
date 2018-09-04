@@ -66,9 +66,9 @@ int main( void ) {
 //	test_with_visuals();
 //	test_random_animats();
 //	test_angles();
-//	test();
+	test();
 //	test_whatever();
-  	test_quadTreeRemoval();
+//  test_quadTreeRemoval();
 
 
 	// stop timer and print exec time

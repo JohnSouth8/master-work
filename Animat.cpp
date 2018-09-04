@@ -118,17 +118,25 @@ void Animat::setVelocity( float v_new ) {
 
 void Animat::move() {
 
-	float newX, newY, deltaX, deltaY;
+	float oldX, oldY, newX, newY, deltaX, deltaY;
 
+	oldX = posX;
+	oldY = posY;
 	deltaX = velocity * cos( direction );
 	deltaY = velocity * sin( direction );
-	newX = posX + deltaX;
-	newY = posY + deltaY;
+	newX = oldX + deltaX;
+	newY = oldY + deltaY;
 
 	posX = util::getWrappedCoordinate( newX, HABITAT->sizeX );
 	posY = util::getWrappedCoordinate( newY, HABITAT->sizeY );
 	energy -= 1;	// TODO: energy loss should be proportional to action (so not int? or rather some linguistic classes i.e. 'some', 'a lot of' energy lost)
 					//  also, if no movement is performed, very little energy should be subtracted
+
+	// TODO: it should be ensured that absolutely no 2 animats share the exact same position
+
+	// Animats should move within the QuadTree as well
+	coordinate newPos( newX, newY );
+	HABITAT->populationTree.move( this, newPos );
 
 }
 
