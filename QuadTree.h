@@ -58,7 +58,6 @@ public:
 
 	bool insert( ecosystem::Organism* );
 	bool remove( ecosystem::Organism* );
-	bool move( ecosystem::Organism*, coordinate );
 
 	unsigned int count();
 	ecosystem::Organism* find( coordinate );

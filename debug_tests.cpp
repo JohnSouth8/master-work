@@ -462,6 +462,65 @@ int test_quadTreeRemoval() {
 
 
 
+int test_animatMovements() {
+
+	HABITAT->populateWorld( 0 );
+
+	cout << "number of animats in the tree: " << HABITAT->populationTree.count() << endl;
+
+	vector<Organism*> animats = HABITAT->populationTree.getAll();
+	int aniLen = animats.size();
+
+	cout << "number of animats retreived from the tree: " << aniLen << endl;
+
+	std::random_shuffle( animats.begin(), animats.end() );
+
+	for ( int i = 1; i <= aniLen; i++ ) {
+
+		cout << "iteration " << i << endl;
+
+
+		Animat* mover = dynamic_cast<Animat*>( animats[i] );
+
+		cout << "animat " << mover->name;
+		cout << " at position (" << mover->posX << "," << mover->posY << "), facing " << mover->direction << endl;
+
+		coordinate oldPos( mover->posX, mover->posY );
+		if ( dynamic_cast<Animat*> ( HABITAT->populationTree.find( oldPos ) ) == mover )
+			cout << "\t-found in the quad tree!" << endl;
+
+		float randturn = RNGESUS->uniformRandomUnitFloat() * PI;
+		if ( RNGESUS->randomBoolean() )
+			randturn *= -1;
+		float randspeed = RNGESUS->uniformRandomUnitFloat();
+
+		mover->turn( randturn );
+		mover->adjustVelocity( randspeed );
+
+		cout << "turns by " << randturn << " radians to " << mover->direction << " and accelerates to " << randspeed << " of max speed" << endl;
+
+		mover->move();
+
+		cout << mover->name << " now at position (" << mover->posX << "," << mover->posY << ")" << endl;
+
+		coordinate newPos( mover->posX, mover->posY );
+		if ( dynamic_cast<Animat*> ( HABITAT->populationTree.find( newPos ) ) == mover )
+			cout << "\t-found in the quad tree!" << endl;
+
+		if ( !HABITAT->populationTree.find( oldPos ) )
+			cout << "\t-old position now vacant!" << endl;
+
+//		getchar();
+
+
+	}
+
+	return 0;
+
+}
+
+
+
 int test_angles() {
 
 	int n_tests = 50;

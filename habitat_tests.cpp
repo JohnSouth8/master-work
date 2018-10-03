@@ -162,13 +162,17 @@ int test() {
 
 			}
 
-			if ( obituary.size() > 0 )
+			if ( obituary.size() > 0 ) {
 				for ( auto obt : obituary ) {
 					HABITAT->death( obt );
 				}
+			}
+
+			if ( HABITAT->population.size() == 0 )
+				break;
 
 			// if tracked animat died, transfer tracking to random animat if any
-			if ( HABITAT->population.find( tracked->name ) == HABITAT->population.end() && HABITAT->population.size() > 0 ) {
+			if ( HABITAT->population.find( tracked->name ) == HABITAT->population.end() ) {
 				Organism* trorg = HABITAT->populationTree.getRandomOrganism();
 				while ( trorg == nullptr )
 					trorg = HABITAT->populationTree.getRandomOrganism();
@@ -190,7 +194,7 @@ int test() {
 
 			++time_counter;
 
-			std::this_thread::sleep_for( std::chrono::milliseconds( simulationPause ) );
+//			std::this_thread::sleep_for( std::chrono::milliseconds( simulationPause ) );
 
 			cout << "#";
 			cout.flush();
@@ -228,9 +232,14 @@ int test() {
 	glDeleteVertexArrays( 1, &vaoEnv );
 	glDeleteVertexArrays( 1, &vaoFCM );
 
+
+	glfwMakeContextCurrent( fcmWindow );
+	gx::destroyWindow();
+	glfwMakeContextCurrent( simWindow );
 	gx::destroyWindow();
 
 
+	cout << endl << "Simulation concluded cleanly, extinction complete" << endl;
 
 
 	return 0;

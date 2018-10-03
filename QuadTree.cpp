@@ -72,6 +72,7 @@ bool QuadTree::containsCoordinate( coordinate point ) {
 }
 
 
+
 void QuadTree::subdivide() {
 
 	float halfX = start.x + (end.x - start.x) / 2;
@@ -116,7 +117,27 @@ void QuadTree::subdivide() {
 
 bool QuadTree::merge() {
 
-	return true;
+	// if this is already a leaf node with the bucket
+	if ( northWest == nullptr )
+		return true;	// do nothing
+
+	// otherwise count the number of members in the child nodes
+	unsigned int membersCount = this->count();
+
+	// if too many children, also if this bucket would immediately be full
+	if ( membersCount > (bucketSize/2) )
+		return true;	// nothing to do here
+	else {
+		// otherwise gather children from each subtree and delete the subtrees
+		bucket = this->getAll();
+		delete northWest; northWest = nullptr;
+		delete northEast; northEast = nullptr;
+		delete southWest; southWest = nullptr;
+		delete southEast; southEast = nullptr;
+		return true;
+	}
+
+	return false;
 
 }
 
@@ -169,7 +190,7 @@ bool QuadTree::remove( Organism* org ) {
 				bucket.erase( it );
 
 				// if the bucket is empty, try to merge parent node
-				if ( bucket.empty() == 0 && parent->count() < bucketSize )
+				if ( bucket.empty() == 0 && parent != nullptr && parent->count() < (parent->bucketSize/2) )
 					return parent->merge();
 				else
 					return true;
@@ -193,29 +214,6 @@ bool QuadTree::remove( Organism* org ) {
 
 	if ( southEast->remove( org ) )
 		return true;
-
-	return false;
-
-}
-
-
-
-bool QuadTree::move( Organism* org, coordinate newPos ) {
-
-	if ( !containsCoordinate( coordinate( org->posX, org->posY ) ) )
-		return false;
-
-	if ( northWest == nullptr ) {
-		std::vector<Organism*>::iterator it;
-		for ( it = bucket.begin(); it < bucket.end(); ++it ) {
-			if ( (*it)->posX == org->posX && (*it)->posY == org->posY ) {
-				bucket.erase( it );
-				return true;
-			}
-		}
-		return false;	// item was not found
-	}
-
 
 	return false;
 

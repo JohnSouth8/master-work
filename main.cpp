@@ -69,6 +69,7 @@ int main( void ) {
 	test();
 //	test_whatever();
 //  test_quadTreeRemoval();
+//  test_animatMovements();
 
 
 	// stop timer and print exec time

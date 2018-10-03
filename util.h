@@ -33,10 +33,6 @@ namespace util {
 	Eigen::VectorXf sigmoid( Eigen::VectorXf );
 	Eigen::VectorXf tanh( Eigen::VectorXf );
 
-	// following functions are deprecated since implementation of util::Chance
-	int randIntFrom( int, int );
-	float randFromUnitInterval();
-
 	int getWrappedIndex( int, int );
 	float getWrappedCoordinate( float, int );
 	float distanceInPeriodicBoundary( float, float, float, float, int, int );
