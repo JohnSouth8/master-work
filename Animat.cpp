@@ -136,7 +136,9 @@ void Animat::move() {
 
 	posX = util::getWrappedCoordinate( newX, HABITAT->sizeX );
 	posY = util::getWrappedCoordinate( newY, HABITAT->sizeY );
-	energy -= 1;	// TODO: energy loss should be proportional to action (so not int? or rather some linguistic classes i.e. 'some', 'a lot of' energy lost)
+
+	// currently energy is of minor importance
+//	energy -= 1;	// TODO: energy loss should be proportional to action (so not int? or rather some linguistic classes i.e. 'some', 'a lot of' energy lost)
 					//  also, if no movement is performed, very little energy should be subtracted
 
 
@@ -338,17 +340,17 @@ void Animat::sense() {
 
 	// add activations to sensation
 	sensation(cognition.concepts["s_foodNearby"]) 	+= foodActivation;
-	sensation(cognition.concepts["s_kinNearby"]) 	+= kinActivation;
+//	sensation(cognition.concepts["s_kinNearby"]) 	+= kinActivation;
 	sensation(cognition.concepts["s_foodInReach"])	+= foodInReach;
-	sensation(cognition.concepts["s_kinInReach"]) 	+= kinInReach;
+//	sensation(cognition.concepts["s_kinInReach"]) 	+= kinInReach;
 	sensation(cognition.concepts["s_foodLeft"]) 	+= foodActivation_l;
 	sensation(cognition.concepts["s_foodRight"]) 	+= foodActivation_r;
-	sensation(cognition.concepts["s_kinLeft"]) 		+= kinActivation_l;
-	sensation(cognition.concepts["s_kinRight"]) 	+= kinActivation_r;
+//	sensation(cognition.concepts["s_kinLeft"]) 		+= kinActivation_l;
+//	sensation(cognition.concepts["s_kinRight"]) 	+= kinActivation_r;
 	sensation(cognition.concepts["s_speed"])		+= speedActivation;
-	sensation(cognition.concepts["s_energy"])		+= energyActivation;
-	sensation(cognition.concepts["s_fatigue"])		+= fatigueActivation;
-	sensation(cognition.concepts["s_comfort"])		+= comfortActivation;
+//	sensation(cognition.concepts["s_energy"])		+= energyActivation;
+//	sensation(cognition.concepts["s_fatigue"])		+= fatigueActivation;
+//	sensation(cognition.concepts["s_comfort"])		+= comfortActivation;
 
 
 }

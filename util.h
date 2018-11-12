@@ -44,6 +44,7 @@ namespace util {
 	float stimulusVisualActivation( float, float );
 	float stimulusOlfactoryActivation( float );
 	bool compareStimuli( stimulus, stimulus );
+	bool compareAnimatEnergies( ecosystem::Animat*, ecosystem::Animat* );
 
 	std::vector<float> constructGenome( std::map<std::string, float> );
 	std::vector<float> constructRandomGenome( std::map<std::string, float> );

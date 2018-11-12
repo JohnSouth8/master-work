@@ -227,6 +227,12 @@ namespace util {
 
 
 
+	bool compareAnimatEnergies( ecosystem::Animat* ani1, ecosystem::Animat* ani2 ) {
+		return ani1->energy > ani2->energy;
+	}
+
+
+
 	std::vector<float> constructGenome( std::map<string, float> ini ) {
 
 		int genomeLength = 8 + pow( ini["n_concepts"], 2 );

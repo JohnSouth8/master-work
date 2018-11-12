@@ -293,9 +293,10 @@ bool Habitat::breed( Animat* groom, Animat* bride ) {
 	float mutationRate = env_ini["mutation_rate"];
 	float mutationEffectSTD = env_ini["mutation_std"];
 
-	float distance = distanceBetweenOrganisms( groom, bride );
-	if ( distance > groom->reach || distance > bride->reach )
-		return false;
+	// distance is not important yet
+//	float distance = distanceBetweenOrganisms( groom, bride );
+//	if ( distance > groom->reach || distance > bride->reach )
+//		return false;
 
 	std::vector<float> gene_offspring ( geneSize );
 

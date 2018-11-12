@@ -249,6 +249,187 @@ int test() {
 
 
 
+int test_fixed_evolution() {
+
+
+	HABITAT->populateWorld( 0 );	//!!
+	int n_animats = HABITAT->population.size();
+	tracked = dynamic_cast<Animat*>( HABITAT->populationTree.getRandomOrganism() );
+
+	for ( int i = 0; i < 500; ++i ) HABITAT->growMeadows();
+
+
+
+	if ( !glfwInit() ) {
+		std::cout << "Failed to initialise GLFW" << std::endl;
+		return -1;
+	}
+	simWindow = gx::createWindow( 1000, 1000, "simulation" );
+	gx::setBackground( 0.0f, 0.0f, 0.0f, 1.0f );
+	gx::setupKeyboard( simWindow, keyActions );
+//	gx::setupKeyboard( simWindow );
+
+	// load stuff
+	GLuint vaoEnv = gx::createAndBindVAO();
+	GLuint dataBufEnv = gx::createVBO();
+	GLuint shaderProg1 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
+	gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv, tracked->name );
+	gx::drawHabitat( simWindow, shaderProg1 );
+
+
+	// create new window for fcm
+	fcmWindow = gx::createWindow( 500, 500, "fcm " + tracked->name );
+	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
+	gx::setupKeyboard( fcmWindow, keyActions );
+	// load stuff
+	GLuint vaoFCM = gx::createAndBindVAO();
+	GLuint dataBufFCM = gx::createVBO();
+	GLuint linesBufFCM = gx::createVBO();
+	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
+
+	gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
+	gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
+
+
+
+	int time_counter = 0;
+	int reproduction_cycle = 200;
+	float mating_fraction = 0.1;
+	int n_successful = mating_fraction * n_animats;
+
+	while( HABITAT->population.size() > 0 && !glfwWindowShouldClose( simWindow ) && !glfwWindowShouldClose( fcmWindow ) ) {
+
+		if ( simState != PAUSE )
+		{
+
+			HABITAT->growMeadows();
+
+			for ( auto &nm_ani : HABITAT->population )
+			{
+
+				Animat* ani = nm_ani.second;
+				ani->reason();
+
+			}
+
+
+//			if ( HABITAT->population.size() == 0 )
+//				break;
+//
+//			// if tracked animat died, transfer tracking to random animat if any
+//			if ( HABITAT->population.find( tracked->name ) == HABITAT->population.end() ) {
+//				Organism* trorg = HABITAT->populationTree.getRandomOrganism();
+//				while ( trorg == nullptr )
+//					trorg = HABITAT->populationTree.getRandomOrganism();
+//				tracked = dynamic_cast<Animat*>( trorg );
+//				glfwSetWindowTitle( fcmWindow, ("fcm " + tracked->name).c_str() );
+//			}
+
+
+			glfwMakeContextCurrent( simWindow );
+			gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv, tracked->name );
+			gx::drawHabitat( simWindow, shaderProg1 );
+
+			if ( HABITAT->population.size() > 0 ) {
+				glfwMakeContextCurrent( fcmWindow );
+				glfwSetWindowTitle( fcmWindow, ("fcm " + tracked->name).c_str() );
+				gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
+				gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
+			}
+
+			++time_counter;
+
+
+
+			// every <reproduction_cycle> iterations, pair the most successful and kill the old generation
+			if ( time_counter % reproduction_cycle == 0 ) {
+
+				// first get the most succesful - order the animats by energy
+				vector<Organism*> temps = HABITAT->populationTree.getAll();
+				vector<Animat*> candidates( temps.size() );
+				for ( uint i = 0; i < temps.size(); i++ )
+					candidates[i] = dynamic_cast<Animat*>( temps[i] );
+				std::sort( candidates.begin(), candidates.end(), util::compareAnimatEnergies );
+
+				// top <n_successful> get to mate
+				int n_offspring = 0;
+				while ( n_offspring < n_animats ) {
+					// choose a partner randomly
+					int partner1 = n_offspring % n_successful;
+					int partner2 = RNGESUS->uniformRandomIntFrom( 0, n_successful );
+					while ( partner2 == partner1 )
+						// redo if RNGESUS wants hermaphrodism
+						partner2 = RNGESUS->uniformRandomIntFrom( 0, n_successful );
+
+					HABITAT->breed( candidates[partner1], candidates[partner2] );
+
+				}
+
+
+				// then kill all of them -> remove them from the tree
+				for ( auto ani : candidates )
+					HABITAT->death( ani );
+
+
+			}
+
+
+
+//			std::this_thread::sleep_for( std::chrono::milliseconds( simulationPause ) );
+
+			cout << "#";
+			cout.flush();
+			if ( time_counter % 100 == 0 )
+				cout << " " << time_counter << endl;
+
+			// pause simulation if STEP
+			if ( simState == STEP )
+				simState = PAUSE;
+
+
+		}
+
+
+		glfwPollEvents();
+
+		if ( glfwGetKey( simWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+			glfwSetWindowShouldClose( simWindow, GL_TRUE );
+
+		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
+
+
+
+
+	}
+
+
+	// cleanup buffers	TODO: move to gx
+	glDeleteBuffers( 1, &dataBufEnv );
+	glDeleteBuffers( 1, &dataBufFCM );
+	glDeleteBuffers( 1, &linesBufFCM );
+	glDeleteProgram( shaderProg1 );
+	glDeleteProgram( shaderProg2 );
+	glDeleteVertexArrays( 1, &vaoEnv );
+	glDeleteVertexArrays( 1, &vaoFCM );
+
+
+	glfwMakeContextCurrent( fcmWindow );
+	gx::destroyWindow();
+	glfwMakeContextCurrent( simWindow );
+	gx::destroyWindow();
+
+
+	cout << endl << "Simulation concluded cleanly, extinction complete" << endl;
+
+
+	return 0;
+
+
+}
+
+
+
 int test_random_animats() {
 
 	// init animats

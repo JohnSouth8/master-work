@@ -26,6 +26,7 @@ void keyActions( GLFWwindow* window, int key, int scancode, int action, int mods
 int test_random_animats();
 int test_foodGrowth_visual();
 int test();
+int test_fixed_evolution();
 int test_old();
 int test_with_visuals();
 

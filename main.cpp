@@ -66,7 +66,8 @@ int main( void ) {
 //	test_with_visuals();
 //	test_random_animats();
 //	test_angles();
-	test();
+//	test();
+	test_fixed_evolution();
 //	test_whatever();
 //  test_quadTreeRemoval();
 //  test_animatMovements();

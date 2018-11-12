@@ -20,8 +20,8 @@ const float PI = 3.14159;
 //filenames
 const std::string ENVIRONMENT_INI 		= "environment.ini";
 const std::string ANIMAT_INI 			= "animat.ini";
-const std::string FCM_CONCEPTS_FILE 	= "fcm_concepts_031";
-const std::string FCM_MASK_FILE			= "fcm_mask_031";
+const std::string FCM_CONCEPTS_FILE 	= "fcm_concepts_04";
+const std::string FCM_MASK_FILE			= "fcm_mask_04";
 
 // randomness
 std::random_device FATE;
