@@ -56,6 +56,7 @@ public:
 	void subdivide();
 	bool merge();
 
+	bool insertDebug( ecosystem::Organism* );
 	bool insert( ecosystem::Organism* );
 	bool remove( ecosystem::Organism* );
 

@@ -60,6 +60,9 @@ public:
 	std::map<std::string, float> env_ini;
 	std::map<std::string, float> ani_ini;
 
+	// tracking variables
+	int foodConsumed;
+
 
 	// member functions
 	void growMeadows();
@@ -69,7 +72,7 @@ public:
 
 	void populateWorld( int );
 	void populateWorldOld( int, std::string, std::string, std::string );
-	bool breed( Animat*, Animat* );
+	bool breed( Animat*, Animat*, bool );
 	void birth( std::vector<float>, util::coordinate location, float direction );
 	void death( Animat* );
 

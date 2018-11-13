@@ -252,11 +252,11 @@ int test() {
 int test_fixed_evolution() {
 
 
-	HABITAT->populateWorld( 0 );	//!!
+	HABITAT->populateWorld( 500 );	//!!
 	int n_animats = HABITAT->population.size();
 	tracked = dynamic_cast<Animat*>( HABITAT->populationTree.getRandomOrganism() );
 
-	for ( int i = 0; i < 500; ++i ) HABITAT->growMeadows();
+	for ( int i = 0; i < 300; ++i ) HABITAT->growMeadows();
 
 
 
@@ -273,31 +273,31 @@ int test_fixed_evolution() {
 	GLuint vaoEnv = gx::createAndBindVAO();
 	GLuint dataBufEnv = gx::createVBO();
 	GLuint shaderProg1 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
-	gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv, tracked->name );
+	gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv, "" );
 	gx::drawHabitat( simWindow, shaderProg1 );
 
 
 	// create new window for fcm
-	fcmWindow = gx::createWindow( 500, 500, "fcm " + tracked->name );
-	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
-	gx::setupKeyboard( fcmWindow, keyActions );
-	// load stuff
-	GLuint vaoFCM = gx::createAndBindVAO();
-	GLuint dataBufFCM = gx::createVBO();
-	GLuint linesBufFCM = gx::createVBO();
-	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
-
-	gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
-	gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
+//	fcmWindow = gx::createWindow( 500, 500, "fcm " + tracked->name );
+//	gx::setBackground( 1.0f, 1.0f, 1.0f, 1.0f );
+//	gx::setupKeyboard( fcmWindow, keyActions );
+//	// load stuff
+//	GLuint vaoFCM = gx::createAndBindVAO();
+//	GLuint dataBufFCM = gx::createVBO();
+//	GLuint linesBufFCM = gx::createVBO();
+//	GLuint shaderProg2 = gx::loadShaders( "shaders/shader.vert", "shaders/shader.frag" );
+//
+//	gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
+//	gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
 
 
 
 	int time_counter = 0;
-	int reproduction_cycle = 200;
+	int reproduction_cycle = 300;
 	float mating_fraction = 0.1;
 	int n_successful = mating_fraction * n_animats;
 
-	while( HABITAT->population.size() > 0 && !glfwWindowShouldClose( simWindow ) && !glfwWindowShouldClose( fcmWindow ) ) {
+	while( HABITAT->population.size() > 0 && !glfwWindowShouldClose( simWindow ) /*&& !glfwWindowShouldClose( fcmWindow )*/ ) {
 
 		if ( simState != PAUSE )
 		{
@@ -327,22 +327,45 @@ int test_fixed_evolution() {
 
 
 			glfwMakeContextCurrent( simWindow );
-			gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv, tracked->name );
+			gx::loadHabitatIntoBuffer( vaoEnv, dataBufEnv, "" );
 			gx::drawHabitat( simWindow, shaderProg1 );
 
-			if ( HABITAT->population.size() > 0 ) {
-				glfwMakeContextCurrent( fcmWindow );
-				glfwSetWindowTitle( fcmWindow, ("fcm " + tracked->name).c_str() );
-				gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
-				gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
-			}
+//			if ( HABITAT->population.size() > 0 ) {
+//				glfwMakeContextCurrent( fcmWindow );
+//				glfwSetWindowTitle( fcmWindow, ("fcm " + tracked->name).c_str() );
+//				gx::loadFCMIntoBuffer( tracked, vaoFCM, dataBufFCM, linesBufFCM );
+//				gx::drawFCM( fcmWindow, tracked, shaderProg2, dataBufFCM, linesBufFCM );
+//			}
 
 			++time_counter;
+//			std::this_thread::sleep_for( std::chrono::milliseconds( simulationPause ) );
+
+			cout << "#";
+			cout.flush();
+			if ( time_counter % 100 == 0 )
+				cout << " " << time_counter << endl;
+
+
+			// pause simulation if STEP
+			if ( simState == STEP )
+				simState = PAUSE;
+
+
+
+
 
 
 
 			// every <reproduction_cycle> iterations, pair the most successful and kill the old generation
 			if ( time_counter % reproduction_cycle == 0 ) {
+
+				// print the successfulness of this generation and reset it
+				cout << "Food consumed by current generation: " << HABITAT->foodConsumed << endl;
+				HABITAT->foodConsumed = 0;
+
+
+				cout << "New generation hatching!" << endl;
+
 
 				// first get the most succesful - order the animats by energy
 				vector<Organism*> temps = HABITAT->populationTree.getAll();
@@ -361,7 +384,8 @@ int test_fixed_evolution() {
 						// redo if RNGESUS wants hermaphrodism
 						partner2 = RNGESUS->uniformRandomIntFrom( 0, n_successful );
 
-					HABITAT->breed( candidates[partner1], candidates[partner2] );
+					if ( HABITAT->breed( candidates[partner1], candidates[partner2], false ) )
+						n_offspring++;
 
 				}
 
@@ -370,21 +394,9 @@ int test_fixed_evolution() {
 				for ( auto ani : candidates )
 					HABITAT->death( ani );
 
+				cout << "Generation revolution complete!" << endl;
 
 			}
-
-
-
-//			std::this_thread::sleep_for( std::chrono::milliseconds( simulationPause ) );
-
-			cout << "#";
-			cout.flush();
-			if ( time_counter % 100 == 0 )
-				cout << " " << time_counter << endl;
-
-			// pause simulation if STEP
-			if ( simState == STEP )
-				simState = PAUSE;
 
 
 		}
@@ -395,8 +407,8 @@ int test_fixed_evolution() {
 		if ( glfwGetKey( simWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
 			glfwSetWindowShouldClose( simWindow, GL_TRUE );
 
-		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
-			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
+//		if ( glfwGetKey( fcmWindow, GLFW_KEY_ESCAPE ) == GLFW_PRESS )
+//			glfwSetWindowShouldClose( fcmWindow, GL_TRUE );
 
 
 
@@ -406,21 +418,21 @@ int test_fixed_evolution() {
 
 	// cleanup buffers	TODO: move to gx
 	glDeleteBuffers( 1, &dataBufEnv );
-	glDeleteBuffers( 1, &dataBufFCM );
-	glDeleteBuffers( 1, &linesBufFCM );
+//	glDeleteBuffers( 1, &dataBufFCM );
+//	glDeleteBuffers( 1, &linesBufFCM );
 	glDeleteProgram( shaderProg1 );
-	glDeleteProgram( shaderProg2 );
+//	glDeleteProgram( shaderProg2 );
 	glDeleteVertexArrays( 1, &vaoEnv );
-	glDeleteVertexArrays( 1, &vaoFCM );
+//	glDeleteVertexArrays( 1, &vaoFCM );
 
 
-	glfwMakeContextCurrent( fcmWindow );
-	gx::destroyWindow();
+//	glfwMakeContextCurrent( fcmWindow );
+//	gx::destroyWindow();
 	glfwMakeContextCurrent( simWindow );
 	gx::destroyWindow();
 
 
-	cout << endl << "Simulation concluded cleanly, extinction complete" << endl;
+	cout << endl << "Simulation concluded cleanly, extinction is complete" << endl;
 
 
 	return 0;

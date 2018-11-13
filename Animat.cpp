@@ -50,7 +50,9 @@ Animat::Animat( string nm, std::vector<float> gnm, float px, float py, float dir
 //	util::printMatrixToFile( cognition.L, "debug_output/"+name+"_L.txt", false );
 
 	age = 0;
-	energy = maxEnergy / 2;
+	// TODO temporarirly removed
+//	energy = maxEnergy / 2;
+	energy = 0;
 	comfort = 50;
 	fatigue = 0;
 	direction = dir;
@@ -196,7 +198,7 @@ void Animat::procreate() {
 		if ( mates.distance <= reach ) {
 			Animat* mate = static_cast<Animat*>( mates.entity );
 			if ( court( mate ) )
-				HABITAT->breed( this, mate );
+				HABITAT->breed( this, mate, true );
 		}
 	}
 
@@ -593,7 +595,7 @@ void Animat::react( VectorXf motor ) {
 	if ( motor(0) > 0.5 ) {
 		// if eat action is successful (some energy is gained), the animat can no longer act
 		if ( nearbyFood.size() > 0 && nearbyFood[0].distance <= reach && eat( nearbyFood[0].entity->posX, nearbyFood[0].entity->posY ) != 0 ) {
-			std::cout << "I, " << name << ", ate!" << std::endl;
+//			std::cout << "I, " << name << ", ate!" << std::endl;
 			return;
 		}
 	}
@@ -766,7 +768,8 @@ void Animat::formPhenotype() {
 	eyeFieldOfView	= RNGESUS->normalFloat( eyeFieldOfView, STD_DEGREE*eyeFieldOfView );
 	olfactoryRange	= RNGESUS->normalFloat( olfactoryRange, STD_DEGREE*olfactoryRange );
 
-	cognition.setLinkMatrixFromMask( genome, gene );
+//	cognition.setLinkMatrixFromMask( genome, gene );
+	cognition.setLinkMatrixFromParentGenome( genome, gene );
 
 }
 

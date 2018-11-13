@@ -61,6 +61,9 @@ Habitat::Habitat() {
 		meadows.push_back( m );
 	}
 
+	// tracking
+	foodConsumed = 0;
+
 }
 
 Habitat::Habitat( string iniFileName ) {
@@ -91,6 +94,8 @@ Habitat::Habitat( string iniFileName ) {
 		meadows.push_back( m );
 	}
 
+	// tracking
+	foodConsumed = 0;
 
 }
 
@@ -124,10 +129,9 @@ void Habitat::populateWorld( int n_animats ) {
 	std::vector<float> pys = RNGESUS->nUniformRandomFloatsFrom( n_animats, 0, sizeY );
 	std::vector<float> dirs = RNGESUS->nUniformRandomFloatsFrom( n_animats, -PI, PI );
 
-	std::vector<float> ancestor_genome = util::constructGenome( ani_ini );
-
 	for ( int i = 0; i < n_animats; ++i ) {
-		birth( ancestor_genome, coordinate( pxs[i], pys[i] ), dirs[i] );
+		std::vector<float> parent_genome = util::constructRandomGenome( ani_ini );
+		birth( parent_genome, coordinate( pxs[i], pys[i] ), dirs[i] );
 	}
 
 }
@@ -199,10 +203,10 @@ void Habitat::birth( std::vector<float> genome, coordinate location, float direc
 	populationTree.insert( ani );
 	population[ani->name] = ani;	// staged to be deprecated
 
-	// debug
-	int n = populationTree.count();
-	std::cout << "Born animat number "<< n << ":\t";
-	ani->toString();
+//	// debug
+//	int n = populationTree.count();
+//	std::cout << "Born animat number "<< n << ":\t";
+//	ani->toString();
 
 }
 
@@ -276,7 +280,7 @@ float Habitat::consumeFood( int x, int y ){
 		return 0;
 	else {
 		grassTree.remove( gr );
-//		vegetation.find
+		foodConsumed++;
 		return foodEnergyVal;
 	}
 
@@ -284,7 +288,7 @@ float Habitat::consumeFood( int x, int y ){
 
 
 
-bool Habitat::breed( Animat* groom, Animat* bride ) {
+bool Habitat::breed( Animat* groom, Animat* bride, bool here ) {
 
 	if ( groom->genome.size() != bride->genome.size() )
 		return false;
@@ -321,7 +325,20 @@ bool Habitat::breed( Animat* groom, Animat* bride ) {
 
 	}
 
-	birth( gene_offspring, coordinate( bride->posX, bride->posY ), bride->direction );
+	// set birth location
+	coordinate birth_location;
+	float birth_direction;
+	if ( here ) {
+		birth_location.x = bride->posX;
+		birth_location.y = bride->posY;
+		birth_direction = bride->direction;
+	}
+	else {
+		birth_location.x = RNGESUS->uniformRandomIntFrom( 0, sizeX );
+		birth_location.y = RNGESUS->uniformRandomIntFrom( 0, sizeY );
+		birth_direction = RNGESUS->uniformRandomFloatFrom( -PI, PI );
+	}
+	birth( gene_offspring, birth_location, birth_direction );
 	return true;
 
 }

@@ -156,6 +156,20 @@ void FCM::setLinkMatrixFromMask( std::vector<float> genome, int maskStart ) {
 
 
 
+void FCM::setLinkMatrixFromParentGenome( std::vector<float> genome, int maskStart ) {
+
+	int gene = maskStart;
+
+	for ( int row = 0; row < nConcepts; ++row ) {
+		for ( int col = 0; col < nConcepts; ++col ) {
+			L(row, col) = RNGESUS->normalFloat( genome[gene++], STD_DEGREE );
+		}
+	}
+
+}
+
+
+
 void FCM::applySensations( VectorXf sensations ) {
 
 	// if sensations is not the input vector

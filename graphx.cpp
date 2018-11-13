@@ -226,7 +226,7 @@ namespace gx {
 			points_buffer_data[counter*5 + 0] = float( 2.0f * it->second->posX / float(env_w) - 1 );	// X
 			points_buffer_data[counter*5 + 1] = float( 2.0f * it->second->posY / float(env_h) - 1 );	// Y
 			points_buffer_data[counter*5 + 2] = 0.95f;													// R
-			if ( it->first.compare( trackedName ) == 0 )
+			if ( trackedName.compare( "" ) != 0 && it->first.compare( trackedName ) == 0 )
 				points_buffer_data[counter*5 + 3] = 0.95f;												// G
 			else
 				points_buffer_data[counter*5 + 3] = 0.0f;												// G

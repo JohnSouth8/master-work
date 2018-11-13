@@ -175,6 +175,46 @@ bool QuadTree::insert( Organism* org ) {
 
 
 
+// can be safely removed
+bool QuadTree::insertDebug( Organism* org ) {
+
+	coordinate pos( org->posX, org->posY );
+
+	// check if organism belongs in this node
+	if ( !containsCoordinate( pos ) ) {
+		std::cout << "organism does not belong!" << std::endl;
+		return false;
+	}
+
+	// check whether this is a node or a leaf
+	if ( northWest == nullptr ) {
+
+		// if leaf with space remaining, add this animat and return
+		if ( bucket.size() < bucketSize ) {
+			std::cout << "organism push ...";
+			bucket.push_back( org );
+			std::cout << " successful!" << std::endl;
+			return true;
+		}
+		else {
+			std::cout << "subdividing tree..." << std::endl;
+			subdivide();
+		}
+
+	}
+
+	std::cout << "inserting into child nodes..." << std::endl;
+	if ( northWest->insertDebug( org ) ) return true;
+	if ( northEast->insertDebug( org ) ) return true;
+	if ( southWest->insertDebug( org ) ) return true;
+	if ( southEast->insertDebug( org ) ) return true;
+
+	return false;
+
+}
+
+
+
 bool QuadTree::remove( Organism* org ) {
 
 	if ( !containsCoordinate( coordinate( org->posX, org->posY ) ) )

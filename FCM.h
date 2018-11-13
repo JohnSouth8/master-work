@@ -57,6 +57,7 @@ public:
 	void setRandomLinkMatrix( float );
 	void loadLinkMatrixFromFile( std::string );
 	void setLinkMatrixFromMask( std::vector<float>, int );
+	void setLinkMatrixFromParentGenome( std::vector<float>, int );
 	void applySensations( Eigen::VectorXf );
 	Eigen::VectorXf getOutput();
 
