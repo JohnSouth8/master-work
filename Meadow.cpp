@@ -20,7 +20,7 @@ Meadow::Meadow( int cx, int cy, int r, float gr ) {
 	centerY = cy;
 	radius = abs( r );		// in case of some random negative outlier
 	growRate = fabs( gr );	// in case of some random negative outlier
-	// TODO: implement over-grazing - death of a meadow when no food is left
+	// TODO: death of a meadow
 
 }
 

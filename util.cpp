@@ -318,15 +318,32 @@ namespace util {
 
 
 
-	string generateName( int length ) {
+//	string generateName( int length ) {
+//
+//		int charmin = 65, charmax = 90;
+//		string sname;
+//
+//		std::vector<int> chars = RNGESUS->nUniformRandomIntsFrom( length, charmin, charmax );
+//
+//		for ( int i = 0; i < length; ++i )
+//			sname += chars[i];
+//
+//		return sname;
+//
+//	}
 
-		int charmin = 65, charmax = 90;
-		string sname;
 
-		std::vector<int> chars = RNGESUS->nUniformRandomIntsFrom( length, charmin, charmax );
 
-		for ( int i = 0; i < length; ++i )
-			sname += chars[i];
+	string generateName( uint length ) {
+
+		string charIndex = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+		std::vector<int> randomIndices = RNGESUS->nUniformRandomIntsFrom( length, 0, charIndex.length()-1 );
+
+		string sname = "";
+		for ( uint i = 0; i < length; ++i ) {
+			sname += charIndex[randomIndices[i]];
+		}
 
 		return sname;
 

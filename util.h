@@ -53,7 +53,7 @@ namespace util {
 
 	std::vector<float> getColourFromGradient( std::vector<float>, std::vector<float>, float );
 
-	std::string generateName( int );
+	std::string generateName( uint );
 
 	std::string readFileContent( std::string );
 	std::map<std::string, float> readSimpleIni( std::string );

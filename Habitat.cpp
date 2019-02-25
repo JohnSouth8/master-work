@@ -120,7 +120,8 @@ Habitat::~Habitat() {
 
 void Habitat::populateWorld( int n_animats ) {
 
-	ani_ini = util::readSimpleIni( ANIMAT_INI );
+	if ( ani_ini.empty() )
+		ani_ini = util::readSimpleIni( ANIMAT_INI );
 
 	if ( n_animats == 0 )
 		n_animats = static_cast<int>( ani_ini["n_animats"] );
@@ -246,7 +247,7 @@ void Habitat::growMeadows() {
 
 		int cx = RNGESUS->uniformRandomIntFrom( 0, sizeX-1 );
 		int cy = RNGESUS->uniformRandomIntFrom( 0, sizeY-1 );
-		int r = RNGESUS->normalInt( env_ini["radius_mean_meadow"], env_ini["radius_std_meadows"] );
+		int r = RNGESUS->normalInt( env_ini["radius_mean_meadows"], env_ini["radius_std_meadows"] );
 		float gr = RNGESUS->normalFloat( env_ini["growrate_mean_meadows"], env_ini["growrate_std_meadows"] );
 
 		Meadow* m = new Meadow( cx, cy, r, gr );

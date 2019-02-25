@@ -179,6 +179,7 @@ namespace gx {
 		util::coordinate rng0 ( 0, 0 );
 		util::coordinate lmts ( env_w, env_h );
 
+		// TODO: make sure that this number is never exceeded: maximally 1000000 entities in the world, never more
 		static GLfloat points_buffer_data[5000000]; //= new GLfloat[n_data*5];		// << each point has 5 datums: X Y R G B
 
 		// TODO

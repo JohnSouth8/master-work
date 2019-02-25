@@ -294,15 +294,25 @@ int test_fixed_evolution() {
 
 	int time_counter = 0;
 	int reproduction_cycle = 300;
-	float mating_fraction = 0.1;
-	int n_successful = mating_fraction * n_animats;
+	float mating_fraction = 0.25;
+	uint n_successful = mating_fraction * n_animats;
+	uint target_food = 11000;
 
 	while( HABITAT->population.size() > 0 && !glfwWindowShouldClose( simWindow ) /*&& !glfwWindowShouldClose( fcmWindow )*/ ) {
 
 		if ( simState != PAUSE )
 		{
 
-			HABITAT->growMeadows();
+//			// just a fun experiment: divide time into 2 seasons - when meadows grow and when they don't
+//			if ( (time_counter % reproduction_cycle) > (reproduction_cycle / 2) ) {
+//				HABITAT->growMeadows();
+//			}
+
+			// a new approach: probability of a meadow growth is inversely proportional to the amount of food in the world
+			int n_food = HABITAT->grassTree.count();
+			float p_growth = fabs( RNGESUS->normalFloat( (1-(n_food/(float)target_food)), 0.01 ) );
+			if ( RNGESUS->uniformRandomUnitFloat() < p_growth )
+				HABITAT->growMeadows();
 
 			for ( auto &nm_ani : HABITAT->population )
 			{
@@ -363,35 +373,69 @@ int test_fixed_evolution() {
 				cout << "Food consumed by current generation: " << HABITAT->foodConsumed << endl;
 				HABITAT->foodConsumed = 0;
 
-
+				cout << "Food left: " << HABITAT->grassTree.count() << endl;
 				cout << "New generation hatching!" << endl;
 
 
 				// first get the most succesful - order the animats by energy
 				vector<Organism*> temps = HABITAT->populationTree.getAll();
-				vector<Animat*> candidates( temps.size() );
+				vector<Animat*> animates( temps.size() );
 				for ( uint i = 0; i < temps.size(); i++ )
-					candidates[i] = dynamic_cast<Animat*>( temps[i] );
-				std::sort( candidates.begin(), candidates.end(), util::compareAnimatEnergies );
+					animates[i] = dynamic_cast<Animat*>( temps[i] );
+				std::sort( animates.begin(), animates.end(), util::compareAnimatEnergies );
+
+				vector<Animat*> candidates;
+				for ( uint i = 0; i < n_successful; ++i ) {
+					if ( animates[i]->energy > 0 ) {
+						candidates.push_back( animates[i] );
+					}
+				}
+
+				cout << "Number of successful animats: " << candidates.size() << endl;
+
 
 				// top <n_successful> get to mate
-				int n_offspring = 0;
+				uint n_offspring = 0;
+				uint n_mates = candidates.size();
 				while ( n_offspring < n_animats ) {
 					// choose a partner randomly
-					int partner1 = n_offspring % n_successful;
-					int partner2 = RNGESUS->uniformRandomIntFrom( 0, n_successful );
+					int partner1 = n_offspring % n_mates;
+					int partner2 = RNGESUS->uniformRandomIntFrom( 0, n_mates );
 					while ( partner2 == partner1 )
 						// redo if RNGESUS wants hermaphrodism
-						partner2 = RNGESUS->uniformRandomIntFrom( 0, n_successful );
+						partner2 = RNGESUS->uniformRandomIntFrom( 0, n_mates );
 
-					if ( HABITAT->breed( candidates[partner1], candidates[partner2], false ) )
+					if ( HABITAT->breed( animates[partner1], animates[partner2], false ) )
 						n_offspring++;
 
 				}
 
+//				// every successful animat gets to mate at least once ( twice if n_mates < half the population
+//				uint n_offspring = 0;
+//				uint n_mates = candidates.size();
+//				uint n_repeats = ceil( 0.5 / (n_mates / (float)animates.size()) );
+//
+//				for ( uint b = 0; b < n_repeats; ++b ) {
+//					for ( uint i = 0; i < n_mates; ++i ) {
+//						uint partner_i = RNGESUS->uniformRandomIntFrom( 0, n_mates-1 );
+//						while ( partner_i == i )
+//							// redo if RNGESUS wants hermaphrodism
+//							partner_i = RNGESUS->uniformRandomIntFrom( 0, n_mates-1 );
+//
+//						if ( HABITAT->breed( candidates[i], candidates[partner_i], false ) )
+//							n_offspring++;
+//					}
+//				}
+//				// populate the rest the same way as at the beginning of the simulation
+//				int n_new = n_animats - n_offspring;
+//				HABITAT->populateWorld( n_new );
+//
+//				cout << "Number of offspring: " << n_offspring << ", new: " << n_new << endl;
+
+
 
 				// then kill all of them -> remove them from the tree
-				for ( auto ani : candidates )
+				for ( auto ani : animates )
 					HABITAT->death( ani );
 
 				cout << "Generation revolution complete!" << endl;
